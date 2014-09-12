@@ -4,5 +4,8 @@ namespace fragments {
 		public:
 			Integrator(){};
 			virtual ~Integrator(){};
+
+			void Setup(){};
+			void Update(){};
 	};
 } // namespace fragments

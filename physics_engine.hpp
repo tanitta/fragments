@@ -1,6 +1,6 @@
 #pragma once
-#include <collision_detector.hpp><`0`>
-#include <constraint_solver.hpp><`0`>
+#include <collision_detector.hpp>
+#include <constraint_solver.hpp>
 #include <integrator.hpp>
 
 namespace fragments {
@@ -17,7 +17,16 @@ namespace fragments {
 				integrator_(){};
 			virtual ~PhysicsEngine(){};
 
-			void Update(){};
+			void Setup(){
+				collision_detector_.Setup();
+				constraint_solver_.Setup();
+				integrator_.Setup();
+			};
+			void Update(){
+				collision_detector_.Update();
+				constraint_solver_.Update();
+				integrator_.Update();
+			};
 
 	};
 } // namespace fragments

@@ -5,5 +5,8 @@ namespace fragments {
 		public:
 			ConstraintSolver(){};
 			virtual ~ConstraintSolver(){};
+
+			void Setup(){};
+			void Update(){};
 	};
 } // namespace fragments
