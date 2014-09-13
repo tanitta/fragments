@@ -5,5 +5,8 @@ namespace fragments {
 		public:
 			ForceAdder(){};
 			virtual ~ForceAdder(){};
+
+			void Setup(){};
+			void Update(){};
 	};
 } // namespace fragments

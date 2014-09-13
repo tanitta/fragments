@@ -21,11 +21,13 @@ namespace fragments {
 			virtual ~PhysicsEngine(){};
 
 			void Setup(){
+				force_adder_.Setup();
 				collision_detector_.Setup();
 				constraint_solver_.Setup();
 				integrator_.Setup();
 			};
 			void Update(){
+				force_adder_.Update();
 				collision_detector_.Update();
 				constraint_solver_.Update();
 				integrator_.Update();
