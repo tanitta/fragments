@@ -1,12 +1,16 @@
 #pragma once
 
 namespace fragments {
-	class Config {
-		public:
-			bool isGravity;
+	namespace data {
+		class Config {
+			public:
+				bool is_gravity_;
+				bool is_air_resistance_;
 
-			Config()
-				isGravity(true){};
-			virtual ~Config(){};
-	};
+				Config():
+					is_gravity_(true),
+					is_air_resistance_(true){};
+				virtual ~Config(){};
+		};
+	} // namespace data
 } // namespace fragments

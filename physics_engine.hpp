@@ -1,4 +1,7 @@
 #pragma once
+
+#include <data/config.hpp><`0`>
+
 #include <force_adder.hpp>
 #include <collision_detector.hpp>
 #include <constraint_solver.hpp>
@@ -13,7 +16,7 @@ namespace fragments {
 			fragments::Integrator integrator_;
 
 		public:
-			PhysicsEngine():
+			PhysicsEngine(fragments::data::Config& config):
 				force_adder_(),
 				collision_detector_(),
 				constraint_solver_(),
