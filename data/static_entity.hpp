@@ -3,7 +3,7 @@
 #include <base_entity.hpp>
 namespace fragments {
 	namespace data {
-		class StaticEntity : public fragments::data::BaseEntity {
+		class StaticEntity{
 			public:
 				std::shared_ptr<std::vector< boost::numeric::ublas::vector<float>>> points_;
 				std::vector< std::shared_ptr< boost::numeric::ublas::vector<float> > > face_;
