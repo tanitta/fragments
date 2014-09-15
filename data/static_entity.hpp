@@ -18,6 +18,10 @@ namespace fragments {
 					points_->operator[](index)[1] = y;
 					points_->operator[](index)[2] = z;
 				};
+
+				boost::numeric::ublas::vector<float> GetPoint(int index){
+					return points_->operator[](index);
+				}
 		};
 	} // namespace data
 } // namespace fragments

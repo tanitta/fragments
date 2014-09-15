@@ -1,6 +1,6 @@
 #pragma once
 
-#include <data/config.hpp><`0`>
+#include <data/config.hpp>
 
 #include <force_adder.hpp>
 #include <collision_detector.hpp>
