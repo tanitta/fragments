@@ -1,10 +1,11 @@
 #pragma once
-
-#include <base_entity.hpp>
+#include <shape.hpp>
+#include <attribute.hpp><`0`>
+#include <state.hpp><`0`>
 #include <static_entity.hpp>
 namespace fragments {
 	namespace data {
-		class ActiveEntity : public fragments::data::BaseEntity {
+		class ActiveEntity{
 			public:
 				const fragments::data::Shape shape_;
 				fragments::data::Attribute attribute_;

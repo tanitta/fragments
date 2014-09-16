@@ -1,6 +1,5 @@
 #pragma once
 #include <boost/numeric/ublas/vector.hpp>
-#include <base_entity.hpp>
 namespace fragments {
 	namespace data {
 		class StaticEntity{
