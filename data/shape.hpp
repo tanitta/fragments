@@ -2,10 +2,10 @@
 
 namespace fragments {
 	namespace data {
-		class Shape {
-			public:
-				Shape(){};
-				virtual ~Shape(){};
+		enum Shape {
+			SQUARE,
+			DISK,
+			SPHERE
 		};
 	} // namespace data
 } // namespace fragments
