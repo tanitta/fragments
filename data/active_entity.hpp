@@ -1,7 +1,7 @@
 #pragma once
 #include <shape.hpp>
-#include <attribute.hpp><`0`>
-#include <state.hpp><`0`>
+#include <attribute.hpp>
+#include <state.hpp>
 #include <static_entity.hpp>
 namespace fragments {
 	namespace data {
@@ -11,16 +11,18 @@ namespace fragments {
 				fragments::data::Attribute attribute_;
 				fragments::data::State state_;
 
-				vector< shared_ptr< fragments::data::StaticEntity > > static_entity_;
+				vector<fragments::data::StaticEntity*> static_entity_ptrs_;
 
 				ActiveEntity(fragments::data::Shape shape):
 					shape_(shape),
 					state_(),
 					attribute_(),
-					static_entity_(0){};
+					static_entity_ptrs_(0){};
 				virtual ~ActiveEntity(){};
 
-				void PushStaticEntity(shared_ptr< fragments::data::StaticEntity > ptr){};
+				void PushStaticEntity(fragments::data::StaticEntity* ptr){
+					static_entity_ptrs_.push_back(ptr);
+				};
 
 		};
 	} // namespace data
