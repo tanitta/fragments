@@ -44,8 +44,8 @@ namespace fragments {
 
 			void Setup(std::vector<fragments::data::StaticEntity>* static_entities_ptr){
 				std::vector<fragments::data::StaticEntity*> static_entity_ptrs;
-				for (fragments::data::StaticEntity i : *static_entities_ptr) {
-					static_entity_ptrs.push_back(&i);
+				for (int i = 0; i < static_entities_ptr->size(); i++) {
+					static_entity_ptrs.push_back(&static_entities_ptr->operator[](i));
 				}
 				static_tree_.Setup(static_entity_ptrs);
 			};
