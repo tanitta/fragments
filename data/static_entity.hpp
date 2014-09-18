@@ -21,6 +21,9 @@ namespace fragments {
 				boost::numeric::ublas::vector<float> GetPoint(int index){
 					return points_[index];
 				}
+
+				boost::numeric::ublas::vector<float> GetCenter(){	
+				}
 		};
 	} // namespace data
 } // namespace fragments

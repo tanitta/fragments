@@ -35,6 +35,7 @@ namespace fragments {
 					static_entity_.SetPoint(2,-100,0,-100);
 
 					static_entities_.push_back(static_entity_);
+
 					ofSetWindowTitle("fragments");
 					ofEnableDepthTest();
 					ofEnableAntiAliasing();
@@ -53,7 +54,9 @@ namespace fragments {
 
 				virtual ~StaticEntityTest(){};
 
-				void setup(){};
+				void setup(){
+					physics_engine_.Setup(&static_entities_);
+				};
 				void update(){
 				};
 				void draw(){
