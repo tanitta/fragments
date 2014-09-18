@@ -23,9 +23,9 @@ namespace fragments {
 				integrator_(){};
 			virtual ~PhysicsEngine(){};
 
-			void Setup(){
+			void Setup(std::vector<fragments::data::StaticEntity>* static_entities_ptr){
 				force_adder_.Setup();
-				collision_detector_.Setup();
+				collision_detector_.Setup(static_entities_ptr);
 				constraint_solver_.Setup();
 				integrator_.Setup();
 			};
