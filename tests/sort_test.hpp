@@ -29,7 +29,7 @@ namespace fragments {
 				virtual ~SortTest(){};
 
 				void setup(){
-					for (int i = 0; i < 4; i++) {
+					for (int i = 0; i < 20; i++) {
 						static_entities_.push_back(fragments::data::StaticEntity());
 						float x = ofRandom(-2000,2000);
 						float y = ofRandom(-2000,2000);
@@ -92,7 +92,7 @@ namespace fragments {
 
 					ofBoxPrimitive box(bound_box_size[0], bound_box_size[1], bound_box_size[2]);
 					box.setPosition(bound_box_center[0], bound_box_center[1], bound_box_center[2]);
-					ofSetColor(64,64,64);
+					ofSetColor(64,64,64,125);
 					box.drawWireframe();
 					// static_node.box_size_min_();
 					for (auto i : static_node.nexts_) {
