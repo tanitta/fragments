@@ -41,6 +41,7 @@ namespace fragments{
 
 				void MakeNode(std::vector<fragments::data::StaticEntity*> static_entity_ptrs){
 					std::cout<<static_entity_ptrs.size()<<std::endl;
+
 					//axis sort
 					int most_large_axis = 0;
 					for (int i = 0; i < 3; i++) {
@@ -58,16 +59,6 @@ namespace fragments{
 								box_size_max_[i] = j->GetMaxPoint(i)[i];
 							}
 						}
-						// for(int j = 0; j<static_entity_ptrs.size(); j++){
-						// 	if(static_entity_ptrs[j]->GetMinPoint(i)[i] <box_size_min_[i]){
-						// 		box_size_min_[i] = static_entity_ptrs[j]->GetMinPoint(i)[i];
-						// 	}
-						// 	if(static_entity_ptrs[j]->GetMaxPoint(i)[i] >box_size_max_[i]){
-						// 		box_size_max_[i] = static_entity_ptrs[j]->GetMaxPoint(i)[i];
-						// 	}
-						// };
-						// box_size_min_[i] = static_entity_ptrs[0]->GetCenter()[i];
-						// box_size_max_[i] = static_entity_ptrs[static_entity_ptrs.size()-1]->GetCenter()[i];
 						if (i != 0) {
 							if (box_size_max_[i] - box_size_min_[i] > box_size_max_[i-1] - box_size_min_[i-1]) {
 								most_large_axis = i;
