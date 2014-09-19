@@ -29,7 +29,7 @@ namespace fragments {
 				virtual ~SortTest(){};
 
 				void setup(){
-					for (int i = 0; i < 5; i++) {
+					for (int i = 0; i < 4; i++) {
 						static_entities_.push_back(fragments::data::StaticEntity());
 						float x = ofRandom(-2000,2000);
 						float y = ofRandom(-2000,2000);
