@@ -2,64 +2,12 @@
 
 #include <data/static_entity.hpp>
 #include <boost/numeric/ublas/vector.hpp>
-namespace  {
-	class LessCenter {
-		private:
-			const int axis_;
-		public:
-			LessCenter(const int axis):axis_(axis){};
-			virtual ~LessCenter(){};
-
-			bool operator()(fragments::data::StaticEntity* a, fragments::data::StaticEntity* b) {
-				return a->GetCenter()[axis_] < b->GetCenter()[axis_];
-			};
-
-	};
-
-	class StaticNode {
-		public:
-			std::vector<StaticNode*> next_ptrs_;
-			std::vector<fragments::data::StaticEntity*> static_entity_ptrs_;
-
-			boost::numeric::ublas::vector<float> box_size_max_;
-			boost::numeric::ublas::vector<float> box_size_min_;
-
-			StaticNode(){};
-			virtual ~StaticNode(){};
-
-			void Setup(std::vector<fragments::data::StaticEntity*> static_entity_ptrs){
-				if (static_entity_ptrs.size() > 0){
-
-					MakeNord(static_entity_ptrs);
-				};
-			};
-
-
-			void MakeNord(std::vector<fragments::data::StaticEntity*> static_entity_ptrs){
-				std::cout<<static_entity_ptrs.size()<<std::endl;
-				if (static_entity_ptrs.size() > 1){
-					for(auto i : static_entity_ptrs){
-						std::cout<<"Z:"<<i->GetCenter()[2]<<std::endl;
-					}
-					std::cout<<"----Sort----"<<std::endl;
-					LessCenter less_center(2);
-					std::sort(static_entity_ptrs.begin(), static_entity_ptrs.end(), less_center);
-
-					for(auto i : static_entity_ptrs){
-						std::cout<<"Z:"<<i->GetCenter()[2]<<std::endl;
-					}
-				}else{
-
-				};
-			};
-
-	};
-} // namespace
+#include <data/static_node.hpp><`0`>
 
 namespace fragments {
 	class CollisionDetector {
 		private:
-			StaticNode static_tree_;
+			fragments::data::StaticNode static_tree_;
 
 		public:
 			CollisionDetector(){};
