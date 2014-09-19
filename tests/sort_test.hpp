@@ -34,13 +34,16 @@ namespace fragments {
 
 					// static_entities_.push_back(static_entity_);
 
-					for (int i = 0; i < 10; i++) {
+					for (int i = 0; i < 40; i++) {
 						static_entities_.push_back(fragments::data::StaticEntity());
-						float x = ofRandom(-1000,1000);
-						float z = ofRandom(-1000,1000);
-						static_entities_[i].SetPoint(0,100+x,0,0+z);
-						static_entities_[i].SetPoint(1,-100+x,0,100+z);
-						static_entities_[i].SetPoint(2,-100+x,0,-100+z);
+						float x = ofRandom(-2000,2000);
+						float z = ofRandom(-2000,2000);
+						float a = ofRandom(-50,50);
+						static_entities_[i].SetPoint(0,100+x+a,0,0+z+a);
+						a = ofRandom(-50,50);
+						static_entities_[i].SetPoint(1,-100+x+a,0,100+z+a);
+						a = ofRandom(-50,50);
+						static_entities_[i].SetPoint(2,-100+x+a,0,-100+z+a);
 					}
 
 					ofSetWindowTitle("fragments");
@@ -71,8 +74,17 @@ namespace fragments {
 				void draw(){
 					cam.begin();
 					ofDrawGrid(500,10,false,true,true,true);
+					ofSetColor(255,255,255);
 					for(ofMesh i : map){
 						i.draw();
+					}
+					ofSetColor(255,0,0);
+					for(fragments::data::StaticEntity i : static_entities_){
+						float x,y,z;
+						x = i.GetCenter()[0];
+						y = i.GetCenter()[1];
+						z = i.GetCenter()[2];
+						ofDrawIcoSphere(x,y,z,20);
 					}
 					cam.end();
 				};

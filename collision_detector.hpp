@@ -11,7 +11,7 @@ namespace  {
 			virtual ~LessCenter(){};
 
 			bool operator()(fragments::data::StaticEntity* a, fragments::data::StaticEntity* b) {
-				return a->GetCenter()[0] < b->GetCenter()[0];
+				return a->GetCenter()[axis_] < b->GetCenter()[axis_];
 			};
 
 	};
@@ -38,8 +38,16 @@ namespace  {
 			void MakeNord(std::vector<fragments::data::StaticEntity*> static_entity_ptrs){
 				std::cout<<static_entity_ptrs.size()<<std::endl;
 				if (static_entity_ptrs.size() > 1){
-					LessCenter less_center(0);
+					for(auto i : static_entity_ptrs){
+						std::cout<<"Z:"<<i->GetCenter()[2]<<std::endl;
+					}
+					std::cout<<"----Sort----"<<std::endl;
+					LessCenter less_center(2);
 					std::sort(static_entity_ptrs.begin(), static_entity_ptrs.end(), less_center);
+
+					for(auto i : static_entity_ptrs){
+						std::cout<<"Z:"<<i->GetCenter()[2]<<std::endl;
+					}
 				}else{
 
 				};

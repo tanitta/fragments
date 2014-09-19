@@ -24,7 +24,7 @@ namespace fragments {
 
 				float GetMax(const int axis)const{
 					float max = points_[0][axis];
-					for (int i = 0; i < 3; i++) {
+					for (int i = 1; i < 3; i++) {
 						if (points_[i][axis] > max) {
 							max = points_[i][axis];
 						}
@@ -34,7 +34,7 @@ namespace fragments {
 
 				float GetMin(const int axis)const{
 					float min = points_[0][axis];
-					for (int i = 0; i < 3; i++) {
+					for (int i = 1; i < 3; i++) {
 						if (points_[i][axis] < min) {
 							min = points_[i][axis];
 						}
@@ -45,7 +45,7 @@ namespace fragments {
 				boost::numeric::ublas::vector<float> GetCenter()const{
 					boost::numeric::ublas::vector<float> center(3);
 					for(int i = 0; i<3; i++){
-						center[i] = (GetMax(i)-GetMin(i))*0.5;
+						center[i] = (GetMax(i)-GetMin(i))*0.5+GetMin(i);
 					}
 					return center;
 				}
