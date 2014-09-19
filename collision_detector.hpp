@@ -36,7 +36,7 @@ namespace  {
 
 
 			void MakeNord(std::vector<fragments::data::StaticEntity*> static_entity_ptrs){
-				std::cout<<static_entity_ptrs[0]->GetCenter()[0]<<std::endl;
+				std::cout<<static_entity_ptrs.size()<<std::endl;
 				if (static_entity_ptrs.size() > 1){
 					LessCenter less_center(0);
 					std::sort(static_entity_ptrs.begin(), static_entity_ptrs.end(), less_center);

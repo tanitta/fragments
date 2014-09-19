@@ -25,7 +25,6 @@ namespace fragments {
 				float GetMax(const int axis)const{
 					float max = points_[0][axis];
 					for (int i = 0; i < 3; i++) {
-						std::cout<<points_[i][axis]<<endl;
 						if (points_[i][axis] > max) {
 							max = points_[i][axis];
 						}
