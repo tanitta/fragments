@@ -23,7 +23,7 @@ namespace fragments {
 				}
 
 
-				boost::numeric::ublas::vector<float> GetMaxPoint(const int axis){
+				boost::numeric::ublas::vector<float> GetMaxPoint(const int axis) const{
 					int max_index = 0;
 					for (int i = 1; i < 3; i++) {
 						if (points_[i][axis] > points_[max_index][axis]) {
@@ -33,7 +33,7 @@ namespace fragments {
 					return points_[max_index];
 				};
 
-				boost::numeric::ublas::vector<float> GetMinPoint(const int axis){
+				boost::numeric::ublas::vector<float> GetMinPoint(const int axis) const{
 					int min_index = 0;
 					for (int i = 1; i < 3; i++) {
 						if (points_[i][axis] < points_[min_index][axis]) {
@@ -44,7 +44,7 @@ namespace fragments {
 
 				};
 
-				boost::numeric::ublas::vector<float> GetCenter(){
+				boost::numeric::ublas::vector<float> GetCenter() const{
 					boost::numeric::ublas::vector<float> center(3);
 					for(int i = 0; i<3; i++){
 						center[i] = (GetMaxPoint(i)[i]-GetMinPoint(i)[i])*0.5+GetMinPoint(i)[i];
