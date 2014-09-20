@@ -35,11 +35,11 @@ namespace fragments {
 						float y = ofRandom(-2000,2000);
 						float z = ofRandom(-2000,2000);
 						float a = ofRandom(-50,50);
-						static_entities_[i].SetPoint(0,100+x+a,0+y+a,0+z+a);
+						static_entities_[i].SetPoint(0,100+x+a,0+y+a*5,0+z+a);
 						a = ofRandom(-50,50);
-						static_entities_[i].SetPoint(1,-100+x+a,0+y+a,100+z+a);
+						static_entities_[i].SetPoint(1,-100+x+a,0+y+a*5,100+z+a);
 						a = ofRandom(-50,50);
-						static_entities_[i].SetPoint(2,-100+x+a,0+y+a,-100+z+a);
+						static_entities_[i].SetPoint(2,-100+x+a,0+y+a*5,-100+z+a);
 					}
 
 					for(fragments::data::StaticEntity i : static_entities_){
