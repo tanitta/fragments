@@ -12,7 +12,10 @@ namespace fragments {
 				boost::numeric::ublas::vector<float> linear_velocity_;
 				boost::numeric::ublas::vector<float> angular_velocity_;
 
-				State(){};
+				State():
+					position_(3),
+					linear_velocity_(3),
+					angular_velocity_(3){};
 				virtual ~State(){};
 		};
 	} // namespace data

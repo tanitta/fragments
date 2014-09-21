@@ -88,7 +88,7 @@ namespace fragments{
 						nexts_[0].MakeNode(partial_static_entity_ptrs1);
 						nexts_[1].MakeNode(partial_static_entity_ptrs2);
 					}else{
-
+						static_entity_ptrs_ = static_entity_ptrs;
 					};
 				};
 

@@ -3,24 +3,31 @@
 #include "ofMain.h"
 
 #include <fragments/data/static_entity.hpp>
+#include <fragments/data/active_entity.hpp>
 #include <../data/static_node.hpp>
+#include <fragments/collision_detector.hpp><`0`>
 namespace fragments {
 	namespace tests {
 		class SearchCollidableNodeTest : public ofBaseApp{
 			private:
 				vector< fragments::data::StaticEntity > static_entities_;
+				vector< fragments::data::ActiveEntity > active_entities_;
 				fragments::data::StaticNode static_tree_;
 
+				fragments::CollisionDetector collision_detector_;
 				std::vector<ofMesh> map;
 				ofEasyCam cam;
 
 			public:
 				SearchCollidableNodeTest():
 				static_entities_(0),
+				active_entities_(1),
 				static_tree_(),
+				collision_detector_(),
 				map(0),
 				cam(){
 					ofSetWindowTitle("fragments");
+					ofSetFrameRate(30);
 					ofEnableAlphaBlending();
 					ofEnableDepthTest();
 					ofEnableAntiAliasing();
@@ -54,16 +61,11 @@ namespace fragments {
 						}
 						map.push_back(mesh);
 					}
-					std::vector<fragments::data::StaticEntity*> static_entity_ptrs(0);
-					// for (auto i : static_entities_) {
-					// 	static_entity_ptrs.push_back(&i);
-					// }
-					for(int i = 0; i< static_entities_.size(); i++){
-						static_entity_ptrs.push_back(&static_entities_[i]);
-					}
-					static_tree_.MakeNode(static_entity_ptrs);
+
+					collision_detector_.Setup(static_entities_, active_entities_);
 				};
 				void update(){
+					collision_detector_.Update();
 				};
 				void draw(){
 					cam.begin();
@@ -80,7 +82,6 @@ namespace fragments {
 						z = i.GetCenter()[2];
 						ofDrawIcoSphere(x,y,z,20);
 					}
-					drawBox(static_tree_);
 					cam.end();
 				};
 				void drawBox(fragments::data::StaticNode& static_node){
