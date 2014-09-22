@@ -70,8 +70,8 @@ namespace fragments{
 						std::sort(static_entity_ptrs.begin(), static_entity_ptrs.end(), less_center);
 					}
 
+					//devide
 					if (static_entity_ptrs.size() > 1){
-						//devide
 						int partial_length = static_entity_ptrs.size()/2;
 						std::vector<fragments::data::StaticEntity*> partial_static_entity_ptrs1(0);
 						std::vector<fragments::data::StaticEntity*> partial_static_entity_ptrs2(0);
