@@ -50,6 +50,7 @@ namespace fragments {
 
 			void Update(){
 				for (auto i : active_entity_ptrs_) {
+					i->UpdateBoundingBox();
 					SearchStaticTree(static_tree_, *i);
 				}
 			};

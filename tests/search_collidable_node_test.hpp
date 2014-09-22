@@ -21,7 +21,7 @@ namespace fragments {
 			public:
 				SearchCollidableNodeTest():
 				static_entities_(0),
-				active_entities_(1),
+				active_entities_(0),
 				static_tree_(),
 				collision_detector_(),
 				map(0),
