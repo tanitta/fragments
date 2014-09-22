@@ -27,20 +27,30 @@ namespace fragments {
 				}
 			};
 
-			bool DetectCollisionFromAABB(){
+			bool DetectCollisionFromAABB(const fragments::data::StaticNode& static_node, const fragments::data::ActiveEntity& active_entity)const{
+				for (int i = 0; i < 3; i++) {
+					if(active_entity.box_size_max_[i] < static_node.box_size_min_[i] && active_entity.box_size_min_[i] > static_node.box_size_max_[i]){
+						return false;
+					}
+				}
+				return true;
 			};
 
-			void SearchStaticTree(fragments::data::StaticNode& static_node){
-				std::cout<<static_node.static_entity_ptrs_.size()<<std::endl;
-				for (auto i : static_node.nexts_) {
-				SearchStaticTree(i);
+			void SearchStaticTree(fragments::data::StaticNode& static_node, fragments::data::ActiveEntity& active_entity){
+				if (DetectCollisionFromAABB(static_node,active_entity)){
+					// 詳細判定
+
+					for (auto i : static_node.nexts_) {
+						SearchStaticTree(i, active_entity);
+					}
 				}
+
+
 			};
 
 			void Update(){
-				std::cout<<"Update"<<std::endl;
 				for (auto i : active_entity_ptrs_) {
-					SearchStaticTree(static_tree_);
+					SearchStaticTree(static_tree_, *i);
 				}
 			};
 
