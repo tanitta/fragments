@@ -35,6 +35,10 @@ namespace fragments {
 						box_size_max_[i] += shape_.size_*0.5;
 					}
 				}
+
+				void Integrate(float step){
+					state_.position_ += state_.linear_velocity_ * step;
+				};
 		};
 	} // namespace data
 } // namespace fragments

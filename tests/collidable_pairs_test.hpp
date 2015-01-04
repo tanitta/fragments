@@ -4,42 +4,41 @@
 
 #include <fragments/data/static_entity.hpp>
 #include <fragments/data/active_entity.hpp>
+#include <fragments/data/collidable_pair.hpp>
 #include <../data/static_node.hpp>
 #include <fragments/collision_detector.hpp>
 #include <fragments/integrator.hpp>
+
 namespace fragments {
 	namespace tests {
-		class SearchCollidableNodeTest : public ofBaseApp{
+		class CollidablePairsTest : public ofBaseApp{
 			private:
-				vector< fragments::data::StaticEntity > static_entities_;
-				vector< fragments::data::ActiveEntity > active_entities_;
+				std::vector<fragments::data::StaticEntity> static_entities_;
+				std::vector<fragments::data::ActiveEntity> active_entities_;
+				std::vector<fragments::data::CollidablePair> collidable_pairs_;
 				fragments::data::StaticNode static_tree_;
-
 				//pipeline
 				fragments::CollisionDetector collision_detector_;
 				fragments::Integrator integrator_;
 
-				std::vector<ofMesh> map;
-				ofEasyCam cam;
-
+				std::vector<ofMesh> map_;
+				ofEasyCam cam_;
 			public:
-				SearchCollidableNodeTest():
-				static_entities_(0),
-				active_entities_(0),
-				static_tree_(),
-				collision_detector_(),
-				integrator_(),
-				map(0),
-				cam(){
+				CollidablePairsTest():
+					static_entities_(0),
+					active_entities_(0),
+					collidable_pairs_(),
+					static_tree_(),
+					collision_detector_(),
+					map_(0),
+					cam_(){
 					ofSetWindowTitle("fragments");
 					ofSetFrameRate(30);
 					ofEnableAlphaBlending();
 					ofEnableDepthTest();
 					ofEnableAntiAliasing();
 				};
-
-				virtual ~SearchCollidableNodeTest(){};
-
+				virtual ~CollidablePairsTest(){};
 				void setup(){
 					//StaticEntityの追加
 					for (int i = 0; i < 20; i++) {
@@ -66,20 +65,21 @@ namespace fragments {
 						for(int j = 0; j<3; j++){
 							mesh.addIndex(2-j);
 						}
-						map.push_back(mesh);
+						map_.push_back(mesh);
 					}
 
 					collision_detector_.Setup(static_entities_, active_entities_);
 				};
 				void update(){
-					collision_detector_.Update();
+					collidable_pairs_.clear();
+					collision_detector_.Update(collidable_pairs_);
 					integrator_.Update(active_entities_);
 				};
 				void draw(){
-					cam.begin();
+					cam_.begin();
 					ofDrawGrid(500,10,false,true,true,true);
 					ofSetColor(255,255,255);
-					for(ofMesh i : map){
+					for(ofMesh i : map_){
 						i.draw();
 					}
 					ofSetColor(255,0,0);
@@ -90,7 +90,7 @@ namespace fragments {
 						z = i.GetCenter()[2];
 						ofDrawIcoSphere(x,y,z,20);
 					}
-					cam.end();
+					cam_.end();
 				};
 				void drawBox(fragments::data::StaticNode& static_node){
 					boost::numeric::ublas::vector<float> bound_box_center(3);
@@ -108,16 +108,6 @@ namespace fragments {
 						drawBox(i);
 					}
 				}
-
-				void keyPressed(int key){};
-				void keyReleased(int key){};
-				void mouseMoved(int x, int y ){};
-				void mouseDragged(int x, int y, int button){};
-				void mousePressed(int x, int y, int button){};
-				void mouseReleased(int x, int y, int button){};
-				void windowResized(int w, int h){};
-				void dragEvent(ofDragInfo dragInfo){};
-				void gotMessage(ofMessage msg){};
 		};
 	} // namespace tests
 } // namespace fragments

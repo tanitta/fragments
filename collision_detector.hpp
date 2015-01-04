@@ -2,6 +2,7 @@
 
 #include <data/static_entity.hpp>
 #include <data/active_entity.hpp>
+#include <data/collidable_pair.hpp>
 #include <boost/numeric/ublas/vector.hpp>
 #include <data/static_node.hpp>
 
@@ -36,26 +37,29 @@ namespace fragments {
 				return true;
 			};
 
-			void SearchStaticTree(fragments::data::StaticNode& static_node, fragments::data::ActiveEntity& active_entity){
+			void SearchStaticTree(fragments::data::StaticNode& static_node, fragments::data::ActiveEntity& active_entity, std::vector<fragments::data::CollidablePair>& collidable_pairs){
 				if (DetectCollisionFromAABB(static_node,active_entity)){
 					// 詳細判定
 
-					for (auto i : static_node.nexts_) {
-						SearchStaticTree(i, active_entity);
+					// 末端nodeの場合
+					if(static_node.nexts_.size()==0){
+						//CollisionPairを追加
+						// collidable_pairs.push_back();
+						collidable_pairs.push_back(fragments::data::CollidablePair(*static_node.static_entity_ptrs_[0],active_entity));
+
+					}else{
+						for (auto i : static_node.nexts_) {
+							SearchStaticTree(i, active_entity, collidable_pairs);
+						}
 					}
 				}
+			}
 
-
-			};
-
-			void Update(){
+			void Update(std::vector<fragments::data::CollidablePair>& collidable_pairs){
 				for (auto i : active_entity_ptrs_) {
 					i->UpdateBoundingBox();
-					SearchStaticTree(static_tree_, *i);
+					SearchStaticTree(static_tree_, *i, collidable_pairs);
 				}
 			};
-
-
-
 	};
 } // namespace fragments
