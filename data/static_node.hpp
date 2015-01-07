@@ -1,8 +1,10 @@
 #pragma once
-
 #include <static_entity.hpp>
-#include <boost/numeric/ublas/vector.hpp>
 
+#ifdef Success
+  #undef Success
+#endif
+#include <Eigen/Core>
 namespace  {
 	class LessCenter {
 		private:
@@ -25,11 +27,11 @@ namespace fragments{
 				std::vector<StaticNode> nexts_;
 				std::vector<fragments::data::StaticEntity*> static_entity_ptrs_;
 
-				boost::numeric::ublas::vector<float> box_size_max_;
-				boost::numeric::ublas::vector<float> box_size_min_;
+				Eigen::Vector3d box_size_max_;
+				Eigen::Vector3d box_size_min_;
 
 				StaticNode():
-					box_size_min_(3),box_size_max_(3){};
+					box_size_min_(Eigen::Vector3d::Zero(3)),box_size_max_(Eigen::Vector3d::Zero(3)){};
 				virtual ~StaticNode(){};
 
 				void Setup(std::vector<fragments::data::StaticEntity*> static_entity_ptrs){

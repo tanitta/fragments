@@ -1,12 +1,16 @@
 #pragma once
-#include <boost/numeric/ublas/vector.hpp>
+
+#ifdef Success
+  #undef Success
+#endif
+#include <Eigen/Core>
 namespace fragments {
 	namespace data {
 		class StaticEntity{
 			public:
-				std::vector< boost::numeric::ublas::vector<float>> points_;
+				std::vector<Eigen::Vector3d> points_;
 				StaticEntity():
-					points_(4,boost::numeric::ublas::vector<float>(3))
+					points_(4,Eigen::Vector3d::Zero(3))
 					// face_(3,)
 				{
 				};
@@ -18,12 +22,12 @@ namespace fragments {
 					points_[index][2] = z;
 				};
 
-				boost::numeric::ublas::vector<float> GetPoint(const int index) const {
+				Eigen::Vector3d GetPoint(const int index) const {
 					return points_[index];
 				}
 
 
-				boost::numeric::ublas::vector<float> GetMaxPoint(const int axis) const{
+				Eigen::Vector3d GetMaxPoint(const int axis) const{
 					int max_index = 0;
 					for (int i = 1; i < 3; i++) {
 						if (points_[i][axis] > points_[max_index][axis]) {
@@ -33,7 +37,7 @@ namespace fragments {
 					return points_[max_index];
 				};
 
-				boost::numeric::ublas::vector<float> GetMinPoint(const int axis) const{
+				Eigen::Vector3d GetMinPoint(const int axis) const{
 					int min_index = 0;
 					for (int i = 1; i < 3; i++) {
 						if (points_[i][axis] < points_[min_index][axis]) {
@@ -44,8 +48,8 @@ namespace fragments {
 
 				};
 
-				boost::numeric::ublas::vector<float> GetCenter() const{
-					boost::numeric::ublas::vector<float> center(3);
+				Eigen::Vector3d GetCenter() const{
+					Eigen::Vector3d center;
 					for(int i = 0; i<3; i++){
 						center[i] = (GetMaxPoint(i)[i]-GetMinPoint(i)[i])*0.5+GetMinPoint(i)[i];
 					}

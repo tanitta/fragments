@@ -5,6 +5,7 @@
 #include <fragments/data/static_entity.hpp>
 #include <fragments/data/active_entity.hpp>
 #include <fragments/data/collidable_pair.hpp>
+#include <fragments/data/constraint_pair.hpp>
 #include <../data/static_node.hpp>
 #include <fragments/collision_detector.hpp>
 #include <fragments/integrator.hpp>
@@ -15,7 +16,7 @@ namespace fragments {
 			private:
 				std::vector<fragments::data::StaticEntity> static_entities_;
 				std::vector<fragments::data::ActiveEntity> active_entities_;
-				std::vector<fragments::data::CollidablePair> collidable_pairs_;
+				std::vector<fragments::data::ConstraintPair> constraint_pairs_;
 				fragments::data::StaticNode static_tree_;
 				//pipeline
 				fragments::CollisionDetector collision_detector_;
@@ -27,7 +28,6 @@ namespace fragments {
 				CollidablePairsTest():
 					static_entities_(0),
 					active_entities_(0),
-					collidable_pairs_(),
 					static_tree_(),
 					collision_detector_(),
 					map_(0),
@@ -71,8 +71,7 @@ namespace fragments {
 					collision_detector_.Setup(static_entities_, active_entities_);
 				};
 				void update(){
-					collidable_pairs_.clear();
-					collision_detector_.Update(collidable_pairs_);
+					collision_detector_.Update(constraint_pairs_);
 					integrator_.Update(active_entities_);
 				};
 				void draw(){
@@ -93,8 +92,8 @@ namespace fragments {
 					cam_.end();
 				};
 				void drawBox(fragments::data::StaticNode& static_node){
-					boost::numeric::ublas::vector<float> bound_box_center(3);
-					boost::numeric::ublas::vector<float> bound_box_size(3);
+					Eigen::Vector3d bound_box_center(Eigen::Vector3d::Zero(3));
+					Eigen::Vector3d bound_box_size(Eigen::Vector3d::Zero(3));
 
 					bound_box_center= (static_node.box_size_max_ - static_node.box_size_min_)*0.5 + static_node.box_size_min_;
 					bound_box_size = static_node.box_size_max_ - static_node.box_size_min_;

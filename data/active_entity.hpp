@@ -1,6 +1,10 @@
 #pragma once
 
-#include <boost/numeric/ublas/vector.hpp>
+// #include <boost/numeric/ublas/vector.hpp>
+#ifdef Success
+  #undef Success
+#endif
+#include <Eigen/Core>
 #include <shape.hpp>
 #include <attribute.hpp>
 #include <state.hpp>
@@ -13,8 +17,10 @@ namespace fragments {
 				fragments::data::Attribute attribute_;
 				fragments::data::State state_;
 
-				boost::numeric::ublas::vector<float> box_size_max_;
-				boost::numeric::ublas::vector<float> box_size_min_;
+				// boost::numeric::ublas::vector<float> box_size_max_;
+				// boost::numeric::ublas::vector<float> box_size_min_;
+				Eigen::Vector3d box_size_max_;
+				Eigen::Vector3d box_size_min_;
 
 				ActiveEntity(const fragments::data::ShapeType shape = fragments::data::ShapeType::SQUARE, const float size = 1.0):
 					shape_(shape, size),
