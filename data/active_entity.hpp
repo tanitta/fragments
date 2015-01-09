@@ -17,8 +17,6 @@ namespace fragments {
 				fragments::data::Attribute attribute_;
 				fragments::data::State state_;
 
-				// boost::numeric::ublas::vector<float> box_size_max_;
-				// boost::numeric::ublas::vector<float> box_size_min_;
 				Eigen::Vector3d box_size_max_;
 				Eigen::Vector3d box_size_min_;
 
@@ -27,6 +25,14 @@ namespace fragments {
 					state_(),
 					attribute_(){};
 				virtual ~ActiveEntity(){};
+
+				void SetPosition(Eigen::Vector3d p){
+					state_.position_ = p;
+				};
+
+				void SetLinearVelocity(Eigen::Vector3d p){
+					state_.linear_velocity_ = p;
+				};
 
 				void UpdateBoundingBox(){
 					for (int i = 0; i < 3; i++) {
@@ -37,6 +43,7 @@ namespace fragments {
 							box_size_min_[i] = state_.position_[i] + state_.linear_velocity_[i];
 							box_size_max_[i] = state_.position_[i];
 						}
+						//Shape毎にバウンディングボックスの算出方法が異なるので分岐すること
 						box_size_min_[i] -= shape_.size_*0.5;
 						box_size_max_[i] += shape_.size_*0.5;
 					}

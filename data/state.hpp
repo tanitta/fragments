@@ -1,21 +1,26 @@
 #pragma once
 
-#include <boost/numeric/ublas/vector.hpp>
-#include <boost/math/quaternion.hpp>
+// #include <boost/numeric/ublas/vector.hpp>
+// #include <boost/math/quaternion.hpp>
+#ifdef Success
+  #undef Success
+#endif
+#include "Eigen/Dense"
+#include "Eigen/Geometry"
 namespace fragments {
 	namespace data {
 		class State {
 			public:
 				bool is_active_;
-				boost::numeric::ublas::vector<float> position_;
-				boost::math::quaternion<float> orientation_;
-				boost::numeric::ublas::vector<float> linear_velocity_;
-				boost::numeric::ublas::vector<float> angular_velocity_;
+				Eigen::Vector3d position_;
+				// Eigen::Quaternion<double> orientation_;
+				Eigen::Vector3d linear_velocity_;
+				Eigen::Vector3d angular_velocity_;
 
 				State():
-					position_(3),
-					linear_velocity_(3),
-					angular_velocity_(3){};
+					position_(Eigen::Vector3d::Zero(3)),
+					linear_velocity_(Eigen::Vector3d::Zero(3)),
+					angular_velocity_(Eigen::Vector3d::Zero(3)){};
 				virtual ~State(){};
 		};
 	} // namespace data

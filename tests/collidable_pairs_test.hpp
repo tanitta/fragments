@@ -68,6 +68,10 @@ namespace fragments {
 						map_.push_back(mesh);
 					}
 
+
+					active_entities_.push_back(fragments::data::ActiveEntity());
+					active_entities_[0].SetPosition(Eigen::Vector3d(0,0,0));
+
 					collision_detector_.Setup(static_entities_, active_entities_);
 				};
 				void update(){
