@@ -93,8 +93,10 @@ namespace fragments {
 						z = i.GetCenter()[2];
 						ofDrawIcoSphere(x,y,z,20);
 					}
+					drawBox(collision_detector_.GetStaticTree());
 					cam_.end();
 				};
+
 				void drawBox(fragments::data::StaticNode& static_node){
 					Eigen::Vector3d bound_box_center(Eigen::Vector3d::Zero(3));
 					Eigen::Vector3d bound_box_size(Eigen::Vector3d::Zero(3));
@@ -104,13 +106,14 @@ namespace fragments {
 
 					ofBoxPrimitive box(bound_box_size[0], bound_box_size[1], bound_box_size[2]);
 					box.setPosition(bound_box_center[0], bound_box_center[1], bound_box_center[2]);
-					ofSetColor(64,64,64,125);
+					ofSetColor(64,64,64);
 					box.drawWireframe();
 					// static_node.box_size_min_();
 					for (auto i : static_node.nexts_) {
 						drawBox(i);
 					}
 				}
+
 		};
 	} // namespace tests
 } // namespace fragments

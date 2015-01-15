@@ -39,7 +39,6 @@ namespace fragments {
 			};
 
 			void SearchStaticTree(fragments::data::StaticNode& static_node, fragments::data::ActiveEntity& active_entity, std::vector<fragments::data::CollidablePair>& collidable_pairs){
-				std::cout<<"DetectCollisionFromAABB : "<<DetectCollisionFromAABB(static_node,active_entity)<<std::endl;
 				if (DetectCollisionFromAABB(static_node,active_entity)){
 					// 詳細判定
 
@@ -61,21 +60,21 @@ namespace fragments {
 			};
 
 			void Update(std::vector<fragments::data::ConstraintPair>& constraint_pair){
-				std::cout<<"######## CollisionDetector::Update ########"<<std::endl;
 				collidable_pairs_.clear();
 				// Broadphase
-				std::cout<<"active_entity_ptrs_.size : "<<active_entity_ptrs_.size()<<std::endl;
 				for (auto i : active_entity_ptrs_) {
 					i->UpdateBoundingBox();
 					SearchStaticTree(static_tree_, *i, collidable_pairs_);
 				}
 
-				std::cout<<"collidable_pairs_.size : "<<collidable_pairs_.size()<<std::endl;
-
 				// Narrowphase
 				for (auto&& i : collidable_pairs_) {
 					SearchCollisionDetail(i);
 				}
+			};
+
+			fragments::data::StaticNode& GetStaticTree(){
+				return static_tree_;
 			};
 	};
 } // namespace fragments

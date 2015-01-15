@@ -5,13 +5,14 @@
   #undef Success
 #endif
 #include <Eigen/Core>
+#include <base_entity.hpp>
 #include <shape.hpp>
 #include <attribute.hpp>
 #include <state.hpp>
 #include <static_entity.hpp>
 namespace fragments {
 	namespace data {
-		class ActiveEntity{
+		class ActiveEntity : public fragments::data::BaseEntity{
 			public:
 				const fragments::data::Shape shape_;
 				fragments::data::Attribute attribute_;

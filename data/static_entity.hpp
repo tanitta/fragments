@@ -4,9 +4,11 @@
   #undef Success
 #endif
 #include <Eigen/Core>
+#include <base_entity.hpp>
+
 namespace fragments {
 	namespace data {
-		class StaticEntity{
+		class StaticEntity : public fragments::data::BaseEntity{
 			public:
 				std::vector<Eigen::Vector3d> points_;
 				StaticEntity():
