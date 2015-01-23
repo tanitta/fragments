@@ -2,6 +2,10 @@
 #include <boost/numeric/ublas/matrix.hpp>
 namespace fragments {
 	namespace data {
+		//! 属性を表す
+		/*!
+		 * 重量や慣性テンソル等の属性を表す
+		 */
 		class Attribute {
 			public:
 				const float mass_;

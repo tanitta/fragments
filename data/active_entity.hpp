@@ -12,29 +12,36 @@
 #include <static_entity.hpp>
 namespace fragments {
 	namespace data {
+		//! 動的なEntity
+		/*!
+		 *
+		 */
 		class ActiveEntity : public fragments::data::BaseEntity{
 			public:
+				//! 形状を定義
 				const fragments::data::Shape shape_;
+				//! 属性を定義
 				fragments::data::Attribute attribute_;
+				//! 状態を定義
 				fragments::data::State state_;
-
+				
 				Eigen::Vector3d box_size_max_;
 				Eigen::Vector3d box_size_min_;
-
-				ActiveEntity(const fragments::data::ShapeType shape = fragments::data::ShapeType::SQUARE, const float size = 1.0):
+				
+				ActiveEntity(const fragments::data::ShapeType shape = fragments::data::ShapeType::SQUARE, const float size = 100.0):
 					shape_(shape, size),
 					state_(),
 					attribute_(){};
 				virtual ~ActiveEntity(){};
-
+				
 				void SetPosition(Eigen::Vector3d p){
 					state_.position_ = p;
 				};
-
+				
 				void SetLinearVelocity(Eigen::Vector3d p){
 					state_.linear_velocity_ = p;
 				};
-
+				
 				void UpdateBoundingBox(){
 					for (int i = 0; i < 3; i++) {
 						if(state_.position_[i] < state_.position_[i] + state_.linear_velocity_[i]){
@@ -49,7 +56,7 @@ namespace fragments {
 						box_size_max_[i] += shape_.size_*0.5;
 					}
 				}
-
+				
 				void Integrate(float step){
 					state_.position_ += state_.linear_velocity_ * step;
 				};

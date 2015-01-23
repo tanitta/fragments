@@ -41,7 +41,7 @@ namespace fragments {
 				virtual ~CollidablePairsTest(){};
 				void setup(){
 					//StaticEntityの追加
-					for (int i = 0; i < 20; i++) {
+					for (int i = 0; i < 1; i++) {
 						static_entities_.push_back(fragments::data::StaticEntity());
 						float x = ofRandom(-2000,2000);
 						float y = ofRandom(-500,500);
@@ -53,6 +53,9 @@ namespace fragments {
 						a = ofRandom(-50,50);
 						static_entities_[i].SetPoint(2,-100+x+a,0+y+a*5,-100+z+a);
 					}
+					static_entities_[0].SetPoint(0,200,0,-150);
+					static_entities_[0].SetPoint(1,0,0,-150);
+					static_entities_[0].SetPoint(2,150,0,200);
 
 					//描画するmeshにStaticEntityを追加
 					for(fragments::data::StaticEntity i : static_entities_){
@@ -68,9 +71,9 @@ namespace fragments {
 						map_.push_back(mesh);
 					}
 
-
-					active_entities_.push_back(fragments::data::ActiveEntity());
-					active_entities_[0].SetPosition(Eigen::Vector3d(0,0,0));
+					// ActiveEntityの初期化
+					active_entities_.push_back(fragments::data::ActiveEntity(fragments::data::SPHERE));
+					active_entities_[0].SetPosition(Eigen::Vector3d(100,0,0));
 
 					collision_detector_.Setup(static_entities_, active_entities_);
 				};
@@ -81,11 +84,13 @@ namespace fragments {
 				void draw(){
 					cam_.begin();
 					ofDrawGrid(500,10,false,true,true,true);
-					ofSetColor(255,255,255);
+					
+					// StaticEntity
+					ofSetColor(126,126,255);
 					for(ofMesh i : map_){
 						i.draw();
 					}
-					ofSetColor(255,0,0);
+					ofSetColor(0,0,126);
 					for(fragments::data::StaticEntity i : static_entities_){
 						float x,y,z;
 						x = i.GetCenter()[0];
@@ -94,6 +99,16 @@ namespace fragments {
 						ofDrawIcoSphere(x,y,z,20);
 					}
 					drawBox(collision_detector_.GetStaticTree());
+					
+					// ActiveEntity
+					ofSetColor(255,126,126);
+					for (auto&& i : active_entities_) {
+						float x,y,z;
+						x = i.state_.position_[0];
+						y = i.state_.position_[1];
+						z = i.state_.position_[2];
+						ofDrawIcoSphere(x,y,z,i.shape_.size_);
+					}
 					cam_.end();
 				};
 

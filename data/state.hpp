@@ -9,6 +9,10 @@
 #include "Eigen/Geometry"
 namespace fragments {
 	namespace data {
+		//! 状態を定義
+		/*!
+		 * 位置，速度，角度，角速度といった状態を格納する
+		 */
 		class State {
 			public:
 				bool is_active_;
