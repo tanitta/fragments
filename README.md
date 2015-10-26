@@ -1,6 +1,7 @@
+![ScreenShot](https://github.com/tanitta/fragments/blob/master/logo.png)
+
 fragments
 =========
-![ScreenShot](https://github.com/tanitta/fragments/blob/master/logo.png)
 Rigid body dynamics simulator
 
 ## Pipeline
