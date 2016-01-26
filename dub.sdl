@@ -1,0 +1,4 @@
+name "fragments"
+description "Rigid body dynamics simulator"
+copyright "Copyright © 2016, tanitta"
+authors "tanitta"
