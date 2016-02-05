@@ -1,4 +1,9 @@
 name "fragments"
-description "Rigid body dynamics simulator"
-copyright "Copyright © 2016, tanitta"
+description "A rigid body dynamics simulator"
+copyright "Copyright © 2015, tanitta"
 authors "tanitta"
+dependency "armos" version=">=0.0.2"
+
+buildType "debug-profile" {
+	buildOptions "debugMode" "debugInfo" "profile"
+}
