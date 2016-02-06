@@ -50,3 +50,42 @@
 	- [ ] ConstraintSolver
 	
 	- [ ] Integrator
+
+- [x] ContactPoint [2016/02/05 (Fri) 21:15]
+	coordination
+	normal
+	distance
+
+Entity
+	
+	StaticEntity
+		- [x] Polygon [2016/02/05 (Fri) 21:32]
+			Vertex*3;
+			BoundingBox
+	DynamicEntity
+		ContactPoint[] contactPoints(StaticEntity)
+		
+Constraint
+	Entity*2
+	contactPoint*2//それぞれのentityの座標系で
+	
+	axis
+	jacDiagInv
+	rhs
+	lowerLimit
+	upperLimit
+	accumImpulse;
+	
+ConstraintDetector
+	MapConstraintDetector
+		CollisionDetector
+			CollidablePair//衝突可能性のあるDynamicEntityとStaticEntityのPair
+			
+			CollidablePair[]
+			broadphase(DynamicEntity, StaticTree)
+			
+			ConstraintPair[]
+			narrowphase(CollidablePair[])
+			
+	ModelConstraintDetector
+ConstraintSolver
