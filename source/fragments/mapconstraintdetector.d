@@ -10,8 +10,8 @@ class MapConstraintDetector {
 	public{
 		/++
 		++/
-		void setPolygons(ref Polygon[] polygons){
-			_root = AABBNode(polygons);
+		void setStaticEntities(StaticEntity[] staticEntities){
+			_root = AABBNode(staticEntities);
 		}
 		/++
 		++/
@@ -28,7 +28,7 @@ class MapConstraintDetector {
 		
 		CollidablePair[] detectCollidablePair(ref CollidablePair[] collidablePairs, DynamicEntity[] dynamicEntities){
 			foreach (dynamicEntity; dynamicEntities) {
-				foreach (polygon; _root.detectCollidablePolygons(dynamicEntity.boundingBox)) {
+				foreach (polygon; _root.detectCollidableStaticEntities(dynamicEntity.boundingBox)) {
 					collidablePairs ~= CollidablePair(dynamicEntity, polygon);
 				}
 			}
@@ -76,28 +76,28 @@ private struct AABBNode{
 	public{
 		/++
 		++/
-		this(Polygon[] polygons)in{assert( polygons.length > 0);}body{
+		this(StaticEntity[] staticEntities)in{assert( staticEntities.length > 0);}body{
 			import std.array;
 			import std.math;
 			ar.Vector3d start = ar.Vector3d(0, 0, 0);
 			ar.Vector3d end = ar.Vector3d(0, 0, 0);
 
-			foreach (p; polygons) {
+			foreach (staticEntity; staticEntities) {
 				for (int axis = 0; axis < 3; axis++) {
-					start[axis] = fmin(start[axis], p.boundingBox.start[axis] );
-					end[axis] = fmax(end[axis], p.boundingBox.end[axis] );
+					start[axis] = fmin(start[axis], staticEntity.boundingBox.start[axis] );
+					end[axis] = fmax(end[axis], staticEntity.boundingBox.end[axis] );
 				}
 			}
 			_boundingBox = BoundingBox(start, end);
 			
-			if(polygons.length > 1){
-				polygons.sortPolygonsWithAxis!((in double a, in double b){return a<b;})(_boundingBox.majorAxis);
+			if(staticEntities.length > 1){
+				staticEntities.sortStaticEntitiesWithAxis!((in double a, in double b){return a<b;})(_boundingBox.majorAxis);
 					
-				auto splitPoint= polygons.length / 2;
-				_nexts ~= AABBNode(polygons[0 .. splitPoint]);
-				_nexts ~= AABBNode(polygons[splitPoint.. $]);
+				auto splitPoint= staticEntities.length / 2;
+				_nexts ~= AABBNode(staticEntities[0 .. splitPoint]);
+				_nexts ~= AABBNode(staticEntities[splitPoint.. $]);
 			}else{
-				_polygon = polygons[0];
+				_staticEntity = staticEntities[0];
 			}
 		}
 		
@@ -105,28 +105,28 @@ private struct AABBNode{
 			return (_nexts.length == 0);
 		}
 		
-		Polygon[] detectCollidablePolygons(in BoundingBox boundingBox){
-			Polygon[] array;
-			detectCollidablePolygonsRecursively(boundingBox, array);
+		StaticEntity[] detectCollidableStaticEntities(in BoundingBox boundingBox){
+			StaticEntity[] array;
+			detectCollidableStaticEntitiesRecursively(boundingBox, array);
 			return array;
 		}
 	}//public
 
 	private{
 		AABBNode[] _nexts;
-		Polygon _polygon;
+		StaticEntity _staticEntity;
 		
 		BoundingBox _boundingBox;
 		
-		void detectCollidablePolygonsRecursively(in BoundingBox boundingBox, ref Polygon[] array){
+		void detectCollidableStaticEntitiesRecursively(in BoundingBox boundingBox, ref StaticEntity[] array){
 			if(boundingBox & _boundingBox){
 				if(isLeaf){
 					import std.stdio;
 					"leaf".writeln;
-					array ~= _polygon;
+					array ~= _staticEntity;
 				}else{
 					foreach (nextNode; _nexts) {
-						nextNode.detectCollidablePolygonsRecursively(boundingBox, array);
+						nextNode.detectCollidableStaticEntitiesRecursively(boundingBox, array);
 					}
 				}
 			}
@@ -159,19 +159,19 @@ unittest{
 	assert(axis == 1);
 }
 
-private void sortPolygonsWithAxis(alias Func)(Polygon[] polygons, int axis){
-	bool func(in Polygon a, in Polygon b){
+private void sortStaticEntitiesWithAxis(alias Func)(StaticEntity[] staticEntities, int axis){
+	bool func(in StaticEntity a, in StaticEntity b){
 		return Func(a.boundingBox.center[axis], b.boundingBox.center[axis]);
 	}
 	
 	import std.algorithm;
-	polygons.sort!func;
+	staticEntities.sort!func;
 }
 
 unittest{
 	import armos;
 	alias V = ar.Vector3d;
-	auto polygons = [ 
+	StaticEntity[] polygons = [ 
 		new Polygon([V(2, 1, 2), V(4, 4, 2), V(2, 1, 4)]), 
 		new Polygon([V(5, 4, 5), V(3, 3, 3), V(6, 5, 7)]), 
 		new Polygon([V(0, -1, 0), V(1, -1, 0), V(1, 0, 2)]), 
@@ -184,7 +184,7 @@ unittest{
 	];
 	
 	// sortPolygonsWithAxis!((in double a, in double b){return a<b;}, 0)(polygons);
-	polygons.sortPolygonsWithAxis!((in double a, in double b){return a<b;})(0);
+	polygons.sortStaticEntitiesWithAxis!((in double a, in double b){return a<b;})(0);
 	
 	foreach (int index, p; polygons) {
 		assert (p.boundingBox.center == resultPolygonsX[index].boundingBox.center);
