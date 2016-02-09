@@ -20,7 +20,7 @@ class Polygon : StaticEntity{
 		}
 		
 		///
-		const( ar.Vector3d[3] ) vertices()const{return _vertices;};
+		ar.Vector3d[3] vertices()const{return _vertices;};
 		
 		///
 		BoundingBox boundingBox()const{return _boundingBox;};

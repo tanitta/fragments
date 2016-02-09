@@ -19,7 +19,9 @@ interface Entity {
 interface StaticEntity : Entity{
 	public{
 		///
-		const( ar.Vector3d[3] ) vertices()const;
+		ar.Vector3d[3] vertices()const;
+		
+		BoundingBox boundingBox()const;
 	}//public
 
 	private{
