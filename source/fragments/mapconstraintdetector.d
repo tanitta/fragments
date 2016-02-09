@@ -15,10 +15,10 @@ class MapConstraintDetector {
 		}
 		/++
 		++/
-		ConstraintPair[] detectConstraintPairs(in DynamicEntity[] dynamicEntities)const{
+		ConstraintPair[] detectConstraintPairs(DynamicEntity[] dynamicEntities){
 			import std.algorithm;
-			CollidablePair[] constraintPair;
-			
+			CollidablePair[] collidablePairs;
+			detectCollidablePair(collidablePairs, dynamicEntities);
 			return broadPhase(dynamicEntities, _root).narrowPhase;
 		}
 	}//public
