@@ -42,7 +42,6 @@ class Integrator(NumericType) {
 		
 		void integratePosition(DynamicEntity!(N) entity){
 			with(entity){
-				// linearVelocity.print;
 				position = position + linearVelocity * _unitTime;
 			}
 		}
@@ -51,9 +50,7 @@ class Integrator(NumericType) {
 			with(entity){
 				if(angularVelocity.norm > 0.0){
 					auto qAngularVelocityPerUnitTime = Q.angleAxis(angularVelocity.norm*_unitTime, angularVelocity.normalized);
-					import std.stdio;
 					orientation = qAngularVelocityPerUnitTime * orientation;
-					orientation.vec.print;
 				}
 			}
 		}
