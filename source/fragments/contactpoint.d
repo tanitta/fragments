@@ -2,16 +2,18 @@ module fragments.contactpoint;
 import armos;
 /++
 ++/
-struct ContactPoint {
+struct ContactPoint(NumericType) {
+	alias N = NumericType;
+	alias V3 = ar.Vector!(N, 3);
 	public{
 		///
-		ar.Vector3d coordination;
+		V3 coordination;
 		
 		///
-		ar.Vector3d normal;
+		V3 normal;
 		
 		///
-		double distance;
+		N distance;
 	}//public
 
 	private{

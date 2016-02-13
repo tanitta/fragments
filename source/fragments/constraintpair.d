@@ -4,10 +4,11 @@ import fragments.contactpoint;
 
 /++
 ++/
-struct ConstraintPair {
+struct ConstraintPair(NumericType) {
+	alias N = NumericType;
 	public{
-		Entity[2] entities;
-		ContactPoint contactPoint;
+		Entity!(N)[2] entities;
+		ContactPoint!(N) contactPoint;
 	}//public
 
 	private{

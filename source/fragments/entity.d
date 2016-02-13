@@ -4,10 +4,12 @@ import fragments.boundingbox;
 import fragments.contactpoint;
 /++
 ++/
-interface Entity {
+interface Entity(NumericType) {
+	alias N = NumericType;
+	
 	public{
 		///
-		BoundingBox boundingBox()const;
+		BoundingBox!(N) boundingBox()const;
 	}//public
 
 	private{
@@ -16,12 +18,15 @@ interface Entity {
 
 /++
 ++/
-interface StaticEntity : Entity{
+interface StaticEntity(NumericType) : Entity!(NumericType){
+	alias N = NumericType;
+	alias V3 = ar.Vector!(N, 3);
+	
 	public{
 		///
-		ar.Vector3d[3] vertices()const;
+		V3[3] vertices()const;
 		
-		BoundingBox boundingBox()const;
+		BoundingBox!(N) boundingBox()const;
 	}//public
 
 	private{
@@ -30,17 +35,54 @@ interface StaticEntity : Entity{
 
 /++
 ++/
-interface DynamicEntity : Entity{
+interface DynamicEntity(NumericType) : Entity!(NumericType){
+	alias N = NumericType;
+	alias V3 = ar.Vector!(N, 3);
+	alias Q = ar.Quaternion!(N);
+	alias M33 = ar.Matrix!(N, 3, 3);
+	
 	public{
 		///
-		double mass()const;
+		N mass()const;
 		
 		///
-		void mass(in double);
+		void mass(in N);
 		
 		///
-		ContactPoint[] contactPoints(in StaticEntity staticEntity)const;
+		M33 inertia()const;
 		
-		BoundingBox boundingBox()const;
+		///
+		void inertia(in M33);
+		
+		///
+		V3 position()const;
+		
+		///
+		void position(in V3);
+		
+		///
+		V3 linearVelocity()const;
+		
+		///
+		void linearVelocity(in V3);
+		
+		///
+		Q orientation()const;
+		
+		///
+		void orientation(in Q);
+		
+		///
+		V3 angularVelocity()const;
+		
+		///
+		void angularVelocity(in V3);
+		
+		///
+		BoundingBox!(N) boundingBox()const;
+		
+		///
+		ContactPoint!(N)[] contactPoints(in StaticEntity!(N) staticEntity)const;
+		
 	}//public
 }//interface DynamicEntity
