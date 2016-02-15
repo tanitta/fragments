@@ -6,22 +6,23 @@ import fragments.boundingbox;
 ++/
 class Polygon(NumericType) : StaticEntity!(NumericType){
 	alias N = NumericType;
+	alias V3 = ar.Vector!(N, 3);
 	public{
 		///
-		this(in ar.Vector!(N, 3)[3] v){
+		this(in V3[3] v, V3 clearance = V3.zero){
 			_vertices = v;
-			auto tmpStart = ar.Vector!(N, 3)();
-			auto tmpEnd = ar.Vector!(N, 3)();
+			auto tmpStart = V3();
+			auto tmpEnd = V3();
 			import std.math;
 			for (int dim = 0; dim < 3; dim++) {
 				tmpStart[dim] = fmin(_vertices[0][dim], fmin(_vertices[1][dim], _vertices[2][dim]));
 				tmpEnd[dim] = fmax(_vertices[0][dim], fmax(_vertices[1][dim], _vertices[2][dim]));
 			}
-			_boundingBox = BoundingBox!(N)(tmpStart, tmpEnd);
+			_boundingBox = BoundingBox!(N)(tmpStart-clearance, tmpEnd+clearance);
 		}
 		
 		///
-		ar.Vector!(N, 3)[3] vertices()const{return _vertices;};
+		V3[3] vertices()const{return _vertices;};
 		
 		///
 		BoundingBox!(N) boundingBox()const{return _boundingBox;};

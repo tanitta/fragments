@@ -11,8 +11,8 @@ class Integrator(NumericType) {
 	public{
 		/++
 		++/
-		this(N unitTime){
-			_unitTime = unitTime;
+		this(){
+			_unitTime = N(0);
 		}
 		
 		/++
@@ -21,7 +21,7 @@ class Integrator(NumericType) {
 		
 		/++
 		++/
-		N unitTime(){return _unitTime;}
+		N unitTime()const{return _unitTime;}
 		unittest{
 			auto integrator = new Integrator!(double)(1);
 			assert(integrator.unitTime == 1);

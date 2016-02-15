@@ -8,10 +8,11 @@ struct BoundingBox(NumericType) {
 	alias V3 = ar.Vector!(N, 3);
 	public{
 		///
-		this(in V3 s, in V3 e){
-			_start = s;
-			_end = e;
-			_center = ( s+e )*0.5;
+		this(in V3 s, in V3 e, in V3 offset = V3.zero){
+			import std.math;
+			_start = V3(fmin(s[0], e[0]), fmin(s[1], e[1]), fmin(s[2], e[2])) - offset;
+			_end = V3(fmax(s[0], e[0]), fmax(s[1], e[1]), fmax(s[2], e[2])) + offset;
+			_center = ( _start, _end )*0.5;
 		}
 		
 		///

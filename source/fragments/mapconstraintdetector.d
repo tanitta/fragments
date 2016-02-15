@@ -12,7 +12,7 @@ class MapConstraintDetector(NumericType){
 	public{
 		/++
 		++/
-		void setStaticEntities(StaticEntity!(N)[] staticEntities){
+		void setStaticEntities(ref StaticEntity!(N)[] staticEntities){
 			_root = AABBNode!(N)(staticEntities);
 		}
 		
@@ -22,6 +22,8 @@ class MapConstraintDetector(NumericType){
 			import std.algorithm;
 			CollidablePair!(N)[] collidablePairs;
 			detectCollidablePair(collidablePairs, dynamicEntities);
+			import std.stdio;
+			collidablePairs.length.writeln;
 			return broadPhase(dynamicEntities, _root).narrowPhase;
 		}
 	}//public
@@ -29,10 +31,10 @@ class MapConstraintDetector(NumericType){
 	private{
 		AABBNode!(N) _root;
 		
-		CollidablePair[] detectCollidablePair(ref CollidablePair!(N)[] collidablePairs, DynamicEntity!(N)[] dynamicEntities){
+		CollidablePair!(N)[] detectCollidablePair(ref CollidablePair!(N)[] collidablePairs, DynamicEntity!(N)[] dynamicEntities){
 			foreach (dynamicEntity; dynamicEntities) {
 				foreach (polygon; _root.detectCollidableStaticEntities(dynamicEntity.boundingBox)) {
-					collidablePairs ~= CollidablePair(dynamicEntity, polygon);
+					collidablePairs ~= CollidablePair!(N)(dynamicEntity, polygon);
 				}
 			}
 			return collidablePairs;
@@ -82,7 +84,7 @@ private struct AABBNode(NumericType){
 					end[axis] = fmax(end[axis], staticEntity.boundingBox.end[axis] );
 				}
 			}
-			_boundingBox = BoundingBox(start, end);
+			_boundingBox = BoundingBox!(N)(start, end);
 			
 			if(staticEntities.length > 1){
 				staticEntities.sortStaticEntitiesWithAxis!((in N a, in N b){return a<b;})(_boundingBox.majorAxis);
@@ -99,7 +101,7 @@ private struct AABBNode(NumericType){
 			return (_nexts.length == 0);
 		}
 		
-		StaticEntity!(N)[] detectCollidableStaticEntities(in BoundingBox boundingBox){
+		StaticEntity!(N)[] detectCollidableStaticEntities(in BoundingBox!(N) boundingBox){
 			StaticEntity!(N)[] array;
 			detectCollidableStaticEntitiesRecursively(boundingBox, array);
 			return array;
@@ -112,7 +114,7 @@ private struct AABBNode(NumericType){
 		
 		BoundingBox!(N) _boundingBox;
 		
-		void detectCollidableStaticEntitiesRecursively(in BoundingBox boundingBox, ref StaticEntity!(N)[] array){
+		void detectCollidableStaticEntitiesRecursively(in BoundingBox!(N) boundingBox, ref StaticEntity!(N)[] array){
 			if(boundingBox & _boundingBox){
 				if(isLeaf){
 					array ~= _staticEntity;
