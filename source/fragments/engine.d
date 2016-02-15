@@ -31,7 +31,7 @@ class Engine(NumericType){
 		
 		/++
 		++/
-		void setStaticEntities(ref StaticEntity!(N)[] staticEntities){
+		void setStaticEntities(StaticEntity!(N)[] staticEntities){
 			_mapConstraintDetector.setStaticEntities( staticEntities );
 		};
 		
@@ -40,7 +40,18 @@ class Engine(NumericType){
 		void update( ref DynamicEntity!(N)[] dynamicEntities ){
 			_mapConstraintDetector.detectConstraintPairs( dynamicEntities );
 			_integrator.integrate( dynamicEntities );
+			
+			foreach (entity; dynamicEntities) {
+				with(entity){
+					updateBoundingBox;
+					updatePre;
+				}
+			}
 		};
+		
+		void draw(){
+			_mapConstraintDetector.draw;
+		}
 	}//public
 
 	private{

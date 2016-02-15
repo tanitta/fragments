@@ -30,6 +30,9 @@ template DynamicEntityProperties(NumericType){
 		void position(in V3 position){_position = position;};
 		
 		///
+		V3 positionPre()const{return _positionPre;};
+		
+		///
 		V3 linearVelocity()const{return _linearVelocity;};
 		
 		///
@@ -42,18 +45,39 @@ template DynamicEntityProperties(NumericType){
 		void orientation(in Q orientation){_orientation = orientation;};
 		
 		///
+		Q orientationPre()const{return _orientationPre;};
+		
+		///
 		V3 angularVelocity()const{return _angularVelocity;};
 		
 		///
 		void angularVelocity(in V3 angularVelocity){_angularVelocity = angularVelocity;};
+		
+		///
+		BoundingBox!(N) boundingBox()const{return _boundingBox;}
+		
+		///
+		void updatePre(){
+			_positionPre = _position;
+			_orientationPre = _orientation;
+		}
+		
+		void updateBoundingBox(){
+			_boundingBox = BoundingBox!(N)(_position, _positionPre, _offset);
+		}
 	}//public
+	
 	private{
 		N   _mass;
 		V3  _position;
+		V3  _positionPre;
 		V3  _linearVelocity;
 		Q   _orientation;
+		Q   _orientationPre;
 		V3  _angularVelocity;
 		M33 _inertia;
+		BoundingBox!(N) _boundingBox;
+		V3 _offset;
 	}//private
 }
 
@@ -66,17 +90,17 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 	mixin DynamicEntityProperties!(N);
 	
 	public{
-		///
-		BoundingBox!(N) boundingBox()const{return _boundingBox;};
-		
+		this(){
+			_offset = V3(0.5, 0.5, 0.5);
+		}
 		///
 		ContactPoint!(N)[] contactPoints(in StaticEntity!(N) staticEntity)const{
 			ContactPoint!(N)[] points;
 			return points;
 		};
 	}//public
+	
 	private{
-		BoundingBox!(N) _boundingBox;
 	}//private
 }//class Chip
 unittest{

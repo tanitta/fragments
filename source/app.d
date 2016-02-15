@@ -2,6 +2,29 @@ import armos, std.stdio, std.math;
 import fragments.entity;
 import fragments.square;
 import fragments.engine;
+import fragments.boundingbox;
+
+
+void drawBoundingBox(B)(B boundingBox){
+	with( boundingBox ){
+		ar.drawLine(start[0], start[1], start[2], end[0], start[1], start[2]);
+		ar.drawLine(start[0], start[1], start[2], start[0], end[1], start[2]);
+		ar.drawLine(start[0], start[1], start[2], start[0], start[1], end[2]);
+
+		ar.drawLine(start[0], end[1], start[2], end[0], end[1], start[2]);
+		ar.drawLine(start[0], end[1], start[2], start[0], end[1], end[2]);
+
+		ar.drawLine(end[0], end[1], end[2], start[0], end[1], end[2]);
+		ar.drawLine(end[0], end[1], end[2], end[0], start[1], end[2]);
+		ar.drawLine(end[0], end[1], end[2], end[0], end[1], start[2]);
+
+		ar.drawLine(end[0], start[1], end[2], start[0], start[1], end[2]);
+		ar.drawLine(end[0], start[1], end[2], end[0], start[1], start[2]);
+		
+		ar.drawLine(start[0], end[1], end[2], start[0], start[1], end[2]);
+		ar.drawLine(end[0], end[1], start[2], end[0], start[1], start[2]);
+	}
+}
 
 /++
 ++/
@@ -39,6 +62,7 @@ class Chip(NumericType){
 				ar.multMatrix(entity.orientation.matrix);
 				ar.drawAxis(1.0);
 			ar.popMatrix;
+			entity.boundingBox.drawBoundingBox;
 		}
 		
 		void addForce(in N unitTime, in V3 force,in V3 position = V3.zero){
@@ -94,21 +118,7 @@ class Land(NumericType) {
 			ar.setLineWidth = 2;
 			ar.setColor(255, 128, 0);
 			foreach (staticEntity; _staticEntities) {
-				with( staticEntity.boundingBox ){
-					ar.drawLine(start[0], start[1], start[2], end[0], start[1], start[2]);
-					ar.drawLine(start[0], start[1], start[2], start[0], end[1], start[2]);
-					ar.drawLine(start[0], start[1], start[2], start[0], start[1], end[2]);
-					
-					ar.drawLine(start[0], end[1], start[2], end[0], end[1], start[2]);
-					ar.drawLine(start[0], end[1], start[2], start[0], end[1], end[2]);
-					
-					ar.drawLine(end[0], end[1], end[2], start[0], end[1], end[2]);
-					ar.drawLine(end[0], end[1], end[2], end[0], start[1], end[2]);
-					ar.drawLine(end[0], end[1], end[2], end[0], end[1], start[2]);
-					
-					ar.drawLine(end[0], start[1], end[2], start[0], start[1], end[2]);
-					ar.drawLine(end[0], start[1], end[2], end[0], start[1], start[2]);
-				}
+				// staticEntity.boundingBox.drawBoundingBox;
 			}
 			ar.popStyle;
 		}
@@ -153,7 +163,7 @@ class TestApp : ar.BaseApp{
 		ar.enableDepthTest;
 		camera.target= ar.Vector3f(0, 45, 0);
 		
-		_unitTime = 0.1;
+		_unitTime = 0.033;
 		
 		//Land
 		land = new Land!(N);
@@ -162,11 +172,13 @@ class TestApp : ar.BaseApp{
 		chip = new Chip!(N);
 		chip.position = ar.Vector3d(0, 45, 0);
 		chip.orientation;
-		chip.addForce(_unitTime, ar.Vector3d(20, 10, 0), ar.Vector3d(0, 45, 0.1));
+		chip.addForce(_unitTime, ar.Vector3d(20, -10, 0), ar.Vector3d(0, 45, 0.1));
 		dynamicEntities ~= chip.entity;
 		
-		//engine
+		//Engine
 		engine = new fragments.engine.Engine!(N);
+		// land.staticEntities.length.writeln;
+		engine.setStaticEntities(land.staticEntities);
 		
 		//Gui
 		gui = ( new ar.Gui )
@@ -208,6 +220,10 @@ class TestApp : ar.BaseApp{
 			ar.rotate(c, 0, 1, 0);
 			ar.setColor(255, 255, 255);
 			land.draw;
+			ar.pushStyle;
+			ar.setLineWidth = 2;
+			engine.draw;
+			ar.popStyle;
 			chip.draw;
 			ar.popMatrix;
 		camera.end;

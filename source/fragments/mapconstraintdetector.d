@@ -26,6 +26,12 @@ class MapConstraintDetector(NumericType){
 			collidablePairs.length.writeln;
 			return broadPhase(dynamicEntities, _root).narrowPhase;
 		}
+		
+		void draw(){
+			ar.pushStyle;
+			_root.draw;
+			ar.popStyle;
+		}
 	}//public
 
 	private{
@@ -75,8 +81,9 @@ private struct AABBNode(NumericType){
 		this(StaticEntity!(N)[] staticEntities)in{assert( staticEntities.length > 0);}body{
 			import std.array;
 			import std.math;
-			ar.Vector!(N, 3) start = ar.Vector!(N, 3)(0, 0, 0);
-			ar.Vector!(N, 3) end = ar.Vector!(N, 3)(0, 0, 0);
+			
+			ar.Vector!(N, 3) start = staticEntities[0].boundingBox.start;
+			ar.Vector!(N, 3) end = staticEntities[0].boundingBox.end;
 
 			foreach (staticEntity; staticEntities) {
 				for (int axis = 0; axis < 3; axis++) {
@@ -106,6 +113,10 @@ private struct AABBNode(NumericType){
 			detectCollidableStaticEntitiesRecursively(boundingBox, array);
 			return array;
 		}
+		
+		void draw(){
+			drawRecursively;
+		}
 	}//public
 
 	private{
@@ -116,17 +127,54 @@ private struct AABBNode(NumericType){
 		
 		void detectCollidableStaticEntitiesRecursively(in BoundingBox!(N) boundingBox, ref StaticEntity!(N)[] array){
 			if(boundingBox & _boundingBox){
+					import std.stdio;
 				if(isLeaf){
+					"detect".writeln;
 					array ~= _staticEntity;
 				}else{
+					// "gotonext".writeln;
 					foreach (nextNode; _nexts) {
 						nextNode.detectCollidableStaticEntitiesRecursively(boundingBox, array);
 					}
 				}
 			}
 		}
+		
+		void drawRecursively(){
+			if(isLeaf){
+				ar.setColor(0, 255, 64);
+				_boundingBox.drawBoundingBox;
+			}else{
+				ar.setColor(64, 64, 64);
+				_boundingBox.drawBoundingBox;
+				foreach (nextNode; _nexts) {
+					nextNode.drawRecursively;
+				}
+			}
+		};
 	}//private
 }//struct AABBNode 
+
+private void drawBoundingBox(B)(B boundingBox){
+	with( boundingBox ){
+		ar.drawLine(start[0], start[1], start[2], end[0], start[1], start[2]);
+		ar.drawLine(start[0], start[1], start[2], start[0], end[1], start[2]);
+		ar.drawLine(start[0], start[1], start[2], start[0], start[1], end[2]);
+
+		ar.drawLine(start[0], end[1], start[2], end[0], end[1], start[2]);
+		ar.drawLine(start[0], end[1], start[2], start[0], end[1], end[2]);
+
+		ar.drawLine(end[0], end[1], end[2], start[0], end[1], end[2]);
+		ar.drawLine(end[0], end[1], end[2], end[0], start[1], end[2]);
+		ar.drawLine(end[0], end[1], end[2], end[0], end[1], start[2]);
+
+		ar.drawLine(end[0], start[1], end[2], start[0], start[1], end[2]);
+		ar.drawLine(end[0], start[1], end[2], end[0], start[1], start[2]);
+		
+		ar.drawLine(start[0], end[1], end[2], start[0], start[1], end[2]);
+		ar.drawLine(end[0], end[1], start[2], end[0], start[1], start[2]);
+	}
+}
 
 private int majorAxis(Numeric)(in BoundingBox!(Numeric) boundingbox){
 	import std.algorithm;

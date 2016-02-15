@@ -61,6 +61,9 @@ interface DynamicEntity(NumericType) : Entity!(NumericType){
 		void position(in V3);
 		
 		///
+		V3 positionPre()const;
+		
+		///
 		V3 linearVelocity()const;
 		
 		///
@@ -73,6 +76,9 @@ interface DynamicEntity(NumericType) : Entity!(NumericType){
 		void orientation(in Q);
 		
 		///
+		Q orientationPre()const;
+		
+		///
 		V3 angularVelocity()const;
 		
 		///
@@ -80,6 +86,12 @@ interface DynamicEntity(NumericType) : Entity!(NumericType){
 		
 		///
 		BoundingBox!(N) boundingBox()const;
+		
+		///
+		void updatePre();
+		
+		///
+		void updateBoundingBox();
 		
 		///
 		ContactPoint!(N)[] contactPoints(in StaticEntity!(N) staticEntity)const;
