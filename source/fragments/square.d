@@ -24,6 +24,9 @@ template DynamicEntityProperties(NumericType){
 		void inertia(in M33 inertia){_inertia  = inertia;};
 		
 		///
+		M33 inertiaGlobal()const{return _inertiaGlobal;};
+		
+		///
 		V3 position()const{return _position;};
 		
 		///
@@ -57,12 +60,10 @@ template DynamicEntityProperties(NumericType){
 		BoundingBox!(N) boundingBox()const{return _boundingBox;}
 		
 		///
-		void updatePre(){
+		void updateProperties(){
 			_positionPre = _position;
 			_orientationPre = _orientation;
-		}
-		
-		void updateBoundingBox(){
+			_inertiaGlobal = _orientation.matrix33*_inertiaGlobal*_orientation.matrix33.inverse;
 			_boundingBox = BoundingBox!(N)(_position, _positionPre, _margin);
 		}
 	}//public
@@ -76,6 +77,7 @@ template DynamicEntityProperties(NumericType){
 		Q   _orientationPre;
 		V3  _angularVelocity;
 		M33 _inertia;
+		M33 _inertiaGlobal;
 		BoundingBox!(N) _boundingBox;
 		V3 _margin;
 	}//private
@@ -132,12 +134,12 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 					( ( p2 - p1 ).vectorProduct(pContact-p1).dotProduct(pNormal) > N(0) )&&
 					( ( p0 - p2 ).vectorProduct(pContact-p2).dotProduct(pNormal) > N(0) );
 					if(isBuried && isIncludedInPolygon){
-						import std.stdio;
-						"detect".writeln;
 						auto contactPoint = ContactPoint!(N)();
-						contactPoint.coordination = pContact + p0;
+						
+						contactPoint.coordination = pContact + staticEntity.vertices[0];
 						contactPoint.distance = -d2;
 						contactPoint.normal = pNormal;
+						
 						points ~= contactPoint;
 					}
 				}

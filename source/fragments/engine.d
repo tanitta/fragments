@@ -43,8 +43,7 @@ class Engine(NumericType){
 			
 			foreach (entity; dynamicEntities) {
 				with(entity){
-					updateBoundingBox;
-					updatePre;
+					updateProperties;
 				}
 			}
 		};

@@ -57,6 +57,9 @@ interface DynamicEntity(NumericType) : Entity!(NumericType){
 		void inertia(in M33);
 		
 		///
+		M33 inertiaGlobal()const;
+		
+		///
 		V3 position()const;
 		
 		///
@@ -90,10 +93,7 @@ interface DynamicEntity(NumericType) : Entity!(NumericType){
 		BoundingBox!(N) boundingBox()const;
 		
 		///
-		void updatePre();
-		
-		///
-		void updateBoundingBox();
+		void updateProperties();
 		
 		///
 		ContactPoint!(N)[] contactPoints(in StaticEntity!(N) staticEntity)const;

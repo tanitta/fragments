@@ -63,7 +63,7 @@ class Chip(NumericType){
 		void draw()const{
 			ar.pushMatrix;
 				ar.translate(entity.position);
-				ar.multMatrix(entity.orientation.matrix);
+				ar.multMatrix(entity.orientation.matrix44);
 				ar.drawAxis(1.0);
 				ar.pushStyle;{
 					ar.setColor(64, 64, 64);

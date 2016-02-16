@@ -25,7 +25,9 @@ class MapConstraintDetector(NumericType){
 			import std.stdio;
 			// collidablePairs.length.writeln;
 			foreach (collidablePair; collidablePairs) {
-				collidablePair.dynamicEntity.contactPoints(collidablePair.staticEntity).length.writeln;
+				foreach (contactPoint; collidablePair.dynamicEntity.contactPoints(collidablePair.staticEntity)) {
+					contactPoint.coordination.print;
+				}
 			}
 			return broadPhase(dynamicEntities, _root).narrowPhase;
 		}
