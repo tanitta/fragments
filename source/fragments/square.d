@@ -63,7 +63,7 @@ template DynamicEntityProperties(NumericType){
 		}
 		
 		void updateBoundingBox(){
-			_boundingBox = BoundingBox!(N)(_position, _positionPre, _offset);
+			_boundingBox = BoundingBox!(N)(_position, _positionPre, _margin);
 		}
 	}//public
 	
@@ -77,7 +77,7 @@ template DynamicEntityProperties(NumericType){
 		V3  _angularVelocity;
 		M33 _inertia;
 		BoundingBox!(N) _boundingBox;
-		V3 _offset;
+		V3 _margin;
 	}//private
 }
 
@@ -90,17 +90,64 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 	mixin DynamicEntityProperties!(N);
 	
 	public{
-		this(){
-			_offset = V3(0.5, 0.5, 0.5);
+		this(in N size = N(1.0)){
+			_margin = V3(0.5, 0.5, 0.5);
+			
+			//set some rays used in method : contactPoints
+			_rays ~= V3(size,  0, 0);
+			_rays ~= V3(-size, 0, 0);
+			_rays ~= V3(0,     0, size);
+			_rays ~= V3(0,     0, -size);
+			
+			_rays ~= V3(size,  0, size);
+			_rays ~= V3(-size, 0, -size);
+			_rays ~= V3(size,  0, -size);
+			_rays ~= V3(-size, 0, size);
 		}
 		///
 		ContactPoint!(N)[] contactPoints(in StaticEntity!(N) staticEntity)const{
 			ContactPoint!(N)[] points;
+			foreach (ray; _rays) {
+				auto rayGlobal = _orientation.rotatedVector(ray)+_position;
+				
+				auto p0 = V3.zero;
+				auto p1 = staticEntity.vertices[1] -staticEntity.vertices[0];
+				auto p2 = staticEntity.vertices[2] -staticEntity.vertices[0];
+				
+				auto pBegin = _position - staticEntity.vertices[0];
+				auto pEnd = rayGlobal - staticEntity.vertices[0];
+				auto pNormal= staticEntity.normal;
+				
+				auto isCollidingLineToPlane = ( (pBegin.dotProduct(pNormal)) * (pEnd.dotProduct(pNormal)) <= 0 );
+				if( isCollidingLineToPlane ){
+					import std.math;
+					auto d1 = pNormal.dotProduct(pBegin);
+					auto d2 = pNormal.dotProduct(pEnd);
+					auto a = fabs(d1)/(fabs(d1)+fabs(d2));
+					auto pContact = (N(1)-a)*pBegin + a*pEnd;
+					
+					auto isBuried = (d2 <= 0);
+					auto isIncludedInPolygon =
+					( ( p1 - p0 ).vectorProduct(pContact-p0).dotProduct(pNormal) > N(0) )&&
+					( ( p2 - p1 ).vectorProduct(pContact-p1).dotProduct(pNormal) > N(0) )&&
+					( ( p0 - p2 ).vectorProduct(pContact-p2).dotProduct(pNormal) > N(0) );
+					if(isBuried && isIncludedInPolygon){
+						import std.stdio;
+						"detect".writeln;
+						auto contactPoint = ContactPoint!(N)();
+						contactPoint.coordination = pContact + p0;
+						contactPoint.distance = -d2;
+						contactPoint.normal = pNormal;
+						points ~= contactPoint;
+					}
+				}
+			}
 			return points;
-		};
+		}
 	}//public
 	
 	private{
+		V3[] _rays;
 	}//private
 }//class Chip
 unittest{

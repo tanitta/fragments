@@ -11,6 +11,7 @@ class Polygon(NumericType) : StaticEntity!(NumericType){
 		///
 		this(in V3[3] v, V3 clearance = V3.zero){
 			_vertices = v;
+			
 			auto tmpStart = V3();
 			auto tmpEnd = V3();
 			import std.math;
@@ -19,10 +20,14 @@ class Polygon(NumericType) : StaticEntity!(NumericType){
 				tmpEnd[dim] = fmax(_vertices[0][dim], fmax(_vertices[1][dim], _vertices[2][dim]));
 			}
 			_boundingBox = BoundingBox!(N)(tmpStart-clearance, tmpEnd+clearance);
+			
+			_normal = ( v[1]-v[2] ).vectorProduct( v[2]-v[0] ).normalized;
 		}
 		
 		///
 		V3[3] vertices()const{return _vertices;};
+		
+		V3 normal()const{return _normal;};
 		
 		///
 		BoundingBox!(N) boundingBox()const{return _boundingBox;};
@@ -31,6 +36,7 @@ class Polygon(NumericType) : StaticEntity!(NumericType){
 	private{
 		const( ar.Vector!(N, 3)[3] ) _vertices;
 		const BoundingBox!(N) _boundingBox;
+		const( V3 ) _normal;
 	}//private
 }//class Polygon
 unittest{

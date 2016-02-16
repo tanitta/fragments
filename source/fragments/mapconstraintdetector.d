@@ -23,7 +23,10 @@ class MapConstraintDetector(NumericType){
 			CollidablePair!(N)[] collidablePairs;
 			detectCollidablePair(collidablePairs, dynamicEntities);
 			import std.stdio;
-			collidablePairs.length.writeln;
+			// collidablePairs.length.writeln;
+			foreach (collidablePair; collidablePairs) {
+				collidablePair.dynamicEntity.contactPoints(collidablePair.staticEntity).length.writeln;
+			}
 			return broadPhase(dynamicEntities, _root).narrowPhase;
 		}
 		
@@ -62,14 +65,15 @@ private struct CollidablePair(NumericType) {
 	alias N = NumericType;
 	public{
 		this(DynamicEntity!(N) d, StaticEntity!(N) s){
-			_dynamicEntity = d;
-			_staticEntity = s;
+			dynamicEntity = d;
+			staticEntity = s;
 		}
+		
+		DynamicEntity!(N) dynamicEntity;
+		StaticEntity!(N) staticEntity;
 	}//public
 
 	private{
-		DynamicEntity!(N) _dynamicEntity;
-		StaticEntity!(N) _staticEntity;
 	}//private
 }//struct CollidablePair
 
@@ -127,12 +131,9 @@ private struct AABBNode(NumericType){
 		
 		void detectCollidableStaticEntitiesRecursively(in BoundingBox!(N) boundingBox, ref StaticEntity!(N)[] array){
 			if(boundingBox & _boundingBox){
-					import std.stdio;
 				if(isLeaf){
-					"detect".writeln;
 					array ~= _staticEntity;
 				}else{
-					// "gotonext".writeln;
 					foreach (nextNode; _nexts) {
 						nextNode.detectCollidableStaticEntitiesRecursively(boundingBox, array);
 					}

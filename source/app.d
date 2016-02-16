@@ -7,23 +7,27 @@ import fragments.boundingbox;
 
 void drawBoundingBox(B)(B boundingBox){
 	with( boundingBox ){
-		ar.drawLine(start[0], start[1], start[2], end[0], start[1], start[2]);
-		ar.drawLine(start[0], start[1], start[2], start[0], end[1], start[2]);
-		ar.drawLine(start[0], start[1], start[2], start[0], start[1], end[2]);
-
-		ar.drawLine(start[0], end[1], start[2], end[0], end[1], start[2]);
-		ar.drawLine(start[0], end[1], start[2], start[0], end[1], end[2]);
-
-		ar.drawLine(end[0], end[1], end[2], start[0], end[1], end[2]);
-		ar.drawLine(end[0], end[1], end[2], end[0], start[1], end[2]);
-		ar.drawLine(end[0], end[1], end[2], end[0], end[1], start[2]);
-
-		ar.drawLine(end[0], start[1], end[2], start[0], start[1], end[2]);
-		ar.drawLine(end[0], start[1], end[2], end[0], start[1], start[2]);
-		
-		ar.drawLine(start[0], end[1], end[2], start[0], start[1], end[2]);
-		ar.drawLine(end[0], end[1], start[2], end[0], start[1], start[2]);
+		drawBoxFrame(start, end);
 	}
+}
+
+void drawBoxFrame(V3)(V3 begin, V3 end){
+	ar.drawLine(begin[0], begin[1], begin[2], end[0], begin[1], begin[2]);
+	ar.drawLine(begin[0], begin[1], begin[2], begin[0], end[1], begin[2]);
+	ar.drawLine(begin[0], begin[1], begin[2], begin[0], begin[1], end[2]);
+
+	ar.drawLine(begin[0], end[1], begin[2], end[0], end[1], begin[2]);
+	ar.drawLine(begin[0], end[1], begin[2], begin[0], end[1], end[2]);
+
+	ar.drawLine(end[0], end[1], end[2], begin[0], end[1], end[2]);
+	ar.drawLine(end[0], end[1], end[2], end[0], begin[1], end[2]);
+	ar.drawLine(end[0], end[1], end[2], end[0], end[1], begin[2]);
+
+	ar.drawLine(end[0], begin[1], end[2], begin[0], begin[1], end[2]);
+	ar.drawLine(end[0], begin[1], end[2], end[0], begin[1], begin[2]);
+
+	ar.drawLine(begin[0], end[1], end[2], begin[0], begin[1], end[2]);
+	ar.drawLine(end[0], end[1], begin[2], end[0], begin[1], begin[2]);
 }
 
 /++
@@ -39,7 +43,7 @@ class Chip(NumericType){
 		fragments.square.Square!(N) entity;
 		
 		this(){
-			entity = new fragments.square.Square!(N);
+			entity = new fragments.square.Square!(N)(0.3);
 			entity.mass = N(25);
 			entity.inertia = M33(
 				[0.8, 0, 0],
@@ -61,6 +65,11 @@ class Chip(NumericType){
 				ar.translate(entity.position);
 				ar.multMatrix(entity.orientation.matrix);
 				ar.drawAxis(1.0);
+				ar.pushStyle;{
+					ar.setColor(64, 64, 64);
+					ar.setLineWidth = 2;
+					drawBoxFrame(V3(-0.3, -0.05, -0.3), V3(0.3, 0.05, 0.3));
+				}ar.popStyle;
 			ar.popMatrix;
 			entity.boundingBox.drawBoundingBox;
 		}
@@ -68,9 +77,6 @@ class Chip(NumericType){
 		void addForce(in N unitTime, in V3 force,in V3 position = V3.zero){
 			entity.linearVelocity = entity.linearVelocity + force / entity.mass * unitTime ;
 			entity.angularVelocity = entity.angularVelocity + entity.inertia.inverse*( (position-entity.position).vectorProduct(force) ) * unitTime;
-			entity.inertia.print;
-			import std.stdio;
-			entity.inertia.determinant.writeln;
 		}
 	}//public
 	private{
@@ -103,7 +109,6 @@ class Land(NumericType) {
 					_staticEntities ~= new fragments.polygon.Polygon!(N)(vertices, V3(0.1, 0.1, 0.1));
 				}
 			}
-			import std.stdio;
 			"staticEntities".writeln;
 			_staticEntities.length.writeln;
 		}
@@ -145,7 +150,7 @@ class TestApp : ar.BaseApp{
 	auto camera = new ar.Camera;
 	
 	N _unitTime;
-	// auto integrator = new fragments.integrator.Integrator!(N)(0.0);
+	
 	fragments.engine.Engine!(N) engine;
 	
 	DynamicEntity!(N)[] dynamicEntities;
@@ -177,7 +182,6 @@ class TestApp : ar.BaseApp{
 		
 		//Engine
 		engine = new fragments.engine.Engine!(N);
-		// land.staticEntities.length.writeln;
 		engine.setStaticEntities(land.staticEntities);
 		
 		//Gui
@@ -222,7 +226,7 @@ class TestApp : ar.BaseApp{
 			land.draw;
 			ar.pushStyle;
 			ar.setLineWidth = 2;
-			engine.draw;
+			// engine.draw;
 			ar.popStyle;
 			chip.draw;
 			ar.popMatrix;

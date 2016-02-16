@@ -26,6 +26,8 @@ interface StaticEntity(NumericType) : Entity!(NumericType){
 		///
 		V3[3] vertices()const;
 		
+		V3 normal()const;
+		
 		BoundingBox!(N) boundingBox()const;
 	}//public
 
