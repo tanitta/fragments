@@ -70,16 +70,16 @@ template DynamicEntityProperties(NumericType){
 	
 	private{
 		N   _mass;
-		V3  _position;
-		V3  _positionPre;
-		V3  _linearVelocity;
-		Q   _orientation;
-		Q   _orientationPre;
-		V3  _angularVelocity;
+		V3  _position = V3.zero;
+		V3  _positionPre = V3.zero;
+		V3  _linearVelocity = V3.zero;
+		Q   _orientation = Q.unit;
+		Q   _orientationPre = Q.unit;
+		V3  _angularVelocity = V3.zero;
 		M33 _inertia;
 		M33 _inertiaGlobal;
 		BoundingBox!(N) _boundingBox;
-		V3 _margin;
+		V3 _margin = V3.zero;
 	}//private
 }
 

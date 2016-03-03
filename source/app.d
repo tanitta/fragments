@@ -45,6 +45,8 @@ class Chip(NumericType){
 		this(){
 			entity = new fragments.square.Square!(N)(0.3);
 			entity.mass = N(25);
+			// entity.position = V3.zero;
+			// entity.orientation = Q.zero;
 			entity.inertia = M33(
 				[0.8, 0, 0],
 				[0, 1.5, 0],
@@ -61,6 +63,10 @@ class Chip(NumericType){
 		}
 		
 		void draw()const{
+			// entity.orientation[0].writeln;
+			// entity.orientation[1].writeln;
+			// entity.orientation[2].writeln;
+			// entity.orientation[3].writeln;
 			ar.pushMatrix;
 				ar.translate(entity.position);
 				ar.multMatrix(entity.orientation.matrix44);
@@ -91,7 +97,7 @@ class Land(NumericType) {
 	
 	public{
 		this(){
-			_model = new ar.Model;
+			_model = new ar.Model();
 		}
 
 		void load(string filepath){
@@ -144,6 +150,7 @@ class Land(NumericType) {
 class TestApp : ar.BaseApp{
 	alias N = double;
 	alias V3 = ar.Vector!(N, 3);
+	alias Q = ar.Quaternion!(N);
 	float c = 0;
 	float h = 50;
 	float d = 10;
@@ -157,8 +164,8 @@ class TestApp : ar.BaseApp{
 	
 	Land!(N) land;
 	Chip!(N) chip;
-	auto _linearVelocity = V3();
-	auto _angularVelocity = V3();
+	auto _linearVelocity = V3().zero;
+	auto _angularVelocity = V3().zero;
 	
 	string filename = "Land.x";
 	ar.Gui gui;
@@ -175,8 +182,8 @@ class TestApp : ar.BaseApp{
 		land.load(filename);
 		//Chip
 		chip = new Chip!(N);
-		chip.position = ar.Vector3d(0, 45, 0);
-		chip.orientation;
+		chip.position = V3(0, 45, 0);
+		chip.orientation = Q.unit;
 		chip.addForce(_unitTime, ar.Vector3d(20, -10, 0), ar.Vector3d(0, 45, 0.1));
 		dynamicEntities ~= chip.entity;
 		
@@ -231,13 +238,13 @@ class TestApp : ar.BaseApp{
 			chip.draw;
 			ar.popMatrix;
 		camera.end;
-		
+		//
 		drawDebug;
 	}
 	
 	void drawDebug(){
 		gui.draw;
-		( ar.fpsUseRate*100 ).writeln;
+		// ( ar.fpsUseRate*100 ).writeln;
 	}
 }
 
