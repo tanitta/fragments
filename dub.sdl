@@ -7,3 +7,7 @@ dependency "armos" version=">=0.0.2"
 buildType "debug-profile" {
 	buildOptions "debugMode" "debugInfo" "profile"
 }
+
+buildType "optimized" {
+	buildOptions "optimize"
+}
