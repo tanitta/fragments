@@ -2,6 +2,7 @@ module fragments.entity;
 import armos;
 import fragments.boundingbox;
 import fragments.contactpoint;
+import fragments.material;
 /++
 ++/
 interface Entity(NumericType) {
@@ -10,6 +11,9 @@ interface Entity(NumericType) {
 	public{
 		///
 		BoundingBox!(N) boundingBox()const;
+		
+		///
+		const( Material!(N) ) material()const;
 	}//public
 
 	private{
@@ -26,9 +30,14 @@ interface StaticEntity(NumericType) : Entity!(NumericType){
 		///
 		V3[3] vertices()const;
 		
+		///
 		V3 normal()const;
 		
+		///
 		BoundingBox!(N) boundingBox()const;
+		
+		///
+		const( Material!(N) ) material()const;
 	}//public
 
 	private{
@@ -91,6 +100,9 @@ interface DynamicEntity(NumericType) : Entity!(NumericType){
 		
 		///
 		BoundingBox!(N) boundingBox()const;
+		
+		///
+		const( Material!(N) ) material()const;
 		
 		///
 		void updateProperties();

@@ -1,5 +1,7 @@
 module fragments.mapconstraintdetector;
+
 import fragments.constraintpair;
+import fragments.contactpoint;
 import fragments.entity;
 import fragments.polygon;
 import fragments.boundingbox;
@@ -19,17 +21,12 @@ class MapConstraintDetector(NumericType){
 		/++
 		++/
 		ConstraintPair!(N)[] detectConstraintPairs(DynamicEntity!(N)[] dynamicEntities){
+			// broad phase
 			import std.algorithm;
 			CollidablePair!(N)[] collidablePairs;
-			detectCollidablePair(collidablePairs, dynamicEntities);
-			import std.stdio;
-			// collidablePairs.length.writeln;
-			foreach (collidablePair; collidablePairs) {
-				foreach (contactPoint; collidablePair.dynamicEntity.contactPoints(collidablePair.staticEntity)) {
-					contactPoint.coordination.print;
-				}
-			}
-			return broadPhase(dynamicEntities, _root).narrowPhase;
+			detectCollidablePairs(collidablePairs, dynamicEntities);
+			
+			return generatedConstraintPairs(collidablePairs);
 		}
 		
 		void draw(){
@@ -42,13 +39,34 @@ class MapConstraintDetector(NumericType){
 	private{
 		AABBNode!(N) _root;
 		
-		CollidablePair!(N)[] detectCollidablePair(ref CollidablePair!(N)[] collidablePairs, DynamicEntity!(N)[] dynamicEntities){
+		CollidablePair!(N)[] detectCollidablePairs(ref CollidablePair!(N)[] collidablePairs, DynamicEntity!(N)[] dynamicEntities){
 			foreach (dynamicEntity; dynamicEntities) {
 				foreach (polygon; _root.detectCollidableStaticEntities(dynamicEntity.boundingBox)) {
 					collidablePairs ~= CollidablePair!(N)(dynamicEntity, polygon);
 				}
 			}
 			return collidablePairs;
+		}
+		
+		ConstraintPair!(N)[] generatedConstraintPairs(ref CollidablePair!(N)[] collidablePairs){
+			ConstraintPair!(N)[] constraintPairs;
+			foreach (collidablePair; collidablePairs) {
+				foreach (contactPoint; collidablePair.dynamicEntity.contactPoints(collidablePair.staticEntity)) {
+					constraintPairs ~= generatedConstraintPair(collidablePair, contactPoint);
+					// contactPoint.coordination.print;
+				}
+			}
+			return constraintPairs;
+		}
+		
+		ConstraintPair!(N) generatedConstraintPair(CollidablePair!(N) collidablePair, ContactPoint!(N) contactPoint){
+			ConstraintPair!(N) constraintPair;
+			
+			// constraintPair.entities[0] = collidablePair.dynamicEntity;
+			// constraintPair.axis = contactPoint.normal;
+			
+			// constraintPair.entities[1] = collidablePair.staticEntity;
+			return constraintPair;
 		}
 	}//private
 }//class MapConstraintDetector
@@ -202,17 +220,19 @@ private void sortStaticEntitiesWithAxis(alias Func, N)(StaticEntity!(N)[] static
 
 unittest{
 	import armos;
+	import fragments.material;
+	auto material = new Material!(double);
 	alias V = ar.Vector3d;
 	StaticEntity!(double)[] polygons = [ 
-		new Polygon!(double)([V(2, 1, 2), V(4, 4, 2), V(2, 1, 4)]), 
-		new Polygon!(double)([V(5, 4, 5), V(3, 3, 3), V(6, 5, 7)]), 
-		new Polygon!(double)([V(0, -1, 0), V(1, -1, 0), V(1, 0, 2)]), 
+		new Polygon!(double)([V(2, 1, 2), V(4, 4, 2), V(2, 1, 4)], material), 
+		new Polygon!(double)([V(5, 4, 5), V(3, 3, 3), V(6, 5, 7)], material), 
+		new Polygon!(double)([V(0, -1, 0), V(1, -1, 0), V(1, 0, 2)], material), 
 	];
 	
 	auto resultPolygonsX = [ 
-		new Polygon!(double)([V(0, -1, 0), V(1, -1, 0), V(1, 0, 2)]), 
-		new Polygon!(double)([V(2, 1, 2), V(4, 4, 2), V(2, 1, 4)]), 
-		new Polygon!(double)([V(5, 4, 5), V(3, 3, 3), V(6, 5, 7)]), 
+		new Polygon!(double)([V(0, -1, 0), V(1, -1, 0), V(1, 0, 2)], material), 
+		new Polygon!(double)([V(2, 1, 2), V(4, 4, 2), V(2, 1, 4)], material), 
+		new Polygon!(double)([V(5, 4, 5), V(3, 3, 3), V(6, 5, 7)], material), 
 	];
 	
 	// sortPolygonsWithAxis!((in double a, in double b){return a<b;}, 0)(polygons);

@@ -31,7 +31,7 @@ void drawBoxFrame(V3)(V3 begin, V3 end){
 }
 
 /++
-++/
++/
 class Chip(NumericType){
 	alias N = NumericType;
 	alias Q = ar.Quaternion!(N);
@@ -42,11 +42,14 @@ class Chip(NumericType){
 	public{
 		fragments.square.Square!(N) entity;
 		
+		/++
+		+/
 		this(){
-			entity = new fragments.square.Square!(N)(0.3);
+			import fragments.material;
+			auto material = new Material!(N);
+			
+			entity = new fragments.square.Square!(N)(material, 0.3);
 			entity.mass = N(25);
-			// entity.position = V3.zero;
-			// entity.orientation = Q.zero;
 			entity.inertia = M33(
 				[0.8, 0, 0],
 				[0, 1.5, 0],
@@ -54,19 +57,21 @@ class Chip(NumericType){
 			);
 		}
 		
+		/++
+		+/
 		void position(ar.Vector!(N, 3) p){
 			entity.position = p;
 		}
 		
+		/++
+		+/
 		void orientation(Q p = Q.unit){
 			entity.orientation = p;
 		}
 		
+		/++
+		+/
 		void draw()const{
-			// entity.orientation[0].writeln;
-			// entity.orientation[1].writeln;
-			// entity.orientation[2].writeln;
-			// entity.orientation[3].writeln;
 			ar.pushMatrix;
 				ar.translate(entity.position);
 				ar.multMatrix(entity.orientation.matrix44);
@@ -74,12 +79,14 @@ class Chip(NumericType){
 				ar.pushStyle;{
 					ar.setColor(64, 64, 64);
 					ar.setLineWidth = 2;
-					drawBoxFrame(V3(-0.3, -0.05, -0.3), V3(0.3, 0.05, 0.3));
+					drawBoxFrame(V3(-0.3, -0.02, -0.3), V3(0.3, 0.02, 0.3));
 				}ar.popStyle;
 			ar.popMatrix;
 			entity.boundingBox.drawBoundingBox;
 		}
 		
+		/++
+		+/
 		void addForce(in N unitTime, in V3 force,in V3 position = V3.zero){
 			entity.linearVelocity = entity.linearVelocity + force / entity.mass * unitTime ;
 			entity.angularVelocity = entity.angularVelocity + entity.inertia.inverse*( (position-entity.position).vectorProduct(force) ) * unitTime;
@@ -90,21 +97,28 @@ class Chip(NumericType){
 }//class Chip
 
 /++
-++/
++/
 class Land(NumericType) {
 	alias N = NumericType;
 	alias V3 = ar.Vector!(N, 3);
 	
 	public{
+		
+		/++
+		+/
 		this(){
 			_model = new ar.Model();
 		}
 
+		/++
+		+/
 		void load(string filepath){
 			clear();
 			_model.load(filepath);
 			import fragments.polygon;
+			import fragments.material;
 			
+			auto material = new Material!(N);
 			foreach (mesh; _model.meshes) {
 				for (int i = 0; i < mesh.numIndices; i+=3) {
 					V3[3] vertices;
@@ -112,17 +126,21 @@ class Land(NumericType) {
 						int indicesIndex = mesh.indices[i+j];
 						vertices[j] = V3(mesh.vertices[indicesIndex].x, mesh.vertices[indicesIndex].y, mesh.vertices[indicesIndex].z);
 					}
-					_staticEntities ~= new fragments.polygon.Polygon!(N)(vertices, V3(0.1, 0.1, 0.1));
+					_staticEntities ~= new fragments.polygon.Polygon!(N)(vertices, material, V3(0.1, 0.1, 0.1));
 				}
 			}
 			"staticEntities".writeln;
 			_staticEntities.length.writeln;
 		}
 		
+		/++
+		+/
 		void clear(){
 			_staticEntities = [];
 		}
 		
+		/++
+		+/
 		void draw(){
 			_model.drawFill;
 			ar.pushStyle;
@@ -134,6 +152,8 @@ class Land(NumericType) {
 			ar.popStyle;
 		}
 		
+		/++
+		+/
 		fragments.entity.StaticEntity!(N)[] staticEntities(){
 			return _staticEntities;
 		}
@@ -142,6 +162,7 @@ class Land(NumericType) {
 	private{
 		fragments.entity.StaticEntity!(N)[] _staticEntities;
 		ar.Model _model;
+		// fragments.Material!(N)[] _materials;
 	}//private
 }//class Land
 
@@ -154,6 +175,7 @@ class TestApp : ar.BaseApp{
 	float c = 0;
 	float h = 50;
 	float d = 10;
+	float fpsUseRate = 0;
 	auto camera = new ar.Camera;
 	
 	N _unitTime;
@@ -200,6 +222,7 @@ class TestApp : ar.BaseApp{
 			.add(new ar.Label("Fragments"))
 			.add(new ar.Partition)
 			.add(new ar.Slider!N("UnitTime", _unitTime, 0, 1.0))
+			.add(new ar.MovingGraph!float("fpsUseRate", fpsUseRate, 0.0, 100.0))
 			.add(new ar.Label("linearVelocity"))
 			.add(new ar.Slider!N("x", _linearVelocity[0], -1.0, 1.0))
 			.add(new ar.Slider!N("y", _linearVelocity[1], -1.0, 1.0))
@@ -244,7 +267,8 @@ class TestApp : ar.BaseApp{
 	
 	void drawDebug(){
 		gui.draw;
-		// ( ar.fpsUseRate*100 ).writeln;
+		fpsUseRate = ar.fpsUseRate*100.0;
+		fpsUseRate.writeln;
 	}
 }
 

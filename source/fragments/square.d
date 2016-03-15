@@ -3,6 +3,7 @@ import armos;
 import fragments.entity;
 import fragments.contactpoint;
 import fragments.boundingbox;
+import fragments.material;
 
 template DynamicEntityProperties(NumericType){
 	alias N = NumericType;
@@ -60,6 +61,11 @@ template DynamicEntityProperties(NumericType){
 		BoundingBox!(N) boundingBox()const{return _boundingBox;}
 		
 		///
+		const( Material!(N) ) material()const{
+			return _material;
+		}
+		
+		///
 		void updateProperties(){
 			_positionPre = _position;
 			_orientationPre = _orientation;
@@ -79,6 +85,7 @@ template DynamicEntityProperties(NumericType){
 		M33 _inertia;
 		M33 _inertiaGlobal;
 		BoundingBox!(N) _boundingBox;
+		const( Material!(N) ) _material;
 		V3 _margin = V3.zero;
 	}//private
 }
@@ -92,7 +99,9 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 	mixin DynamicEntityProperties!(N);
 	
 	public{
-		this(in N size = N(1.0)){
+		this(in Material!(N) m, in N size = N(1.0)){
+			_material = m;
+
 			_margin = V3(0.5, 0.5, 0.5);
 			
 			//set some rays used in method : contactPoints
@@ -134,11 +143,11 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 					( ( p2 - p1 ).vectorProduct(pContact-p1).dotProduct(pNormal) > N(0) )&&
 					( ( p0 - p2 ).vectorProduct(pContact-p2).dotProduct(pNormal) > N(0) );
 					if(isBuried && isIncludedInPolygon){
-						auto contactPoint = ContactPoint!(N)();
-						
-						contactPoint.coordination = pContact + staticEntity.vertices[0];
-						contactPoint.distance = -d2;
-						contactPoint.normal = pNormal;
+						auto contactPoint = ContactPoint!(N)(
+							pContact + staticEntity.vertices[0],
+							pNormal, 
+							-d2
+						);
 						
 						points ~= contactPoint;
 					}
@@ -153,5 +162,7 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 	}//private
 }//class Chip
 unittest{
-	auto square = new Square!(double);
+	import fragments.material;
+	auto material = new Material!(double);
+	auto square = new Square!(double)(material);
 }

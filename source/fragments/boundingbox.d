@@ -1,4 +1,5 @@
 module fragments.boundingbox;
+import std.math;
 import armos;
 
 /++
@@ -8,8 +9,16 @@ struct BoundingBox(NumericType) {
 	alias V3 = ar.Vector!(N, 3);
 	public{
 		///
-		this(in V3 s, in V3 e, in V3 offset = V3.zero){
-			import std.math;
+		this(in V3 s, in V3 e, in V3 offset = V3.zero)
+		in{
+			assert(!isNaN(s[0]));
+			assert(!isNaN(s[1]));
+			assert(!isNaN(s[2]));
+			
+			assert(!isNaN(e[0]));
+			assert(!isNaN(e[1]));
+			assert(!isNaN(e[2]));
+		}body{
 			_start = V3(fmin(s[0], e[0]), fmin(s[1], e[1]), fmin(s[2], e[2])) - offset;
 			_end = V3(fmax(s[0], e[0]), fmax(s[1], e[1]), fmax(s[2], e[2])) + offset;
 			_center = ( _start, _end )*0.5;
