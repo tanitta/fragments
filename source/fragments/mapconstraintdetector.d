@@ -37,9 +37,9 @@ class MapConstraintDetector(NumericType){
 	}//public
 
 	private{
-		AABBNode!(N) _root;
+		AABBNode!N _root;
 		
-		CollidablePair!(N)[] detectCollidablePairs(ref CollidablePair!(N)[] collidablePairs, DynamicEntity!(N)[] dynamicEntities){
+		CollidablePair!N[] detectCollidablePairs(ref CollidablePair!(N)[] collidablePairs, DynamicEntity!(N)[] dynamicEntities){
 			foreach (dynamicEntity; dynamicEntities) {
 				foreach (polygon; _root.detectCollidableStaticEntities(dynamicEntity.boundingBox)) {
 					collidablePairs ~= CollidablePair!(N)(dynamicEntity, polygon);
@@ -48,7 +48,7 @@ class MapConstraintDetector(NumericType){
 			return collidablePairs;
 		}
 		
-		ConstraintPair!(N)[] generatedConstraintPairs(ref CollidablePair!(N)[] collidablePairs){
+		ConstraintPair!N[] generatedConstraintPairs(ref CollidablePair!(N)[] collidablePairs){
 			ConstraintPair!(N)[] constraintPairs;
 			foreach (collidablePair; collidablePairs) {
 				foreach (contactPoint; collidablePair.dynamicEntity.contactPoints(collidablePair.staticEntity)) {
@@ -59,13 +59,39 @@ class MapConstraintDetector(NumericType){
 			return constraintPairs;
 		}
 		
-		ConstraintPair!(N) generatedConstraintPair(CollidablePair!(N) collidablePair, ContactPoint!(N) contactPoint){
-			ConstraintPair!(N) constraintPair;
+		ConstraintPair!N generatedConstraintPair(CollidablePair!(N) collidablePair, ContactPoint!(N) contactPoint){
+			ConstraintPair!N constraintPair;
 			
-			// constraintPair.entities[0] = collidablePair.dynamicEntity;
-			// constraintPair.axis = contactPoint.normal;
+			constraintPair.entities[0] = collidablePair.dynamicEntity;
+			constraintPair.entities[1] = collidablePair.staticEntity;
 			
-			// constraintPair.entities[1] = collidablePair.staticEntity;
+			constraintPair.linearConstraints[0] = Constraint!N(
+					(collidablePair.staticEntity.vertices[1] - collidablePair.staticEntity.vertices[0]).normalized, 
+					N(0),   // bias
+					N(0),   // damper
+					N(0),   // spring
+					-N.max, // lowerLimit
+					N.max,  // upperLimit
+			);
+			
+			constraintPair.linearConstraints[1] = Constraint!N(
+					contactPoint.normal,
+					N(0),  // bias
+					N(0),  // damper
+					N(0),  // spring
+					N(0),  // lowerLimit
+					N.max, // upperLimit
+			);
+			
+			constraintPair.linearConstraints[1] = Constraint!N(
+					constraintPair.linearConstraints[0].axis.vectorProduct(constraintPair.linearConstraints[1].axis), 
+					N(0),   // bias
+					N(0),   // damper
+					N(0),   // spring
+					-N.max, // lowerLimit
+					N.max,  // upperLimit
+			);
+			
 			return constraintPair;
 		}
 	}//private

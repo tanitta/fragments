@@ -1,6 +1,7 @@
 module fragments.engine;
 import fragments.entity;
 import fragments.mapconstraintdetector;
+import fragments.constraintsolver;
 import fragments.integrator;
 
 /++
@@ -12,10 +13,14 @@ class Engine(NumericType){
 		/++
 		++/
 		this(){
-			_unitTime = N(0.0);
 			_mapConstraintDetector = new MapConstraintDetector!(N);
+			
 			_integrator = new Integrator!(N);
-			_integrator.unitTime = _unitTime;
+			
+			_constraintSolver = new ConstraintSolver!N;
+			
+			_unitTime = N(0.0);
+			this.unitTime = _unitTime;
 		}
 		
 		/++
@@ -38,7 +43,11 @@ class Engine(NumericType){
 		/++
 		++/
 		void update( ref DynamicEntity!(N)[] dynamicEntities ){
-			_mapConstraintDetector.detectConstraintPairs( dynamicEntities );
+			{
+				auto collisionConstraintPairs = _mapConstraintDetector.detectConstraintPairs( dynamicEntities );
+				_constraintSolver.solve(collisionConstraintPairs);
+			}
+			
 			_integrator.integrate( dynamicEntities );
 			
 			foreach (entity; dynamicEntities) {
@@ -55,7 +64,8 @@ class Engine(NumericType){
 
 	private{
 		N _unitTime;
-		MapConstraintDetector!(N) _mapConstraintDetector;
-		Integrator!(N) _integrator;
+		MapConstraintDetector!N _mapConstraintDetector;
+		Integrator!N _integrator;
+		ConstraintSolver!N _constraintSolver;
 	}//private
 }//class Engine

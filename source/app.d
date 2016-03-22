@@ -98,6 +98,27 @@ class Chip(NumericType){
 
 /++
 +/
+class Model(N) {
+	public{
+		void addChip(Chip!N chip){
+			_chips ~= chip;
+		}
+		
+		void draw()const{
+			import std.algorithm;
+			_chips.each!(c => c.draw);
+		}
+		
+		Chip!N[] chips(){return _chips;};
+	}//public
+
+	private{
+		Chip!N[] _chips;
+	}//private
+}//class Model
+
+/++
++/
 class Land(NumericType) {
 	alias N = NumericType;
 	alias V3 = ar.Vector!(N, 3);
@@ -166,6 +187,7 @@ class Land(NumericType) {
 	}//private
 }//class Land
 
+
 /++
 ++/
 class TestApp : ar.BaseApp{
@@ -184,8 +206,9 @@ class TestApp : ar.BaseApp{
 	
 	DynamicEntity!(N)[] dynamicEntities;
 	
-	Land!(N) land;
-	Chip!(N) chip;
+	Land!(N) _land;
+	// Chip!(N) chip;
+	Model!N _model;
 	auto _linearVelocity = V3().zero;
 	auto _angularVelocity = V3().zero;
 	
@@ -200,20 +223,41 @@ class TestApp : ar.BaseApp{
 		_unitTime = 0.033;
 		
 		//Land
-		land = new Land!(N);
-		land.load(filename);
-		//Chip
-		chip = new Chip!(N);
-		chip.position = V3(0, 45, 0);
-		chip.orientation = Q.unit;
-		chip.addForce(_unitTime, ar.Vector3d(20, -10, 0), ar.Vector3d(0, 45, 0.1));
-		dynamicEntities ~= chip.entity;
+		_land = new Land!(N);
+		_land.load(filename);
+		
+		setupModel;
 		
 		//Engine
 		engine = new fragments.engine.Engine!(N);
-		engine.setStaticEntities(land.staticEntities);
+		engine.setStaticEntities(_land.staticEntities);
 		
-		//Gui
+		setupGui;
+	}
+	
+	void setupModel(){
+		_model = new Model!N;
+		{
+			auto chip = new Chip!(N);
+			chip.position = V3(0, 45, 0);
+			chip.orientation = Q.unit;
+			chip.addForce(_unitTime, ar.Vector3d(20, -10, 0), ar.Vector3d(0, 45, 0.1));
+			_model.addChip(chip);
+		}
+		{
+			auto chip = new Chip!(N);
+			chip.position = V3(1, 45, 0);
+			chip.orientation = Q.unit;
+			chip.addForce(_unitTime, ar.Vector3d(2, -10, 10), ar.Vector3d(1, 45, 0.1));
+			_model.addChip(chip);
+		}
+		import std.algorithm : map;
+		import std.array : array;
+		import std.conv;
+		dynamicEntities = _model.chips.map!(c => c.entity.to!(DynamicEntity!N)).array;
+	}
+	
+	void setupGui(){
 		gui = ( new ar.Gui )
 		.add(
 			(new ar.List)
@@ -253,12 +297,12 @@ class TestApp : ar.BaseApp{
 			ar.pushMatrix;
 			ar.rotate(c, 0, 1, 0);
 			ar.setColor(255, 255, 255);
-			land.draw;
+			_land.draw;
 			ar.pushStyle;
 			ar.setLineWidth = 2;
 			// engine.draw;
 			ar.popStyle;
-			chip.draw;
+			_model.draw;
 			ar.popMatrix;
 		camera.end;
 		//
