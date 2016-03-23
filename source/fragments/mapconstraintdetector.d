@@ -63,33 +63,26 @@ class MapConstraintDetector(NumericType){
 			ConstraintPair!N constraintPair;
 			
 			constraintPair.entities[0] = collidablePair.dynamicEntity;
-			constraintPair.entities[1] = collidablePair.staticEntity;
 			
 			constraintPair.linearConstraints[0] = Constraint!N(
 					(collidablePair.staticEntity.vertices[1] - collidablePair.staticEntity.vertices[0]).normalized, 
-					N(0),   // bias
-					N(0),   // damper
-					N(0),   // spring
 					-N.max, // lowerLimit
 					N.max,  // upperLimit
+					(){return 0;}
 			);
 			
 			constraintPair.linearConstraints[1] = Constraint!N(
 					contactPoint.normal,
-					N(0),  // bias
-					N(0),  // damper
-					N(0),  // spring
 					N(0),  // lowerLimit
 					N.max, // upperLimit
+					(){return 0;}
 			);
 			
 			constraintPair.linearConstraints[1] = Constraint!N(
 					constraintPair.linearConstraints[0].axis.vectorProduct(constraintPair.linearConstraints[1].axis), 
-					N(0),   // bias
-					N(0),   // damper
-					N(0),   // spring
 					-N.max, // lowerLimit
 					N.max,  // upperLimit
+					(){return 0;}
 			);
 			
 			return constraintPair;

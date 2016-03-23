@@ -1,4 +1,5 @@
 module fragments.square;
+
 import armos;
 import fragments.entity;
 import fragments.contactpoint;
@@ -16,16 +17,32 @@ template DynamicEntityProperties(NumericType){
 		N mass()const{return _mass;}
 
 		///
-		void mass(in N m){_mass = m;}
+		void mass(in N m){
+			_mass = m;
+			_massInv = N(1)/m;
+		}
 		
 		///
 		M33 inertia()const{return _inertia;};
 		
 		///
-		void inertia(in M33 inertia){_inertia  = inertia;};
+		void inertia(in M33 inertia){
+			_inertia  = inertia;
+			_inertiaGlobal = _orientation.matrix33*_inertiaGlobal*_orientation.matrix33.inverse;
+			_inertiaGlobalInv = _inertiaGlobal.inverse;
+		};
 		
 		///
 		M33 inertiaGlobal()const{return _inertiaGlobal;};
+		
+		///
+		N massInv()const{
+			return _massInv;
+		}
+		
+		M33 inertiaGlobalInv()const{
+			return _inertiaGlobalInv;
+		}
 		
 		///
 		V3 position()const{return _position;};
@@ -70,12 +87,14 @@ template DynamicEntityProperties(NumericType){
 			_positionPre = _position;
 			_orientationPre = _orientation;
 			_inertiaGlobal = _orientation.matrix33*_inertiaGlobal*_orientation.matrix33.inverse;
+			_inertiaGlobalInv = _inertiaGlobal.inverse;
 			_boundingBox = BoundingBox!(N)(_position, _positionPre, _margin);
 		}
 	}//public
 	
 	private{
 		N   _mass;
+		N   _massInv;
 		V3  _position = V3.zero;
 		V3  _positionPre = V3.zero;
 		V3  _linearVelocity = V3.zero;
@@ -84,6 +103,7 @@ template DynamicEntityProperties(NumericType){
 		V3  _angularVelocity = V3.zero;
 		M33 _inertia;
 		M33 _inertiaGlobal;
+		M33 _inertiaGlobalInv;
 		BoundingBox!(N) _boundingBox;
 		const( Material!(N) ) _material;
 		V3 _margin = V3.zero;
@@ -115,6 +135,7 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 			_rays ~= V3(size,  0, -size);
 			_rays ~= V3(-size, 0, size);
 		}
+		
 		///
 		ContactPoint!(N)[] contactPoints(in StaticEntity!(N) staticEntity)const{
 			ContactPoint!(N)[] points;

@@ -7,8 +7,15 @@ import fragments.material;
 ++/
 interface Entity(NumericType) {
 	alias N = NumericType;
+	alias M33 = ar.Matrix!(N, 3, 3);
 	
 	public{
+		///
+		N massInv()const;
+		
+		///
+		M33 inertiaGlobalInv()const;
+		
 		///
 		BoundingBox!(N) boundingBox()const;
 		

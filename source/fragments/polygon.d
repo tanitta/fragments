@@ -1,4 +1,5 @@
 module fragments.polygon;
+
 import armos;
 import fragments.entity;
 import fragments.boundingbox;
@@ -8,6 +9,7 @@ import fragments.material;
 class Polygon(NumericType) : StaticEntity!(NumericType){
 	alias N = NumericType;
 	alias V3 = ar.Vector!(N, 3);
+	alias M33 = ar.Matrix!(N, 3, 3);
 	public{
 		///
 		this(in V3[3] v, in Material!(N) m, V3 clearance = V3.zero){
@@ -25,6 +27,15 @@ class Polygon(NumericType) : StaticEntity!(NumericType){
 			_normal = ( v[1]-v[2] ).vectorProduct( v[2]-v[0] ).normalized;
 			
 			_material = m;
+		}
+		
+		///
+		N massInv()const{
+			return N(0);
+		}
+		
+		M33 inertiaGlobalInv()const{
+			return M33.zero;
 		}
 		
 		///

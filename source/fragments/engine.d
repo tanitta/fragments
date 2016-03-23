@@ -1,4 +1,5 @@
 module fragments.engine;
+
 import fragments.entity;
 import fragments.mapconstraintdetector;
 import fragments.constraintsolver;

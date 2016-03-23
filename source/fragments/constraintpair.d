@@ -11,11 +11,12 @@ struct ConstraintPair(NumericType) {
 	alias V3 = ar.Vector!(N, 3);
 	
 	public{
-		
-		Entity!(N)[2] entities;
+		DynamicEntity!(N)[2] entities;
 		
 		Constraint!(N)[3] linearConstraints;
 		Constraint!(N)[3] angularConstraints;
+		
+		N k;
 	}//public
 
 	private{
@@ -31,27 +32,21 @@ struct Constraint(NumericType) {
 		// ContactPoint!(N) contactPoint;
 		this(
 			in V3 axis,
-			in N bias,
-			in N damper,
-			in N spring,
 			in N lowerLimit,
 			in N upperLimit,
+			in N delegate() force,
 		){
 			_axis = axis;
 			_lowerLimit = lowerLimit;
 			_upperLimit= upperLimit;
-			_damper = damper;
-			_spring = spring;
-			_bias = bias;
+			_force = force;
 		}
 		
 		@property{
 			V3 axis(){return _axis;};
 			N lowerLimit(){return _lowerLimit;};
 			N upperLimit(){return _upperLimit;};
-			N damper(){return _damper;};
-			N spring(){return _spring;};
-			N bias(){return _bias;};
+			N delegate() force(){return _force;};
 		}
 	}//public
 
@@ -59,8 +54,6 @@ struct Constraint(NumericType) {
 		V3 _axis;
 		N _lowerLimit;
 		N _upperLimit;
-		N _damper;
-		N _spring;
-		N _bias;
+		N delegate() _force;
 	}//private
 }//struct Constraint
