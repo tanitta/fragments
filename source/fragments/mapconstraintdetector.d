@@ -11,6 +11,8 @@ import armos;
 ++/
 class MapConstraintDetector(NumericType){
 	alias N = NumericType;
+	alias V3 = ar.Vector!(N, 3);
+	alias M33 = ar.Matrix!(N, 3, 3);
 	public{
 		/++
 		++/
@@ -34,10 +36,14 @@ class MapConstraintDetector(NumericType){
 			_root.draw;
 			ar.popStyle;
 		}
+		
+		void unitTime(N t){_unitTime = t;}
 	}//public
 
 	private{
 		AABBNode!N _root;
+		
+		N _unitTime;
 		
 		CollidablePair!N[] detectCollidablePairs(ref CollidablePair!(N)[] collidablePairs, DynamicEntity!(N)[] dynamicEntities){
 			foreach (dynamicEntity; dynamicEntities) {
@@ -59,27 +65,89 @@ class MapConstraintDetector(NumericType){
 			return constraintPairs;
 		}
 		
-		ConstraintPair!N generatedConstraintPair(CollidablePair!(N) collidablePair, ContactPoint!(N) contactPoint){
+		ConstraintPair!N generatedConstraintPair(ref CollidablePair!(N) collidablePair, ref ContactPoint!(N) contactPoint)in{assert(_unitTime > N(0));}body{
+			alias M33 = ar.Matrix!(N, 3, 3);
+				
 			ConstraintPair!N constraintPair = ConstraintPair!N(collidablePair.dynamicEntity);
 			
-			N k = 0;
+			V3 r = contactPoint.coordination - collidablePair.dynamicEntity.position;
 			
-			constraintPair.linearConstraints[0] = Constraint!N(
-					(collidablePair.staticEntity.vertices[1] - collidablePair.staticEntity.vertices[0]).normalized, 
-					(ConstraintPair!N constraintPair){return 0;}
+			M33 k;
+			{
+				auto rCrossMatrix = M33(
+					[0,     -r[2], r[1] ],
+					[r[2],  0,     -r[0]],
+					[-r[1], r[0],  0    ],
+					);
+				k = (collidablePair.dynamicEntity.massInv + N(0)) * M33.identity - rCrossMatrix * collidablePair.dynamicEntity.inertiaGlobalInv * rCrossMatrix;
+			}
+			
+			N bias = contactPoint.distance / _unitTime;
+			
+			constraintPair.linearConstraints[0] = collisionConstraint!(0)(
+				collidablePair, 
+				constraintPair, 
+				contactPoint,
+				bias,
+				k, 
 			);
 			
-			constraintPair.linearConstraints[1] = Constraint!N(
-					contactPoint.normal,
-					(ConstraintPair!N constraintPair){return 0;}
+			constraintPair.linearConstraints[1] = collisionConstraint!(1)(
+				collidablePair, 
+				constraintPair, 
+				contactPoint,
+				bias,
+				k, 
 			);
 			
-			constraintPair.linearConstraints[1] = Constraint!N(
-					constraintPair.linearConstraints[0].axis.vectorProduct(constraintPair.linearConstraints[1].axis), 
-					(ConstraintPair!N constraintPair){return 0;}
+			constraintPair.linearConstraints[2] = collisionConstraint!(2)(
+				collidablePair, 
+				constraintPair, 
+				contactPoint,
+				bias,
+				k, 
 			);
 			
 			return constraintPair;
+		}
+		
+		Constraint!N collisionConstraint(int Axis)(
+			ref CollidablePair!(N) collidablePair,
+			ref ConstraintPair!(N) constraintPair,
+			ref ContactPoint!(N) contactPoint,
+			ref N bias,
+			ref M33 k
+		)if(0 <= Axis || Axis <= 2){
+			auto initialImpulse = V3.zero;
+			
+			static if(Axis == 0){
+				return Constraint!N(
+					(collidablePair.staticEntity.vertices[1] - collidablePair.staticEntity.vertices[0]).normalized, 
+					initialImpulse, 
+					(ConstraintPair!N constraintPair){
+						V3[2] v = [V3.zero, V3.zero];
+						return v;
+					}
+				);
+			}else static if(Axis == 1){
+				return Constraint!N(
+					constraintPair.linearConstraints[0].axis.vectorProduct(constraintPair.linearConstraints[1].axis), 
+					initialImpulse, 
+					(ConstraintPair!N constraintPair){
+						V3[2] v = [V3.zero, V3.zero];
+						return v;
+					}
+				);
+			}else{
+				return Constraint!N(
+					constraintPair.linearConstraints[0].axis.vectorProduct(constraintPair.linearConstraints[1].axis), 
+					initialImpulse, 
+					(ConstraintPair!N constraintPair){
+						V3[2] v = [V3.zero, V3.zero];
+						return v;
+					}
+				);
+			}
 		}
 	}//private
 }//class MapConstraintDetector

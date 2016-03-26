@@ -20,7 +20,7 @@ class Engine(NumericType){
 			
 			_constraintSolver = new ConstraintSolver!N;
 			
-			_unitTime = N(0.0);
+			_unitTime = N(1.0/30.0);
 			this.unitTime = _unitTime;
 		}
 		
@@ -28,6 +28,7 @@ class Engine(NumericType){
 		++/
 		void unitTime(in N t){
 			_unitTime = t;
+			_mapConstraintDetector.unitTime = t;
 			_integrator.unitTime = t;
 		}
 		

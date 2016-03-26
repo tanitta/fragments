@@ -14,16 +14,9 @@ struct ConstraintPair(NumericType) {
 		this(DynamicEntity!(N) entityA, DynamicEntity!(N) entityB = null){
 			_entities[0] = entityA;
 			_entities[1] = entityB;
-			
-			if(entityB){
-				// k();
-			}else{
-				// k();
-			}
 		}
 		
-		// DynamicEntity!(N)[2] entities(){return _entities;};
-		// N k(){return _k;};
+		DynamicEntity!(N)[2] entities(){return _entities;};
 		
 		Constraint!(N)[3] linearConstraints;
 		Constraint!(N)[3] angularConstraints;
@@ -42,24 +35,29 @@ struct ConstraintPair(NumericType) {
 struct Constraint(NumericType) {
 	alias N = NumericType;
 	alias V3 = ar.Vector!(N, 3);
+	alias ConstraintCondition = V3[2] delegate(ConstraintPair!N);
 	public{
 		// ContactPoint!(N) contactPoint;
 		this(
 			in V3 axis,
-			in N delegate(ConstraintPair!N constraintPair) force,
+			in V3 initialImpulse,
+			in ConstraintCondition constraintCondition,
 		){
 			_axis = axis;
-			_force = force;
+			_initialImpulse = initialImpulse;
+			_constraintCondition = constraintCondition;
 		}
 		
 		@property{
 			V3 axis(){return _axis;};
-			N delegate(ConstraintPair!N constraintPair) force(){return _force;};
+			V3 initialImpulse(){return _initialImpulse;};
+			ConstraintCondition constraintCondition(){return _constraintCondition;};
 		}
 	}//public
 
 	private{
 		V3 _axis;
-		N delegate(ConstraintPair!N constraintPair) _force;
+		V3 _initialImpulse;
+		ConstraintCondition _constraintCondition;
 	}//private
 }//struct Constraint
