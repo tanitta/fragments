@@ -93,6 +93,8 @@
 						- [ ] biasを考慮したimpulseの計算
 						
 						- [ ] friction
+							- [ ] impulseの計算
+								copy from CollidableConstraint without bias
 			
 		- [ ] ::Update内での並列化を行う
 		
@@ -100,6 +102,10 @@
 		- [ ] preprocessの実装
 			- [ ] 必要なパラメータ調べる
 				- [x] DynamicEntityに追加するプロパティ [2016/03/25 (Fri) 12:04]
+					- [x] deltaLinearVelocity [2016/03/26 (Sat) 22:13]
+					- [x] deltaAngularVelocity [2016/03/26 (Sat) 22:13]
+					
+				- [ ] CollidableConstraintPairに追加するproperty
 					
 				- [ ] ConstraintPairに追加するプロパティ
 					- [x] entityにアクセスするメソッド [2016/03/25 (Fri) 12:08]

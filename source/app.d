@@ -3,6 +3,7 @@ import fragments.entity;
 import fragments.square;
 import fragments.engine;
 import fragments.boundingbox;
+import fragments.constraintpair;
 
 
 void drawBoundingBox(B)(B boundingBox){
@@ -204,7 +205,8 @@ class TestApp : ar.BaseApp{
 	
 	fragments.engine.Engine!(N) engine;
 	
-	DynamicEntity!(N)[] dynamicEntities;
+	DynamicEntity!(N)[] _dynamicEntities;
+	ConstraintPair!(N)[] _constraintPair;
 	
 	Land!(N) _land;
 	// Chip!(N) chip;
@@ -251,12 +253,19 @@ class TestApp : ar.BaseApp{
 			chip.addForce(_unitTime, ar.Vector3d(2, -10, 10), ar.Vector3d(1, 45, 0.1));
 			_model.addChip(chip);
 		}
+		{
+			auto chip = new Chip!(N);
+			chip.position = V3(1, 45, 1);
+			chip.orientation = Q.unit;
+			chip.addForce(_unitTime, ar.Vector3d(3, 0, 1), ar.Vector3d(1, 45, 1.1));
+			_model.addChip(chip);
+		}
 		import std.algorithm : map;
 		import std.array : array;
 		import std.conv;
-		dynamicEntities = _model.chips.map!(c => c.entity.to!(DynamicEntity!N)).array;
+		_dynamicEntities = _model.chips.map!(c => c.entity.to!(DynamicEntity!N)).array;
 	}
-	
+
 	void setupGui(){
 		gui = ( new ar.Gui )
 		.add(
@@ -288,7 +297,7 @@ class TestApp : ar.BaseApp{
 	
 	void update(){
 		engine.unitTime = _unitTime;
-		engine.update(dynamicEntities);
+		engine.update(_dynamicEntities, _constraintPair);
 	}
 	
 	void draw(){

@@ -22,13 +22,13 @@ class MapConstraintDetector(NumericType){
 		
 		/++
 		++/
-		ConstraintPair!(N)[] detectConstraintPairs(DynamicEntity!(N)[] dynamicEntities){
+		CollisionConstraintPair!(N)[] detectCollisionConstraintPairs(DynamicEntity!(N)[] dynamicEntities){
 			// broad phase
 			import std.algorithm;
 			CollidablePair!(N)[] collidablePairs;
 			detectCollidablePairs(collidablePairs, dynamicEntities);
 			
-			return generatedConstraintPairs(collidablePairs);
+			return generatedCollidableConstraintPairs(collidablePairs);
 		}
 		
 		void draw(){
@@ -54,62 +54,66 @@ class MapConstraintDetector(NumericType){
 			return collidablePairs;
 		}
 		
-		ConstraintPair!N[] generatedConstraintPairs(ref CollidablePair!(N)[] collidablePairs){
-			ConstraintPair!(N)[] constraintPairs;
+		CollisionConstraintPair!N[] generatedCollidableConstraintPairs(ref CollidablePair!(N)[] collidablePairs){
+			CollisionConstraintPair!(N)[] collisionConstraintPairs;
 			foreach (collidablePair; collidablePairs) {
 				foreach (contactPoint; collidablePair.dynamicEntity.contactPoints(collidablePair.staticEntity)) {
-					constraintPairs ~= generatedConstraintPair(collidablePair, contactPoint);
-					// contactPoint.coordination.print;
+					collisionConstraintPairs ~= CollisionConstraintPair!N(
+						collidablePair.dynamicEntity,
+						collidablePair.staticEntity,
+						contactPoint,
+						_unitTime,
+					);
 				}
 			}
-			return constraintPairs;
+			return collisionConstraintPairs;
 		}
 		
-		ConstraintPair!N generatedConstraintPair(ref CollidablePair!(N) collidablePair, ref ContactPoint!(N) contactPoint)in{assert(_unitTime > N(0));}body{
-			alias M33 = ar.Matrix!(N, 3, 3);
-				
-			ConstraintPair!N constraintPair = ConstraintPair!N(collidablePair.dynamicEntity);
-			
-			V3 r = contactPoint.coordination - collidablePair.dynamicEntity.position;
-			
-			M33 k;
-			{
-				auto rCrossMatrix = M33(
-					[0,     -r[2], r[1] ],
-					[r[2],  0,     -r[0]],
-					[-r[1], r[0],  0    ],
-					);
-				k = (collidablePair.dynamicEntity.massInv + N(0)) * M33.identity - rCrossMatrix * collidablePair.dynamicEntity.inertiaGlobalInv * rCrossMatrix;
-			}
-			
-			N bias = contactPoint.distance / _unitTime;
-			
-			constraintPair.linearConstraints[0] = collisionConstraint!(0)(
-				collidablePair, 
-				constraintPair, 
-				contactPoint,
-				bias,
-				k, 
-			);
-			
-			constraintPair.linearConstraints[1] = collisionConstraint!(1)(
-				collidablePair, 
-				constraintPair, 
-				contactPoint,
-				bias,
-				k, 
-			);
-			
-			constraintPair.linearConstraints[2] = collisionConstraint!(2)(
-				collidablePair, 
-				constraintPair, 
-				contactPoint,
-				bias,
-				k, 
-			);
-			
-			return constraintPair;
-		}
+		// CollisionConstraintPair!N generatedCollidableConstraintPair(ref CollidablePair!(N) collidablePair, ref ContactPoint!(N) contactPoint)in{assert(_unitTime > N(0));}body{
+		// 	alias M33 = ar.Matrix!(N, 3, 3);
+		//		
+		// 	CollisionConstraintPair!N collisionConstraintPair = CollisionConstraintPair!N(collidablePair.dynamicEntity);
+		//	
+		// 	V3 r = contactPoint.coordination - collidablePair.dynamicEntity.position;
+		//	
+		// 	M33 k;
+		// 	{
+		// 		auto rCrossMatrix = M33(
+		// 			[0,     -r[2], r[1] ],
+		// 			[r[2],  0,     -r[0]],
+		// 			[-r[1], r[0],  0    ],
+		// 			);
+		// 		k = (collidablePair.dynamicEntity.massInv + N(0)) * M33.identity - rCrossMatrix * collidablePair.dynamicEntity.inertiaGlobalInv * rCrossMatrix;
+		// 	}
+		//	
+		// 	N bias = contactPoint.distance / _unitTime;
+		//	
+		// 	collisionConstraintPair.linearConstraints[0] = collisionConstraint!(0)(
+		// 		collidablePair, 
+		// 		collisionConstraintPair, 
+		// 		contactPoint,
+		// 		bias,
+		// 		k, 
+		// 	);
+		//	
+		// 	collisionConstraintPair.linearConstraints[1] = collisionConstraint!(1)(
+		// 		collidablePair, 
+		// 		collisionConstraintPair, 
+		// 		contactPoint,
+		// 		bias,
+		// 		k, 
+		// 	);
+		//	
+		// 	collisionConstraintPair.linearConstraints[2] = collisionConstraint!(2)(
+		// 		collidablePair, 
+		// 		collisionConstraintPair, 
+		// 		contactPoint,
+		// 		bias,
+		// 		k, 
+		// 	);
+		//	
+		// 	return constraintPair;
+		// }
 		
 		Constraint!N collisionConstraint(int Axis)(
 			ref CollidablePair!(N) collidablePair,

@@ -28,7 +28,7 @@ template DynamicEntityProperties(NumericType){
 		///
 		void inertia(in M33 inertia){
 			_inertia  = inertia;
-			_inertiaGlobal = _orientation.matrix33*_inertiaGlobal*_orientation.matrix33.inverse;
+			_inertiaGlobal = _orientation.matrix33*_inertia*_orientation.matrix33.inverse;
 			_inertiaGlobalInv = _inertiaGlobal.inverse;
 		};
 		
@@ -82,6 +82,22 @@ template DynamicEntityProperties(NumericType){
 			return _material;
 		}
 		
+		V3 deltaLinearVelocity()const{
+			return _deltaLinearVelocity;
+		}
+		
+		void deltaLinearVelocity(in V3 v){
+			_deltaLinearVelocity = v;
+		};
+		
+		V3 deltaAngularVelocity()const{
+			return _deltaAngularVelocity;
+		}
+		
+		void deltaAngularVelocity(in V3 v){
+			_deltaAngularVelocity = v;
+		}
+		
 		///
 		void updateProperties(){
 			_positionPre = _position;
@@ -107,6 +123,8 @@ template DynamicEntityProperties(NumericType){
 		BoundingBox!(N) _boundingBox;
 		const( Material!(N) ) _material;
 		V3 _margin = V3.zero;
+		V3 _deltaLinearVelocity;
+		V3 _deltaAngularVelocity;
 	}//private
 }
 

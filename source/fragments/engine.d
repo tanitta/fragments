@@ -4,6 +4,7 @@ import fragments.entity;
 import fragments.mapconstraintdetector;
 import fragments.constraintsolver;
 import fragments.integrator;
+import fragments.constraintpair;
 
 /++
 ++/
@@ -44,10 +45,10 @@ class Engine(NumericType){
 		
 		/++
 		++/
-		void update( ref DynamicEntity!(N)[] dynamicEntities ){
+		void update(ref DynamicEntity!(N)[] dynamicEntities, ref ConstraintPair!N[] constraintPairs){
 			{
-				auto collisionConstraintPairs = _mapConstraintDetector.detectConstraintPairs( dynamicEntities );
-				_constraintSolver.solve(collisionConstraintPairs);
+				auto collisionConstraintPairs = _mapConstraintDetector.detectCollisionConstraintPairs( dynamicEntities );
+				_constraintSolver.solve(collisionConstraintPairs, constraintPairs);
 			}
 			
 			_integrator.integrate( dynamicEntities );
