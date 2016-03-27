@@ -55,7 +55,7 @@ class Engine(NumericType){
 			
 			foreach (entity; dynamicEntities) {
 				with(entity){
-					updateProperties;
+					updateProperties(_unitTime);
 				}
 			}
 		};

@@ -99,12 +99,12 @@ template DynamicEntityProperties(NumericType){
 		}
 		
 		///
-		void updateProperties(){
+		void updateProperties(in N unitTime){
 			_positionPre = _position;
 			_orientationPre = _orientation;
 			_inertiaGlobal = _orientation.matrix33*_inertiaGlobal*_orientation.matrix33.inverse;
 			_inertiaGlobalInv = _inertiaGlobal.inverse;
-			_boundingBox = BoundingBox!(N)(_position, _positionPre, _margin);
+			_boundingBox = BoundingBox!(N)(_position, _position-linearVelocity*unitTime, _margin);
 		}
 	}//public
 	
@@ -123,8 +123,8 @@ template DynamicEntityProperties(NumericType){
 		BoundingBox!(N) _boundingBox;
 		const( Material!(N) ) _material;
 		V3 _margin = V3.zero;
-		V3 _deltaLinearVelocity;
-		V3 _deltaAngularVelocity;
+		V3 _deltaLinearVelocity = V3.zero;
+		V3 _deltaAngularVelocity = V3.zero;
 	}//private
 }
 
@@ -143,65 +143,104 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 			_margin = V3(0.5, 0.5, 0.5);
 			
 			//set some rays used in method : contactPoints
-			_rays ~= V3(size,  0, 0);
-			_rays ~= V3(-size, 0, 0);
-			_rays ~= V3(0,     0, size);
-			_rays ~= V3(0,     0, -size);
-			
-			_rays ~= V3(size,  0, size);
-			_rays ~= V3(-size, 0, -size);
-			_rays ~= V3(size,  0, -size);
-			_rays ~= V3(-size, 0, size);
+			_rays = [
+				V3(size,  0, 0), 
+				V3(-size, 0, 0), 
+				V3(0,     0, size), 
+				V3(0,     0, -size), 
+		
+				V3(size,  0, size), 
+				V3(-size, 0, -size), 
+				V3(size,  0, -size), 
+				V3(-size, 0, size), 
+			];
 		}
 		
 		///
 		ContactPoint!(N)[] contactPoints(in StaticEntity!(N) staticEntity)const{
+			// import std.stdio;
+			// "bb".writeln;
 			ContactPoint!(N)[] points;
+			
 			foreach (ray; _rays) {
-				auto rayGlobal = _orientation.rotatedVector(ray)+_position;
+				immutable isDetectStaticRay = detectContactPoint(
+					_position,
+					_orientation.rotatedVector(ray)+_position, 
+					staticEntity, 
+					points
+				);
 				
-				auto p0 = V3.zero;
-				auto p1 = staticEntity.vertices[1] -staticEntity.vertices[0];
-				auto p2 = staticEntity.vertices[2] -staticEntity.vertices[0];
-				
-				auto pBegin = _position - staticEntity.vertices[0];
-				auto pEnd = rayGlobal - staticEntity.vertices[0];
-				auto pNormal= staticEntity.normal;
-				
-				auto isCollidingLineToPlane = ( (pBegin.dotProduct(pNormal)) * (pEnd.dotProduct(pNormal)) <= 0 );
-				if( isCollidingLineToPlane ){
-					import std.math;
-					auto d1 = pNormal.dotProduct(pBegin);
-					auto d2 = pNormal.dotProduct(pEnd);
-					auto a = fabs(d1)/(fabs(d1)+fabs(d2));
-					auto pContact = (N(1)-a)*pBegin + a*pEnd;
-					
-					auto isBuried = (d2 <= 0);
-					auto isIncludedInPolygon =
-					( ( p1 - p0 ).vectorProduct(pContact-p0).dotProduct(pNormal) > N(0) )&&
-					( ( p2 - p1 ).vectorProduct(pContact-p1).dotProduct(pNormal) > N(0) )&&
-					( ( p0 - p2 ).vectorProduct(pContact-p2).dotProduct(pNormal) > N(0) );
-					if(isBuried && isIncludedInPolygon){
-						auto contactPoint = ContactPoint!(N)(
-							pContact + staticEntity.vertices[0],
-							pNormal, 
-							-d2
-						);
-						
-						points ~= contactPoint;
-					}
+				if(!isDetectStaticRay){
+					V3 rayVelocity = angularVelocity.vectorProduct( _orientation.rotatedVector(ray) );
+					V3 rayBeginGlobal    = _orientation.rotatedVector(ray)+_position - rayVelocity;
+					V3 rayEndGlobal    = _orientation.rotatedVector(ray)+_position;
+
+					detectContactPoint(
+						rayBeginGlobal,
+						rayEndGlobal, 
+						staticEntity, 
+						points
+					);
 				}
 			}
+			
+			detectContactPoint(
+				_position-linearVelocity,
+				_position,
+				staticEntity, 
+				points
+			);
+			
+			// points.writeln;
 			return points;
 		}
 	}//public
 	
 	private{
-		V3[] _rays;
+		V3[8] _rays;
+		
+		bool detectContactPoint(in V3 rayBeginGlobal, in V3 rayEndGlobal, in StaticEntity!(N) staticEntity, ref ContactPoint!(N)[] points)const{
+			immutable p0 = V3.zero;
+			immutable p1 = staticEntity.vertices[1] -staticEntity.vertices[0];
+			immutable p2 = staticEntity.vertices[2] -staticEntity.vertices[0];
+			
+			immutable pBegin = rayBeginGlobal - staticEntity.vertices[0];
+			immutable pEnd = rayEndGlobal - staticEntity.vertices[0];
+			immutable pNormal= staticEntity.normal;
+			
+			immutable isCollidingLineToPlane = ( (pBegin.dotProduct(pNormal)) * (pEnd.dotProduct(pNormal)) <= 0 );
+			if( isCollidingLineToPlane ){
+				import std.math;
+				immutable d1 = pNormal.dotProduct(pBegin);
+				immutable d2 = pNormal.dotProduct(pEnd);
+				immutable a = fabs(d1)/(fabs(d1)+fabs(d2));
+				immutable pContact = (N(1)-a)*pBegin + a*pEnd;
+				
+				immutable isBuried = (d2 < 0 && 0 <= d1);
+				// immutable isBuried = (d2 < 0);
+				immutable isIncludedInPolygon =
+				( ( p1 - p0 ).vectorProduct(pContact-p0).dotProduct(pNormal) >= N(0) )&&
+				( ( p2 - p1 ).vectorProduct(pContact-p1).dotProduct(pNormal) >= N(0) )&&
+				( ( p0 - p2 ).vectorProduct(pContact-p2).dotProduct(pNormal) >= N(0) );
+				
+				if(isBuried && isIncludedInPolygon){
+					immutable contactPoint = ContactPoint!(N)(
+						pContact + staticEntity.vertices[0],
+						pNormal, 
+						-d2
+					);
+					
+					points ~= contactPoint;
+					return true;
+				}
+				return false;
+			}
+			return false;
+		}
 	}//private
 }//class Chip
 unittest{
 	import fragments.material;
 	auto material = new Material!(double);
 	auto square = new Square!(double)(material);
-}
+};

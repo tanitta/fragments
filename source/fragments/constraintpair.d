@@ -68,24 +68,26 @@ struct CollisionConstraintPair(NumericType) {
 	alias M33 = ar.Matrix!(N, 3, 3);
 	
 	public{
+		/// 
 		this(
 			ref DynamicEntity!N dynamicEntity,
 			ref StaticEntity!N staticEntity,
 			ref ContactPoint!(N) contactPoint,
 			ref N unitTime, 
 		){
-			_entity = entity;
+			_entity = dynamicEntity;
 			
 			//set constraints
-			
 			V3 applicationPoint = contactPoint.coordination - dynamicEntity.position;
 			
+			immutable relativeVelocity = dynamicEntity.linearVelocity + dynamicEntity.angularVelocity.vectorProduct(applicationPoint);
 			
-			N bias = contactPoint.distance / unitTime;
-			
-			auto initialImpulse = V3.zero;
-			
-			auto relativeVelocity = dynamicEntity.linearVelocity + dynamicEntity.angularVelocity.vectorProduct(applicationPoint);
+			import std.math;
+			immutable bias = 0.1;
+			immutable slop = N(0);
+			import std.stdio;
+			contactPoint.distance.writeln;
+			immutable biasTerm = (bias * fmax(N(0), contactPoint.distance+slop))/unitTime;
 			
 			collisionConstraint = CollisionConstraint!N(
 				relativeVelocity,
@@ -94,30 +96,17 @@ struct CollisionConstraintPair(NumericType) {
 					dynamicEntity.massInv,
 					dynamicEntity.inertiaGlobalInv,
 					staticEntity.normal
-				),
+					),
 				applicationPoint, 
-				contactPoint.normal,
-				bias,
+				staticEntity.normal,
+				biasTerm,
 			);
 			
-			// constraints[0] = Constraint!N(
+			// friction constraint
 			// 	(staticEntity.vertices[1] - staticEntity.vertices[0]).normalized, 
-			// 	initialImpulse, 
-			// 	(ConstraintPair!N constraintPair){
-			// 		V3[2] v = [V3.zero, V3.zero];
-			// 		return v;
-			// 	}
-			// );
 			
-			// constraints[2] = Constraint!N(
+			// friction constraint
 			// 	constraints[0].axis.vectorProduct(constraints[1].axis), 
-			// 	initialImpulse, 
-			// 	(ConstraintPair!N constraintPair){
-			// 		V3[2] v = [V3.zero, V3.zero];
-			// 		return v;
-			// 	}
-			// );
-
 		}
 		
 		DynamicEntity!(N) entity(){return _entity;};
@@ -133,7 +122,7 @@ struct CollisionConstraintPair(NumericType) {
 			N massInv,
 			M33 inertiaGlobalInv, 
 			V3 normal, 
-		)in{
+		)const in{
 			import std.math;
 			assert(!isNaN(applicationPoint[0]));
 			assert(!isNaN(massInv));
@@ -143,11 +132,11 @@ struct CollisionConstraintPair(NumericType) {
 			M33 k;
 			{
 				auto rCrossMatrix = M33(
-					[0,     -applicationPoint[2], applicationPoint[1] ],
-					[applicationPoint[2],  0,     -applicationPoint[0]],
-					[-applicationPoint[1], applicationPoint[0],  0    ],
-					);
-				k = (massInv + N(0)) * M33.identity - rCrossMatrix * inertiaGlobalInv * rCrossMatrix;
+					[0,                    -applicationPoint[2], applicationPoint[1] ],
+					[applicationPoint[2],  0,                    -applicationPoint[0]],
+					[-applicationPoint[1], applicationPoint[0],  0                   ],
+				);
+				k = massInv * M33.identity - rCrossMatrix * inertiaGlobalInv * rCrossMatrix;
 			}
 			
 			return N(1)/((k * normal).dotProduct(normal));
@@ -160,43 +149,60 @@ struct CollisionConstraintPair(NumericType) {
 struct CollisionConstraint(NumericType) {
 	alias N = NumericType;
 	alias V3 = ar.Vector!(N, 3);
-	alias ConstraintCondition = V3[2] delegate(ConstraintPair!N);
 	public{
+		/// 
 		this(
 			V3 velocity,
 			N jacDiagInv,
-			V3 aplicationPoint, 
+			V3 applicationPoint, 
 			V3 direction, 
-			N bias, 
+			N biasTerm, 
 		)in{
 			import std.math;
 			assert(!isNaN(velocity[0]));
 			assert(!isNaN(jacDiagInv));
-			assert(!isNaN(aplicationPoint[0]));
+			assert(!isNaN(applicationPoint[0]));
 			assert(!isNaN(direction[0]));
-			assert(!isNaN(bias));
+			assert(!isNaN(biasTerm));
 		}body{
 			_jacDiagInv = jacDiagInv;
-			_aplicationPoint = aplicationPoint;
+			_applicationPoint = applicationPoint;
 			_direction = direction;
-			_bias = bias;
+			_biasTerm = biasTerm;
 			
-			_initialImpulse = impulse(velocity);
+			_initialImpulse = -impulse(velocity);
 		}
 		
-		V3[2] deltaVelocities(DynamicEntity!N dynamicEntity){
-			auto deltaVelocity = dynamicEntity.deltaLinearVelocity + dynamicEntity.deltaAngularVelocity.vectorProduct(_aplicationPoint);
+		/// 
+		V3[2] deltaVelocities(DynamicEntity!N dynamicEntity)
+		in{
+			assert(dynamicEntity);
+			import std.math;
+			assert(!isNaN(dynamicEntity.deltaLinearVelocity[0]));
+			assert(!isNaN(dynamicEntity.deltaAngularVelocity[0]));
+			assert(!isNaN(_applicationPoint[0]));
+		}body{
+			V3 deltaVelocity = dynamicEntity.deltaLinearVelocity + dynamicEntity.deltaAngularVelocity.vectorProduct(_applicationPoint);
 			
-			V3[2] v = [V3.zero, V3.zero];
+			import std.algorithm;
+			N deltaImpluse = (_initialImpulse - impulse(deltaVelocity)).clamp(0, N.nan);
+			
+			V3 deltaLinearVelocity = deltaImpluse * dynamicEntity.massInv * _direction;
+			V3 deltaAngularVelocity = deltaImpluse * dynamicEntity.inertiaGlobalInv * _applicationPoint.vectorProduct(_direction);
+			
+			V3[2] v = [
+				deltaLinearVelocity,
+				deltaAngularVelocity,
+			];
 			return v;
 		};
 	}//public
 
 	private{
 		N _jacDiagInv;
-		V3 _aplicationPoint;
+		V3 _applicationPoint;
 		V3 _direction;
-		N _bias;
+		N _biasTerm;
 		
 		N _initialImpulse;
 		
@@ -205,9 +211,9 @@ struct CollisionConstraint(NumericType) {
 			import std.math;
 			assert(!isNaN(deltaVelocity[0]));
 		}body{
-			import std.algorithm;
-			N impulse = _jacDiagInv * (_direction.dotProduct(deltaVelocity) + _bias);
-			return impulse.clamp(N(0), N.nan);
+			N impulse = _jacDiagInv * (_direction.dotProduct(deltaVelocity) - _biasTerm);
+			
+			return impulse;
 		}
 	}//private
 }//struct CollisionConstraint

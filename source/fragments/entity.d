@@ -112,7 +112,7 @@ interface DynamicEntity(NumericType) : Entity!(NumericType){
 		const( Material!(N) ) material()const;
 		
 		///
-		void updateProperties();
+		void updateProperties(in N unitTime);
 		
 		///
 		ContactPoint!(N)[] contactPoints(in StaticEntity!(N) staticEntity)const;

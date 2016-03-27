@@ -78,7 +78,7 @@
 						
 							
 					- [ ] collision constraint 
-						- [ ] impluseの計算
+						- [x] impluseの計算 [2016/03/27 (Sun) 11:39]
 							- [x] kの値の計算の実装 [2016/03/25 (Fri) 12:51]
 								- [x] crossMatrix?の実装 [2016/03/25 (Fri) 11:00]
 									とりあえずハードコーディング．
@@ -87,10 +87,16 @@
 							- [x] what is "jacDiagInv"? [2016/03/26 (Sat) 16:22]
 								impluse値の分母
 							
-						- [ ] biasの実装
+						- [x] solverで動作確認 [2016/03/27 (Sun) 15:13]
+							ポリゴンとの反応を確認．大きく跳ね返るのはチップが回転しているのが原因．
+							- [x] deltaVelocityの初期化 [2016/03/27 (Sun) 12:18]
+							
+						- [x] ポリゴンとrayが水平な状態で衝突した場合の対策 [2016/03/27 (Sun) 17:10]
+							
+						- [x] biasの実装 [2016/03/27 (Sun) 18:30]
 							- [x] depthを渡す [2016/03/26 (Sat) 16:07]
 							- [x] timestepを渡す [2016/03/26 (Sat) 16:07]
-						- [ ] biasを考慮したimpulseの計算
+						- [x] biasを考慮したimpulseの計算 [2016/03/27 (Sun) 18:30]
 						
 						- [ ] friction
 							- [ ] impulseの計算

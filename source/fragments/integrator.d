@@ -6,6 +6,7 @@ import armos;
 ++/
 class Integrator(NumericType) {
 	alias N = NumericType;
+	alias V3 = ar.Vector!(N, 3);
 	alias Q = ar.Quaternion!(N);
 	
 	public{
@@ -31,6 +32,8 @@ class Integrator(NumericType) {
 		
 		void integrate(ref DynamicEntity!(N)[] dynamicEntities){
 			foreach (entity; dynamicEntities) {
+				updateVelocitiesFromDelta(entity);
+				initDeltaVelocity(entity);
 				integratePosition(entity);
 				integrateOrientation(entity);
 			}
@@ -39,6 +42,16 @@ class Integrator(NumericType) {
 
 	private{
 		N _unitTime;
+		
+		void updateVelocitiesFromDelta(DynamicEntity!(N) entity){
+			entity.linearVelocity = entity.linearVelocity + entity.deltaLinearVelocity;
+			entity.angularVelocity = entity.angularVelocity + entity.deltaAngularVelocity;
+		}
+		
+		void initDeltaVelocity(DynamicEntity!(N) entity){
+			entity.deltaLinearVelocity = V3.zero;
+			entity.deltaAngularVelocity = V3.zero;
+		}
 		
 		void integratePosition(DynamicEntity!(N) entity){
 			with(entity){
@@ -57,10 +70,3 @@ class Integrator(NumericType) {
 	}//private
 }//class Integrator
 
-private X euler(X, T)(X x, X v, T unitTime){
-	return x + v * unitTime;
-}
-
-// private X modifiedEuler(X, T)(X x, X v, T unitTime){
-// 	return x;
-// }

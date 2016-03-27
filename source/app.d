@@ -66,8 +66,18 @@ class Chip(NumericType){
 		
 		/++
 		+/
+		V3 position()const{
+			return entity.position;
+		}
+		
+		/++
+		+/
 		void orientation(Q p = Q.unit){
 			entity.orientation = p;
+		}
+		
+		Q orientation()const{
+			return entity.orientation;
 		}
 		
 		/++
@@ -239,25 +249,39 @@ class TestApp : ar.BaseApp{
 	
 	void setupModel(){
 		_model = new Model!N;
+		
+		import std.random;
+		// for (int i = 0; i < 1024; i++) {
+		// 	auto chip = new Chip!(N);
+		// 	chip.position = V3(uniform(-5.0, 5.0), 45+uniform(0.0, 5.0), uniform(-5.0, 5.0));
+		// 	chip.orientation = Q.unit;
+		// 	chip.addForce(_unitTime, ar.Vector3d(uniform(-10.0, 10.0) ,uniform(-100.0, 0.0), uniform(-10.0, 10.0)), chip.position + ar.Vector3d(uniform(-1.0, 1.0), uniform(-1.0, 1.0), uniform(-1.0, 1.0)));
+		// 	_model.addChip(chip);
+		// }
+		
+		// {
+		// 	auto chip = new Chip!(N);
+		// 	chip.position = V3(-2, 45, 0);
+		// 	chip.orientation = Q.unit;
+		// 	chip.addForce(_unitTime, ar.Vector3d(0, -100, 0), ar.Vector3d(-2.1, 45, 0.1));
+		// 	_model.addChip(chip);
+		// }
+		
+		// {
+		// 	auto chip = new Chip!(N);
+		// 	chip.position = V3(1, 80, 1);
+		// 	chip.orientation = Q.unit;
+		// 	chip.addForce(_unitTime, ar.Vector3d(0, -1000000, 0), ar.Vector3d(1, 80, 1));
+		// 	// chip.addForce(_unitTime, ar.Vector3d(10, 0, 0), ar.Vector3d(0, 45, 1));
+		// 	// chip.addForce(_unitTime, ar.Vector3d(-10, 0, 0), ar.Vector3d(0, 45, -1));
+		// 	_model.addChip(chip);
+		// }
+		
 		{
 			auto chip = new Chip!(N);
 			chip.position = V3(0, 45, 0);
 			chip.orientation = Q.unit;
-			chip.addForce(_unitTime, ar.Vector3d(20, -10, 0), ar.Vector3d(0, 45, 0.1));
-			_model.addChip(chip);
-		}
-		{
-			auto chip = new Chip!(N);
-			chip.position = V3(1, 45, 0);
-			chip.orientation = Q.unit;
-			chip.addForce(_unitTime, ar.Vector3d(2, -10, 10), ar.Vector3d(1, 45, 0.1));
-			_model.addChip(chip);
-		}
-		{
-			auto chip = new Chip!(N);
-			chip.position = V3(1, 45, 1);
-			chip.orientation = Q.unit;
-			chip.addForce(_unitTime, ar.Vector3d(3, 0, 1), ar.Vector3d(1, 45, 1.1));
+			chip.addForce(_unitTime, ar.Vector3d(1000, -200, 5000), ar.Vector3d(0, 45, 0));
 			_model.addChip(chip);
 		}
 		import std.algorithm : map;
@@ -321,7 +345,7 @@ class TestApp : ar.BaseApp{
 	void drawDebug(){
 		gui.draw;
 		fpsUseRate = ar.fpsUseRate*100.0;
-		fpsUseRate.writeln;
+		// fpsUseRate.writeln;
 	}
 }
 
