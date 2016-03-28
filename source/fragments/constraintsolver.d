@@ -2,6 +2,7 @@ module fragments.constraintsolver;
 
 import armos;
 import fragments.constraintpair;
+import fragments.entity;
 
 /++
 +/
@@ -11,24 +12,31 @@ class ConstraintSolver(NumericType){
 	alias M33 = ar.Matrix!(N, 3, 3);
 	
 	public{
+		/++
+		++/
+		void unitTime(in N t){_unitTime = t;}
+		
+		/++
+		++/
 		void solve(
 			ref CollisionConstraintPair!N[] collisionConstraintPairs,
 			ref ConstraintPair!N[] constraintPairs,
 		){
-			setup(collisionConstraintPairs, constraintPairs);
+			preProcess(collisionConstraintPairs, constraintPairs);
 			iterate(collisionConstraintPairs, constraintPairs);
+			postProcess(collisionConstraintPairs, constraintPairs);
 		}
 	}//public
 
 	private{
+		N _unitTime;
 		int _iterations = 10;
-		
-		void setup(
+
+		void preProcess(
 			ref CollisionConstraintPair!N[] collisionConstraintPairs, 
 			ref ConstraintPair!N[] constraintPairs,
 		){
 			foreach (ref collisionConstraintPair; collisionConstraintPairs) {
-				
 			}
 			
 			// foreach (ref constraintPair; constraintPairs) {
@@ -76,14 +84,38 @@ class ConstraintSolver(NumericType){
 			}
 		}
 		
-		void updateVelocities(
+		void postProcess(
 			ref CollisionConstraintPair!N[] collisionConstraintPairs, 
 			ref ConstraintPair!N[] constraintPairs,
-		){
-			foreach (ref constraintPair; constraintPairs) {
-			}
+		)in{
+			import std.math;
+			assert(!isNaN(_unitTime));
+		}body{
+			import fragments.contactpoint;
 			foreach (ref collisionConstraintPair; collisionConstraintPairs) {
+				auto entity = collisionConstraintPair.entity;
+				
+				updateVelocitiesFromDelta(entity);
+				initDeltaVelocity(entity);
+				
+				immutable contactPoint = collisionConstraintPair.contactPoint;
+				
+				immutable depth = ( entity.position + entity.linearVelocity * _unitTime - contactPoint.coordination).dotProduct(contactPoint.normal);
+				// entity.position = entity.position - depth;
+				
+				import std.stdio;
+				writeln("depth\t", depth);
 			}
+		}
+		
+		void updateVelocitiesFromDelta(DynamicEntity!(N) entity){
+			entity.linearVelocity = entity.linearVelocity + entity.deltaLinearVelocity;
+			entity.angularVelocity = entity.angularVelocity + entity.deltaAngularVelocity;
+		}
+		
+		void initDeltaVelocity(DynamicEntity!(N) entity){
+			entity.deltaLinearVelocity = V3.zero;
+			entity.deltaAngularVelocity = V3.zero;
 		}
 	}//private
 }//class ConstraintSolver

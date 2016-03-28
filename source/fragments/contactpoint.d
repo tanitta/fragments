@@ -9,20 +9,24 @@ struct ContactPoint(NumericType) {
 	alias V3 = ar.Vector!(N, 3);
 	public{
 		///
-		this(in V3 coordination, in V3 normal, in N distance){
+		this(in V3 coordination, in V3 normal, in N distance, in V3 applicationPoint){
 			_coordination = coordination;
 			_normal = normal;
 			_distance = distance;
+			_applicationPoint = applicationPoint;
 		}
 		
 		///
-		V3 coordination()const{return _coordination;};
+		V3 coordination()const{return _coordination;}
 		
 		///
-		V3 normal()const{return _normal;};
+		V3 normal()const{return _normal;}
 		
 		///
-		N distance()const{return _distance;};
+		N distance()const{return _distance;}
+		
+		///
+		V3 applicationPoint()const{return _applicationPoint;}
 	}//public
 
 	private{
@@ -34,5 +38,8 @@ struct ContactPoint(NumericType) {
 		
 		///
 		N _distance;
+		
+		///
+		V3 _applicationPoint;
 	}//private
 }//struct ContactPoint

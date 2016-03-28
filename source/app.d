@@ -161,8 +161,8 @@ class Land(NumericType) {
 					_staticEntities ~= new fragments.polygon.Polygon!(N)(vertices, material, V3(0.1, 0.1, 0.1));
 				}
 			}
-			"staticEntities".writeln;
-			_staticEntities.length.writeln;
+			
+			writeln("staticEntities", _staticEntities.length);
 		}
 		
 		/++
@@ -206,7 +206,7 @@ class TestApp : ar.BaseApp{
 	alias V3 = ar.Vector!(N, 3);
 	alias Q = ar.Quaternion!(N);
 	float c = 0;
-	float h = 50;
+	float h = 10;
 	float d = 10;
 	float fpsUseRate = 0;
 	auto camera = new ar.Camera;
@@ -267,23 +267,23 @@ class TestApp : ar.BaseApp{
 		// 	_model.addChip(chip);
 		// }
 		
-		// {
-		// 	auto chip = new Chip!(N);
-		// 	chip.position = V3(1, 80, 1);
-		// 	chip.orientation = Q.unit;
-		// 	chip.addForce(_unitTime, ar.Vector3d(0, -1000000, 0), ar.Vector3d(1, 80, 1));
-		// 	// chip.addForce(_unitTime, ar.Vector3d(10, 0, 0), ar.Vector3d(0, 45, 1));
-		// 	// chip.addForce(_unitTime, ar.Vector3d(-10, 0, 0), ar.Vector3d(0, 45, -1));
-		// 	_model.addChip(chip);
-		// }
-		
 		{
 			auto chip = new Chip!(N);
-			chip.position = V3(0, 45, 0);
+			chip.position = V3(1, 80, 1);
 			chip.orientation = Q.unit;
-			chip.addForce(_unitTime, ar.Vector3d(1000, -200, 5000), ar.Vector3d(0, 45, 0));
+			chip.addForce(_unitTime, ar.Vector3d(0, -100000, 0), ar.Vector3d(1, 80, 1));
+			// chip.addForce(_unitTime, ar.Vector3d(10, 0, 0), ar.Vector3d(0, 45, 1));
+			// chip.addForce(_unitTime, ar.Vector3d(-10, 0, 0), ar.Vector3d(0, 45, -1));
 			_model.addChip(chip);
 		}
+		
+		// {
+		// 	auto chip = new Chip!(N);
+		// 	chip.position = V3(200, 45, 0);
+		// 	chip.orientation = Q.unit;
+		// 	chip.addForce(_unitTime, V3(-210*100, 0, 0), V3(200, 45.0, 0));
+		// 	_model.addChip(chip);
+		// }
 		import std.algorithm : map;
 		import std.array : array;
 		import std.conv;
@@ -313,8 +313,8 @@ class TestApp : ar.BaseApp{
 			.add(new ar.Partition)
 			.add(new ar.Label(filename))
 			.add(new ar.Partition)
-			.add(new ar.Slider!float("rotate", c, -180, 180))
-			.add(new ar.Slider!float("height", h, 0, 100))
+			.add(new ar.Slider!float("rotate", c, -360, 360))
+			.add(new ar.Slider!float("height", h, -10, 10))
 			.add(new ar.Slider!float("distance", d, 0, 100))
 		);
 	}
@@ -322,13 +322,16 @@ class TestApp : ar.BaseApp{
 	void update(){
 		engine.unitTime = _unitTime;
 		engine.update(_dynamicEntities, _constraintPair);
+		// writeln("speed", _model.chips[0].entity.linearVelocity.norm*3.6, "km/h");
 	}
 	
 	void draw(){
-		camera.position = ar.Vector3f(0, h, -d);
+		// camera.position = ar.Vector3f(0, h, -d);
+		camera.target = cast(ar.Vector3f)(_model.chips[0].position);
+		camera.position = cast(ar.Vector3f)( _model.chips[0].position+V3(-d*sin(c/360.0*PI), h, -d*cos(c/360.0*PI)) );
 		camera.begin;
 			ar.pushMatrix;
-			ar.rotate(c, 0, 1, 0);
+			// ar.rotate(c, 0, 1, 0);
 			ar.setColor(255, 255, 255);
 			_land.draw;
 			ar.pushStyle;
@@ -346,6 +349,9 @@ class TestApp : ar.BaseApp{
 		gui.draw;
 		fpsUseRate = ar.fpsUseRate*100.0;
 		// fpsUseRate.writeln;
+	}
+	
+	void keyPressed(int str){
 	}
 }
 

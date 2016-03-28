@@ -96,11 +96,17 @@
 						- [x] biasの実装 [2016/03/27 (Sun) 18:30]
 							- [x] depthを渡す [2016/03/26 (Sat) 16:07]
 							- [x] timestepを渡す [2016/03/26 (Sat) 16:07]
+							
 						- [x] biasを考慮したimpulseの計算 [2016/03/27 (Sun) 18:30]
+						
 						
 						- [ ] friction
 							- [ ] impulseの計算
 								copy from CollidableConstraint without bias
+								
+					- [ ] ForceConstraint(DynamicEntity, Force)
+					
+					- [ ] TorqueConstraint(DynamicEntity, Torque)
 			
 		- [ ] ::Update内での並列化を行う
 		
@@ -163,3 +169,35 @@ ConstraintDetector
 			
 	ModelConstraintDetector
 ConstraintSolver
+
+- [x] 衝突すると壁抜けする場合が発生した [2016/03/28 (Mon) 13:59]
+	- 原因
+		作用点をポリゴンとrayの交点にしていたため，
+		dynamicなrayでの検出を行うとdynamicEntityのcoordinationから遥か遠くの座標がcontactPointに指定されてしまい，
+		rCrossMatrixの値が異常になった．
+	- 対策 
+		contactPointを, ポリゴンとrayの交点からrayの終点に変更した．
+		
+	initialImpulseの値がおかしい．x1の時よりもx10の場合の方が小さくなる．計算時の引数はvelovity, direction, jacDiagInvの3つ．
+	jacDiagInv  異常
+		jacDiagInv∝initialImpulse
+		x1よりx10の場合の方が小さくなる
+		inertiaの項が異常
+			applicationPointの値がおかしい?
+				作用点をポリゴンとrayの交点にしていたため，
+				dynamicなrayでの検出を行うとdynamicEntityのcoordinationから遥か遠くの座標がcontactPointに指定されてしまい，
+				rCrossMatrixの値が異常になっている．
+	log	
+		x1
+			relativeVelocity        immutable(Vector!(double, 3))([1.32, 0, 13.2])
+			distance        0.0293415
+			_jacDiagInv     23.5017
+			initialImpulse  169.723
+			deltaV  [Vector!(double, 3)([0, 5.68278, -3.71423]), Vector!(double, 3)([9.52413, -0.331996, -0.952413])]
+			
+		x10
+			relativeVelocity        immutable(Vector!(double, 3))([1.32, 0, 132])
+			distance        0.982611
+			_jacDiagInv     0.348967
+			initialImpulse  25.2015
+			deltaV  [Vector!(double, 3)([0, 0.843813, -0.551511]), Vector!(double, 3)([47.3598, -0.165089, -0.473598])]

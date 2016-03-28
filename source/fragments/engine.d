@@ -30,6 +30,7 @@ class Engine(NumericType){
 		void unitTime(in N t){
 			_unitTime = t;
 			_mapConstraintDetector.unitTime = t;
+			_constraintSolver.unitTime = t;
 			_integrator.unitTime = t;
 		}
 		

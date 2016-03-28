@@ -18,7 +18,7 @@ class Integrator(NumericType) {
 		
 		/++
 		++/
-		void unitTime(N t){_unitTime = t;}
+		void unitTime(in N t){_unitTime = t;}
 		
 		/++
 		++/
@@ -32,8 +32,6 @@ class Integrator(NumericType) {
 		
 		void integrate(ref DynamicEntity!(N)[] dynamicEntities){
 			foreach (entity; dynamicEntities) {
-				updateVelocitiesFromDelta(entity);
-				initDeltaVelocity(entity);
 				integratePosition(entity);
 				integrateOrientation(entity);
 			}
@@ -42,16 +40,6 @@ class Integrator(NumericType) {
 
 	private{
 		N _unitTime;
-		
-		void updateVelocitiesFromDelta(DynamicEntity!(N) entity){
-			entity.linearVelocity = entity.linearVelocity + entity.deltaLinearVelocity;
-			entity.angularVelocity = entity.angularVelocity + entity.deltaAngularVelocity;
-		}
-		
-		void initDeltaVelocity(DynamicEntity!(N) entity){
-			entity.deltaLinearVelocity = V3.zero;
-			entity.deltaAngularVelocity = V3.zero;
-		}
 		
 		void integratePosition(DynamicEntity!(N) entity){
 			with(entity){

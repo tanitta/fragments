@@ -66,6 +66,8 @@ class MapConstraintDetector(NumericType){
 					);
 				}
 			}
+			// import std.stdio;
+			// collisionConstraintPairs.writeln;
 			return collisionConstraintPairs;
 		}
 	}//private
