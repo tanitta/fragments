@@ -36,7 +36,7 @@ class Engine(NumericType){
 		
 		/++
 		++/
-		N unitTime(){return _unitTime;}
+		N unitTime()const{return _unitTime;}
 		
 		/++
 		++/

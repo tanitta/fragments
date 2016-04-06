@@ -122,7 +122,7 @@ private struct AABBNode(NumericType){
 			if(staticEntities.length > 1){
 				staticEntities.sortStaticEntitiesWithAxis!((in N a, in N b){return a<b;})(_boundingBox.majorAxis);
 					
-				auto splitPoint= staticEntities.length / 2;
+				immutable splitPoint= staticEntities.length / 2;
 				_nexts ~= AABBNode!(N)(staticEntities[0 .. splitPoint]);
 				_nexts ~= AABBNode!(N)(staticEntities[splitPoint.. $]);
 			}else{
@@ -202,7 +202,7 @@ private void drawBoundingBox(B)(B boundingBox){
 private int majorAxis(Numeric)(in BoundingBox!(Numeric) boundingbox){
 	import std.algorithm;
 	import std.math;
-	auto vec = boundingbox.end-boundingbox.start;
+	immutable vec = boundingbox.end-boundingbox.start;
 	return ( reduce!(fmax)(vec.data).among(vec[0], vec[1], vec[2])-1 );
 }
 unittest{

@@ -31,7 +31,6 @@ unittest{
 	assert(__traits(compiles,(){
 		ConstraintPair!N forceConstraint = forceConstraintPair!N(entity, V3.zero);
 	}));
-	assert(false);
 }
 
 /++
