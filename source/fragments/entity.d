@@ -126,3 +126,125 @@ interface DynamicEntity(NumericType) : Entity!(NumericType){
 		void deltaAngularVelocity(in V3);
 	}//public
 }//interface DynamicEntity
+
+template DynamicEntityProperties(NumericType){
+	alias N = NumericType;
+	alias V3 = ar.Vector!(N, 3);
+	alias Q = ar.Quaternion!(N);
+	alias M33 = ar.Matrix!(N, 3, 3);
+	
+	public{
+		///
+		N mass()const{return _mass;}
+
+		///
+		void mass(in N m){
+			_mass = m;
+			_massInv = N(1)/m;
+		}
+		
+		///
+		M33 inertia()const{return _inertia;};
+		
+		///
+		void inertia(in M33 inertia){
+			_inertia  = inertia;
+			_inertiaGlobal = _orientation.matrix33*_inertia*_orientation.matrix33.inverse;
+			_inertiaGlobalInv = _inertiaGlobal.inverse;
+		};
+		
+		///
+		M33 inertiaGlobal()const{return _inertiaGlobal;};
+		
+		///
+		N massInv()const{
+			return _massInv;
+		}
+		
+		M33 inertiaGlobalInv()const{
+			return _inertiaGlobalInv;
+		}
+		
+		///
+		V3 position()const{return _position;};
+		
+		///
+		void position(in V3 position){_position = position;};
+		
+		///
+		V3 positionPre()const{return _positionPre;};
+		
+		///
+		V3 linearVelocity()const{return _linearVelocity;};
+		
+		///
+		void linearVelocity(in V3 linearVelocity){_linearVelocity = linearVelocity;};
+		
+		///
+		Q orientation()const{return _orientation;};
+		
+		///
+		void orientation(in Q orientation){_orientation = orientation;};
+		
+		///
+		Q orientationPre()const{return _orientationPre;};
+		
+		///
+		V3 angularVelocity()const{return _angularVelocity;};
+		
+		///
+		void angularVelocity(in V3 angularVelocity){_angularVelocity = angularVelocity;};
+		
+		///
+		BoundingBox!(N) boundingBox()const{return _boundingBox;}
+		
+		///
+		const( Material!(N) ) material()const{
+			return _material;
+		}
+		
+		V3 deltaLinearVelocity()const{
+			return _deltaLinearVelocity;
+		}
+		
+		void deltaLinearVelocity(in V3 v){
+			_deltaLinearVelocity = v;
+		};
+		
+		V3 deltaAngularVelocity()const{
+			return _deltaAngularVelocity;
+		}
+		
+		void deltaAngularVelocity(in V3 v){
+			_deltaAngularVelocity = v;
+		}
+		
+		///
+		void updateProperties(in N unitTime){
+			_positionPre = _position;
+			_orientationPre = _orientation;
+			_inertiaGlobal = _orientation.matrix33*_inertiaGlobal*_orientation.matrix33.inverse;
+			_inertiaGlobalInv = _inertiaGlobal.inverse;
+			_boundingBox = BoundingBox!(N)(_position, _position-linearVelocity*unitTime, _margin);
+		}
+	}//public
+	
+	private{
+		N   _mass;
+		N   _massInv;
+		V3  _position = V3.zero;
+		V3  _positionPre = V3.zero;
+		V3  _linearVelocity = V3.zero;
+		Q   _orientation = Q.unit;
+		Q   _orientationPre = Q.unit;
+		V3  _angularVelocity = V3.zero;
+		M33 _inertia;
+		M33 _inertiaGlobal;
+		M33 _inertiaGlobalInv;
+		BoundingBox!(N) _boundingBox;
+		const( Material!(N) ) _material;
+		V3 _margin = V3.zero;
+		V3 _deltaLinearVelocity = V3.zero;
+		V3 _deltaAngularVelocity = V3.zero;
+	}//private
+}
