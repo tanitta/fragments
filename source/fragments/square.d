@@ -63,13 +63,6 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 			}
 			
 			// detectContactPoint(
-			// 	_position,
-			// 	_position+linearVelocity,
-			// 	staticEntity, 
-			// 	points
-			// );
-			
-			// detectContactPoint(
 			// 	_position-linearVelocity,
 			// 	_position,
 			// 	staticEntity, 
