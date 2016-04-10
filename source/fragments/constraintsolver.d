@@ -100,8 +100,13 @@ class ConstraintSolver(NumericType){
 				
 				immutable contactPoint = collisionConstraintPair.contactPoint;
 				
-				immutable depth = ( entity.position + entity.linearVelocity * _unitTime - contactPoint.coordination).dotProduct(contactPoint.normal);
-				// entity.position = entity.position - depth;
+				// immutable depth = ( entity.position + entity.linearVelocity * _unitTime - contactPoint.coordination).dotProduct(contactPoint.normal);
+				// immutable depth = (entity.linearVelocity * _unitTime).dotProduct(contactPoint.normal);
+				
+				// immutable depth = (contactPoint.applicationPoint - contactPoint.coordination).dotProduct(contactPoint.normal);
+				
+				immutable depth = contactPoint.distance * contactPoint.normal;
+				entity.position = entity.position + depth;
 				
 				import std.stdio;
 				writeln("depth\t", depth);
@@ -119,3 +124,5 @@ class ConstraintSolver(NumericType){
 		}
 	}//private
 }//class ConstraintSolver
+
+

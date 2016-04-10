@@ -24,10 +24,13 @@ template forceConstraintPair(NumericType) {
 unittest{
 	alias N = double;
 	alias V3 = ar.Vector!(N, 3);
+	
 	import fragments.material;
 	auto material = new Material!N;
+	
 	import fragments.square;
 	auto entity = new Square!N(material);
+	
 	assert(__traits(compiles,(){
 		ConstraintPair!N forceConstraint = forceConstraintPair!N(entity, V3.zero);
 	}));
