@@ -125,4 +125,30 @@ class ConstraintSolver(NumericType){
 	}//private
 }//class ConstraintSolver
 
+/++
++/
+private struct SolverBody(NumericType) {
+	alias N = NumericType;
+	alias V3 = ar.Vector!(N, 3);
+	alias M33 = ar.Matrix!(N, 3, 3);
+	
+	public{
+		CollisionConstraintPair!N[] collisionConstraintPairs;
+		DynamicEntity!N dynamicEntity;
+		V3 bias;
+		
+		V3 deltaLinearVelocity = V3.zero;
+		V3 deltaAngularVelocity = V3.zero;
+	}//public
 
+	private{
+	}//private
+}//struct SolverBody
+unittest{
+	assert(
+		__traits(compiles, (){
+			alias N = double;
+			auto solverBody = SolverBody!N();
+		})
+	);
+}
