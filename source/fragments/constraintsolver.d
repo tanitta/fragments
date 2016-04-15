@@ -31,14 +31,22 @@ class ConstraintSolver(NumericType){
 	private{
 		N _unitTime;
 		int _iterations = 10;
+		DynamicEntity!N[] _dynamicEntities;
 
 		void preProcess(
 			ref CollisionConstraintPair!N[] collisionConstraintPairs, 
 			ref ConstraintPair!N[] constraintPairs,
 		){
 			foreach (ref collisionConstraintPair; collisionConstraintPairs) {
+				_dynamicEntities ~= collisionConstraintPair.entity;
 			}
+			import std.algorithm.iteration:uniq;
+			import std.array;
+			_dynamicEntities = _dynamicEntities.uniq.array;
 			
+			foreach (ref entity; _dynamicEntities) {
+				entity.bias = V3.zero;
+			}
 			// foreach (ref constraintPair; constraintPairs) {
 			// 	// linear
 			// 	foreach (ref constraint; constraintPair.linearConstraints) {
@@ -79,7 +87,7 @@ class ConstraintSolver(NumericType){
 				// 	foreach (ref constraint; constraintPair.angularConstraints) {
 				//
 				// 	}
-				// }
+			// }
 
 			}
 		}
@@ -106,10 +114,16 @@ class ConstraintSolver(NumericType){
 				// immutable depth = (contactPoint.applicationPoint - contactPoint.coordination).dotProduct(contactPoint.normal);
 				
 				immutable depth = contactPoint.distance * contactPoint.normal;
-				entity.position = entity.position + depth;
+				if(entity.bias.norm < depth.norm){
+					entity.bias = depth;
+				}
 				
 				import std.stdio;
 				writeln("depth\t", depth);
+			}
+			
+			foreach (entity; _dynamicEntities) {
+				entity.position = entity.position + entity.bias;
 			}
 		}
 		
@@ -124,31 +138,3 @@ class ConstraintSolver(NumericType){
 		}
 	}//private
 }//class ConstraintSolver
-
-/++
-+/
-private struct SolverBody(NumericType) {
-	alias N = NumericType;
-	alias V3 = ar.Vector!(N, 3);
-	alias M33 = ar.Matrix!(N, 3, 3);
-	
-	public{
-		CollisionConstraintPair!N[] collisionConstraintPairs;
-		DynamicEntity!N dynamicEntity;
-		V3 bias;
-		
-		V3 deltaLinearVelocity = V3.zero;
-		V3 deltaAngularVelocity = V3.zero;
-	}//public
-
-	private{
-	}//private
-}//struct SolverBody
-unittest{
-	assert(
-		__traits(compiles, (){
-			alias N = double;
-			auto solverBody = SolverBody!N();
-		})
-	);
-}

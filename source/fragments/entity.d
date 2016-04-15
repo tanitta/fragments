@@ -124,6 +124,10 @@ interface DynamicEntity(NumericType) : Entity!(NumericType){
 		V3 deltaAngularVelocity()const;
 		
 		void deltaAngularVelocity(in V3);
+		
+		V3 bias()const;
+		
+		void bias(in V3);
 	}//public
 }//interface DynamicEntity
 
@@ -219,6 +223,14 @@ template DynamicEntityProperties(NumericType){
 			_deltaAngularVelocity = v;
 		}
 		
+		V3 bias()const{
+			return _bias;
+		}
+		
+		void bias(in V3 b){
+			_bias = b;
+		}
+		
 		///
 		void updateProperties(in N unitTime){
 			_positionPre = _position;
@@ -246,5 +258,6 @@ template DynamicEntityProperties(NumericType){
 		V3 _margin = V3.zero;
 		V3 _deltaLinearVelocity = V3.zero;
 		V3 _deltaAngularVelocity = V3.zero;
+		V3 _bias = V3.zero;
 	}//private
 }
