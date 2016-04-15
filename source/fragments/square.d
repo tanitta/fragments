@@ -49,8 +49,6 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 				);
 				
 				if(!isDetectStaticRay){
-					// immutable V3 rayVelocity = (angularVelocity*0.33).vectorProduct( _orientation.rotatedVector(ray) ) + linearVelocity*0.33;
-					
 					immutable V3 rayVelocity = _orientationPre.rotatedVector(ray)+_positionPre;
 					immutable V3 rayBeginGlobal    = _orientation.rotatedVector(ray)+_position - rayVelocity;
 					immutable V3 rayEndGlobal    = _orientation.rotatedVector(ray)+_position;

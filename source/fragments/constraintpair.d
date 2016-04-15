@@ -124,24 +124,40 @@ struct CollisionConstraintPair(NumericType) {
 			immutable slop = N(0);
 			immutable biasTerm = (bias * fmax(N(0), contactPoint.distance+slop))/unitTime;
 			
+			immutable jacDiagInv = this.jacDiagInv(
+				applicationPoint,
+				dynamicEntity.massInv,
+				dynamicEntity.inertiaGlobalInv,
+				staticEntity.normal
+			);
+			
 			collisionConstraint = CollisionConstraint!N(
 				relativeVelocity,
-				jacDiagInv(
-					applicationPoint,
-					dynamicEntity.massInv,
-					dynamicEntity.inertiaGlobalInv,
-					staticEntity.normal
-					),
+				jacDiagInv, 
 				applicationPoint, 
 				staticEntity.normal,
 				biasTerm,
 			);
 			
 			// friction constraint
-			// 	(staticEntity.vertices[1] - staticEntity.vertices[0]).normalized, 
+			// _dynamicFriction = dynamicEntity.material.
 			
-			// friction constraint
-			// 	constraints[0].axis.vectorProduct(constraints[1].axis), 
+			_staticFriction = (dynamicEntity.material.staticFriction * staticEntity.material.staticFriction)^^N(0.5);
+			_dynamicFriction = (dynamicEntity.material.dynamicFriction * staticEntity.material.dynamicFriction)^^N(0.5);
+			
+			
+			V3[2] frictionAxes;
+			frictionAxes[0] = (staticEntity.vertices[1] - staticEntity.vertices[0]).normalized;
+			frictionAxes[1] = frictionAxes[0].vectorProduct(staticEntity.normal);
+			
+			foreach (int index, frictionAxis; frictionAxes) {
+				frictionConstraints[index] = FrictionConstraint!N(
+					relativeVelocity,
+					jacDiagInv,
+					applicationPoint,
+					frictionAxis,
+				);
+			}
 		}
 		
 		/++
@@ -155,11 +171,28 @@ struct CollisionConstraintPair(NumericType) {
 		/++
 		+/
 		CollisionConstraint!(N) collisionConstraint;
+		
+		/++
+		+/
+		N dynamicFriction()const{
+			return _dynamicFriction;
+		}
+		
+		/++
+		+/
+		N staticFriction()const{
+			return _staticFriction;
+		}
+		
+		FrictionConstraint!(N)[2] frictionConstraints;
 	}//public
 
 	private{
 		DynamicEntity!(N) _entity;
 		ContactPoint!(N) _contactPoint;
+		
+		N _staticFriction;
+		N _dynamicFriction;
 		
 		N jacDiagInv(
 			V3 applicationPoint,
@@ -227,6 +260,7 @@ struct CollisionConstraint(NumericType) {
 			
 			import std.algorithm;
 			immutable N deltaImpluse = (_initialImpulse - impulse(deltaVelocity)).clamp(0, N.nan);
+			_currentImpulse = deltaImpluse;
 			
 			immutable V3 deltaLinearVelocity = deltaImpluse * dynamicEntity.massInv * _direction;
 			immutable V3 deltaAngularVelocity = deltaImpluse * dynamicEntity.inertiaGlobalInv * _applicationPoint.vectorProduct(_direction);
@@ -236,6 +270,10 @@ struct CollisionConstraint(NumericType) {
 				deltaAngularVelocity,
 			];
 			return v;
+		};
+		
+		N currentImpulse()const{
+			return _currentImpulse;
 		};
 	}//public
 
@@ -256,6 +294,8 @@ struct CollisionConstraint(NumericType) {
 			
 			return impulse;
 		}
+		
+		N _currentImpulse = N(0);
 	}//private
 }//struct CollisionConstraint
 
@@ -267,14 +307,45 @@ struct FrictionConstraint(NumericType) {
 	alias ConstraintCondition = V3[2] delegate(ConstraintPair!N);
 	public{
 		this(
-			N jacDiagInv,
-			V3 aplicationPoint, 
-			V3 direction, 
-		){
+			in V3 velocity,
+			in N jacDiagInv,
+			in V3 applicationPoint, 
+			in V3 direction, 
+		)in{
+			import std.math;
+			assert(!isNaN(velocity[0]));
+			assert(!isNaN(jacDiagInv));
+			assert(!isNaN(applicationPoint[0]));
+			assert(!isNaN(direction[0]));
+		}body{
+			_jacDiagInv = jacDiagInv;
+			_applicationPoint = applicationPoint;
+			_direction= direction;
+			
+			_initialImpulse = -impulse(velocity);
 		}
 		
-		V3[2] deltaVelocities(){
-			V3[2] v = [V3.zero, V3.zero];
+		/// 
+		V3[2] deltaVelocities(DynamicEntity!N dynamicEntity)
+		in{
+			assert(dynamicEntity);
+			import std.math;
+			assert(!isNaN(dynamicEntity.deltaLinearVelocity[0]));
+			assert(!isNaN(dynamicEntity.deltaAngularVelocity[0]));
+			assert(!isNaN(_applicationPoint[0]));
+		}body{
+			immutable V3 deltaVelocity = dynamicEntity.deltaLinearVelocity + dynamicEntity.deltaAngularVelocity.vectorProduct(_applicationPoint);
+			
+			import std.algorithm;
+			immutable N deltaImpluse = (_initialImpulse - impulse(deltaVelocity)).clamp(lowerLimit, upperLimit);
+			
+			immutable V3 deltaLinearVelocity = deltaImpluse * dynamicEntity.massInv * _direction;
+			immutable V3 deltaAngularVelocity = deltaImpluse * dynamicEntity.inertiaGlobalInv * _applicationPoint.vectorProduct(_direction);
+			
+			immutable V3[2] v = [
+				deltaLinearVelocity,
+				deltaAngularVelocity,
+			];
 			return v;
 		};
 		
@@ -283,6 +354,20 @@ struct FrictionConstraint(NumericType) {
 	}//public
 
 	private{
-		V3 _initialImpulse;
+		N _jacDiagInv;
+		V3 _applicationPoint;
+		V3 _direction;
+		
+		N _initialImpulse;
+		
+		N impulse(in V3 deltaVelocity)const
+		in{
+			import std.math;
+			assert(!isNaN(deltaVelocity[0]));
+		}body{
+			immutable N impulse = _jacDiagInv * (_direction.dotProduct(deltaVelocity));
+			
+			return impulse;
+		}
 	}//private
 }//struct CollisionConstraint

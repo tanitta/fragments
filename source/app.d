@@ -275,23 +275,23 @@ class TestApp : ar.BaseApp{
 		// 	_model.addChip(chip);
 		// }
 		
-		{
-			auto chip = new Chip!(N);
-			chip.position = V3(3, 80, 2);
-			chip.orientation = Q.unit;
-			chip.addForce(_unitTime, ar.Vector3d(0, -10000, 0), ar.Vector3d(3, 80, 2));
-			// chip.addForce(_unitTime, ar.Vector3d(10, 0, 0), ar.Vector3d(0, 45, 1));
-			// chip.addForce(_unitTime, ar.Vector3d(-10, 0, 0), ar.Vector3d(0, 45, -1));
-			_model.addChip(chip);
-		}
-		
 		// {
 		// 	auto chip = new Chip!(N);
-		// 	chip.position = V3(200, 50, 0);
+		// 	chip.position = V3(3, 80, 2);
 		// 	chip.orientation = Q.unit;
-		// 	chip.addForce(_unitTime, V3(210*1200*5, 0, 0), V3(200, 50.0, 0));
+		// 	chip.addForce(_unitTime, ar.Vector3d(1000, -10000, 0), ar.Vector3d(3, 80, 2));
+		// 	// chip.addForce(_unitTime, ar.Vector3d(10, 0, 0), ar.Vector3d(0, 45, 1));
+		// 	// chip.addForce(_unitTime, ar.Vector3d(-10, 0, 0), ar.Vector3d(0, 45, -1));
 		// 	_model.addChip(chip);
 		// }
+		
+		{
+			auto chip = new Chip!(N);
+			chip.position = V3(200, 50, 0);
+			chip.orientation = Q.unit;
+			chip.addForce(_unitTime, V3(210*120*5, 0, 0), V3(200, 50.0, 0));
+			_model.addChip(chip);
+		}
 		
 		import std.algorithm : map;
 		import std.array : array;

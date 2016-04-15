@@ -72,9 +72,28 @@ class ConstraintSolver(NumericType){
 				foreach (ref collisionConstraintPair; collisionConstraintPairs) {
 					DynamicEntity!N entity = collisionConstraintPair.entity;
 					
-					V3[2] deltaVelocities = collisionConstraintPair.collisionConstraint.deltaVelocities(entity);
-					entity.deltaLinearVelocity  = entity.deltaLinearVelocity + deltaVelocities[0];
-					entity.deltaAngularVelocity = entity.deltaAngularVelocity + deltaVelocities[1];
+					//collision
+					{
+						V3[2] deltaVelocities = collisionConstraintPair.collisionConstraint.deltaVelocities(entity);
+						entity.deltaLinearVelocity  = entity.deltaLinearVelocity + deltaVelocities[0];
+						entity.deltaAngularVelocity = entity.deltaAngularVelocity + deltaVelocities[1];
+						
+						import std.math;
+						immutable maxFriction = fabs(collisionConstraintPair.collisionConstraint.currentImpulse) * collisionConstraintPair.dynamicFriction;
+						foreach (ref frictionConstraint; collisionConstraintPair.frictionConstraints) {
+							frictionConstraint.lowerLimit = -maxFriction;
+							frictionConstraint.upperLimit = maxFriction;
+						}
+					}
+					
+					//friction
+					{
+						foreach (int index, frictionConstraint; collisionConstraintPair.frictionConstraints) {
+							V3[2] deltaVelocities = frictionConstraint.deltaVelocities(entity);
+							entity.deltaLinearVelocity  = entity.deltaLinearVelocity + deltaVelocities[0];
+							entity.deltaAngularVelocity = entity.deltaAngularVelocity + deltaVelocities[1];
+						}
+					}
 				}
 				
 				// foreach (ref constraintPair; constraintPairs) {
@@ -107,12 +126,6 @@ class ConstraintSolver(NumericType){
 				initDeltaVelocity(entity);
 				
 				immutable contactPoint = collisionConstraintPair.contactPoint;
-				
-				// immutable depth = ( entity.position + entity.linearVelocity * _unitTime - contactPoint.coordination).dotProduct(contactPoint.normal);
-				// immutable depth = (entity.linearVelocity * _unitTime).dotProduct(contactPoint.normal);
-				
-				// immutable depth = (contactPoint.applicationPoint - contactPoint.coordination).dotProduct(contactPoint.normal);
-				
 				immutable depth = contactPoint.distance * contactPoint.normal;
 				if(entity.bias.norm < depth.norm){
 					entity.bias = depth;
