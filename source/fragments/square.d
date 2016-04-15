@@ -49,7 +49,9 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 				);
 				
 				if(!isDetectStaticRay){
-					immutable V3 rayVelocity = (angularVelocity*0.33).vectorProduct( _orientation.rotatedVector(ray) ) + linearVelocity*0.33;
+					// immutable V3 rayVelocity = (angularVelocity*0.33).vectorProduct( _orientation.rotatedVector(ray) ) + linearVelocity*0.33;
+					
+					immutable V3 rayVelocity = _orientationPre.rotatedVector(ray)+_positionPre;
 					immutable V3 rayBeginGlobal    = _orientation.rotatedVector(ray)+_position - rayVelocity;
 					immutable V3 rayEndGlobal    = _orientation.rotatedVector(ray)+_position;
 					
@@ -63,7 +65,7 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 			}
 			
 			detectContactPoint(
-				_position-linearVelocity,
+				_positionPre,
 				_position,
 				staticEntity, 
 				points
@@ -92,7 +94,7 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 			immutable pEnd = rayEndGlobal - staticEntity.vertices[0];
 			immutable pNormal= staticEntity.normal;
 			
-			immutable isCollidingLineToPlane = ( (pBegin.dotProduct(pNormal)) * (pEnd.dotProduct(pNormal)) <= 0 );
+			immutable isCollidingLineToPlane = ( (pBegin.dotProduct(pNormal)) * (pEnd.dotProduct(pNormal)) <= N(0) );
 			if( isCollidingLineToPlane ){
 				import std.math;
 				immutable d1 = pNormal.dotProduct(pBegin);

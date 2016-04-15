@@ -112,7 +112,10 @@ interface DynamicEntity(NumericType) : Entity!(NumericType){
 		const( Material!(N) ) material()const;
 		
 		///
-		void updateProperties(in N unitTime);
+		void updatePreStatus();
+			
+		///
+		void updateProperties();
 		
 		///
 		ContactPoint!(N)[] contactPoints(in StaticEntity!(N) staticEntity)const;
@@ -230,14 +233,16 @@ template DynamicEntityProperties(NumericType){
 		void bias(in V3 b){
 			_bias = b;
 		}
-		
-		///
-		void updateProperties(in N unitTime){
+		void updatePreStatus(){
 			_positionPre = _position;
 			_orientationPre = _orientation;
+			
+		}
+		///
+		void updateProperties(){
 			_inertiaGlobal = _orientation.matrix33*_inertiaGlobal*_orientation.matrix33.inverse;
 			_inertiaGlobalInv = _inertiaGlobal.inverse;
-			_boundingBox = BoundingBox!(N)(_position, _position-linearVelocity*unitTime, _margin);
+			_boundingBox = BoundingBox!(N)(_position, _positionPre, _margin);
 		}
 	}//public
 	

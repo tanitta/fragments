@@ -13,7 +13,10 @@ class Polygon(NumericType) : StaticEntity!(NumericType){
 	public{
 		///
 		this(in V3[3] v, in Material!(N) m, V3 clearance = V3.zero){
-			_vertices = v;
+			immutable center = (v[0]+v[1]+v[2])/N(3.0);
+			foreach (int index, vertex; v) {
+				_vertices[index] = vertex+(vertex-center).normalized*0.01;
+			}
 			
 			auto tmpStart = V3();
 			auto tmpEnd = V3();
@@ -24,7 +27,7 @@ class Polygon(NumericType) : StaticEntity!(NumericType){
 			}
 			_boundingBox = BoundingBox!(N)(tmpStart-clearance, tmpEnd+clearance);
 			
-			_normal = ( v[1]-v[2] ).vectorProduct( v[2]-v[0] ).normalized;
+			_normal = ( _vertices[1]-_vertices[2] ).vectorProduct( _vertices[2]-_vertices[0] ).normalized;
 			
 			_material = m;
 		}
@@ -53,7 +56,7 @@ class Polygon(NumericType) : StaticEntity!(NumericType){
 	}//public
 
 	private{
-		const( ar.Vector!(N, 3)[3] ) _vertices;
+		ar.Vector!(N, 3)[3] _vertices;
 		const BoundingBox!(N) _boundingBox;
 		const( V3 ) _normal;
 		const( Material!(N) ) _material;

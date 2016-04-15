@@ -85,13 +85,21 @@ class Chip(NumericType){
 		void draw()const{
 			ar.pushMatrix;
 				ar.translate(entity.position);
+				
+				ar.setColor(64, 64, 255);
+				ar.drawLine(V3.zero, -entity.linearVelocity*0.33);
+				ar.setColor(255, 255, 255);
+				
 				ar.multMatrix(entity.orientation.matrix44);
+				
 				ar.drawAxis(1.0);
+				
 				ar.pushStyle;{
 					ar.setColor(64, 64, 64);
 					ar.setLineWidth = 2;
 					drawBoxFrame(V3(-0.3, -0.02, -0.3), V3(0.3, 0.02, 0.3));
 				}ar.popStyle;
+				
 			ar.popMatrix;
 			entity.boundingBox.drawBoundingBox;
 		}
@@ -279,11 +287,12 @@ class TestApp : ar.BaseApp{
 		
 		// {
 		// 	auto chip = new Chip!(N);
-		// 	chip.position = V3(200, 45, 0);
+		// 	chip.position = V3(200, 50, 0);
 		// 	chip.orientation = Q.unit;
-		// 	chip.addForce(_unitTime, V3(-210*100, 0, 0), V3(200, 45.0, 0));
+		// 	chip.addForce(_unitTime, V3(210*1200*5, 0, 0), V3(200, 50.0, 0));
 		// 	_model.addChip(chip);
 		// }
+		
 		import std.algorithm : map;
 		import std.array : array;
 		import std.conv;
@@ -322,6 +331,7 @@ class TestApp : ar.BaseApp{
 	void update(){
 		engine.unitTime = _unitTime;
 		engine.update(_dynamicEntities, _constraintPair);
+		
 		// writeln("speed", _model.chips[0].entity.linearVelocity.norm*3.6, "km/h");
 	}
 	
@@ -352,6 +362,8 @@ class TestApp : ar.BaseApp{
 	}
 	
 	void keyPressed(int str){
+		// engine.unitTime = _unitTime;
+		// engine.update(_dynamicEntities, _constraintPair);
 	}
 }
 

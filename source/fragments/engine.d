@@ -52,11 +52,17 @@ class Engine(NumericType){
 				_constraintSolver.solve(collisionConstraintPairs, constraintPairs);
 			}
 			
+			foreach (entity; dynamicEntities) {
+				with(entity){
+					updatePreStatus;
+				}
+			}
+			
 			_integrator.integrate( dynamicEntities );
 			
 			foreach (entity; dynamicEntities) {
 				with(entity){
-					updateProperties(_unitTime);
+					updateProperties;
 				}
 			}
 		};

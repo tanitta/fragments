@@ -119,7 +119,7 @@ class ConstraintSolver(NumericType){
 				}
 				
 				import std.stdio;
-				writeln("depth\t", depth);
+				writeln("depth\t", depth.norm);
 			}
 			
 			foreach (entity; _dynamicEntities) {
