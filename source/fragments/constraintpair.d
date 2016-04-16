@@ -3,24 +3,70 @@ module fragments.constraintpair;
 import fragments.entity;
 import fragments.contactpoint;
 import armos;
+
 /++
 +/
-template forceConstraintPair(NumericType) {
-	alias N = NumericType;
-	alias V3 = ar.Vector!(N, 3);
+interface ConstraintPair(NumericType) {
 	public{
-		ConstraintPair!N forceConstraintPair(DynamicEntity!N entity, in V3 force){
-			auto constraintPair = ConstraintPair!N(entity);
-			// constraintPair.linearConstraints[0] = Constraint!N(
-			// 	force.normalized
-			// );
-			return constraintPair;
-		}
 	}//public
 
 	private{
 	}//private
-}//template forceConstraintPair
+}//interface ConstraintPair
+
+/++
++/
+struct LinearImpulseConstraint(NumericType) {
+	alias N = NumericType;
+	alias V3 = ar.Vector!(N, 3);
+	
+	public{
+		this(DynamicEntity!N dynamicEntity, in V3 impulse){
+			this.entity = dynamicEntity; 
+			_impulse = impulse;
+		}
+		/// 
+		V3[2] deltaVelocities(DynamicEntity!N dynamicEntity)
+		in{
+			assert(dynamicEntity);
+			import std.math;
+			assert(!isNaN(dynamicEntity.deltaLinearVelocity[0]));
+		}body{
+			immutable V3 deltaLinearVelocity = -_impulse * dynamicEntity.massInv;
+			immutable V3[2] v = [
+				deltaLinearVelocity,
+				V3.zero,
+			];
+			return v;
+		};
+		
+		DynamicEntity!N entity;
+	}//public
+
+	private{
+		V3 _impulse;
+		N _initialImpulse;
+	}//private
+}//struct ForceConstraint
+
+/++
++/
+// template forceConstraintPair(NumericType) {
+// 	alias N = NumericType;
+// 	alias V3 = ar.Vector!(N, 3);
+// 	public{
+// 		ConstraintPair!N forceConstraintPair(DynamicEntity!N entity, in V3 force){
+// 			auto constraintPair = ConstraintPair!N(entity);
+// 			// constraintPair.linearConstraints[0] = Constraint!N(
+// 			// 	force.normalized
+// 			// );
+// 			return constraintPair;
+// 		}
+// 	}//public
+//
+// 	private{
+// 	}//private
+// }//template forceConstraintPair
 unittest{
 	alias N = double;
 	alias V3 = ar.Vector!(N, 3);
@@ -31,68 +77,69 @@ unittest{
 	import fragments.square;
 	auto entity = new Square!N(material);
 	
-	assert(__traits(compiles,(){
-		ConstraintPair!N forceConstraint = forceConstraintPair!N(entity, V3.zero);
-	}));
+	// assert(__traits(compiles,(){
+	// 	ConstraintPair!N forceConstraint = forceConstraintPair!N(entity, V3.zero);
+	// }));
 }
+
 
 /++
 ++/
-struct ConstraintPair(NumericType) {
-	alias N = NumericType;
-	alias V3 = ar.Vector!(N, 3);
-	
-	public{
-		this(DynamicEntity!(N) entityA, DynamicEntity!(N) entityB = null){
-			_entities[0] = entityA;
-			_entities[1] = entityB;
-		}
-		
-		DynamicEntity!(N)[2] entities(){return _entities;};
-		
-		Constraint!(N)[3] linearConstraints;
-		Constraint!(N)[3] angularConstraints;
-		
-	}//public
-
-	private{
-		DynamicEntity!(N)[2] _entities;
-	}//private
-}//class ConstraintPair
+// struct ConstraintPair(NumericType) {
+// 	alias N = NumericType;
+// 	alias V3 = ar.Vector!(N, 3);
+//	
+// 	public{
+// 		this(DynamicEntity!(N) entityA, DynamicEntity!(N) entityB = null){
+// 			_entities[0] = entityA;
+// 			_entities[1] = entityB;
+// 		}
+//		
+// 		DynamicEntity!(N)[2] entities(){return _entities;};
+//		
+// 		Constraint!(N)[3] linearConstraints;
+// 		Constraint!(N)[3] angularConstraints;
+//		
+// 	}//public
+//
+// 	private{
+// 		DynamicEntity!(N)[2] _entities;
+// 	}//private
+// }//class ConstraintPair
 
 /++
 +/
-struct Constraint(NumericType) {
-	alias N = NumericType;
-	alias V3 = ar.Vector!(N, 3);
-	alias ImpulseFunction = N delegate(V3 deltaVelocity);
-	
-	public{
-		// ContactPoint!(N) contactPoint;
-		this(
-			in V3 initialDeltaVelocity,
-			in V3 applicationPoint, 
-			in V3 axis,
-			in N biasTerm, 
-			in ImpulseFunction impulseFunction,
-		){
-			_impulseFunction = impulseFunction;
-			_axis = axis;
-			_initialImpulse = _impulseFunction(initialDeltaVelocity);
-		}
-		
-		@property{
-			V3 axis(){return _axis;};
-			ImpulseFunction _impulseFunction;
-			V3 initialImpulse(){return _initialImpulse;};
-		}
-	}//public
-
-	private{
-		V3 _axis;
-		V3 _initialImpulse;
-	}//private
-}//struct Constraint
+// struct Constraint(NumericType) {
+// 	alias N = NumericType;
+// 	alias V3 = ar.Vector!(N, 3);
+// 	alias ImpulseFunction = N delegate(V3 deltaVelocity);
+//	
+// 	public{
+// 		// ContactPoint!(N) contactPoint;
+// 		this(
+// 			in V3 initialDeltaVelocity,
+// 			in V3 applicationPoint, 
+// 			in V3 axis,
+// 			in N biasTerm, 
+// 			in ImpulseFunction impulseFunction,
+// 		){
+// 			_impulseFunction = impulseFunction;
+// 			_axis = axis;
+// 			_initialImpulse = _impulseFunction(initialDeltaVelocity);
+// 		}
+//		
+// 		@property{
+// 			V3 axis(){return _axis;};
+// 			ImpulseFunction _impulseFunction;
+// 			V3 initialImpulse(){return _initialImpulse;};
+// 		}
+// 	}//public
+//
+// 	private{
+// 		V3 _axis;
+// 		V3 _initialImpulse;
+// 	}//private
+// }//struct Constraint
 
 /++
 +/
@@ -120,8 +167,8 @@ struct CollisionConstraintPair(NumericType) {
 			
 			
 			import std.math;
-			immutable bias = 0.0;
-			immutable slop = N(0);
+			immutable bias = 0.00;
+			immutable slop = N(0.0);
 			immutable biasTerm = (bias * fmax(N(0), contactPoint.distance+slop))/unitTime;
 			
 			immutable jacDiagInv = this.jacDiagInv(
@@ -304,7 +351,6 @@ struct CollisionConstraint(NumericType) {
 struct FrictionConstraint(NumericType) {
 	alias N = NumericType;
 	alias V3 = ar.Vector!(N, 3);
-	alias ConstraintCondition = V3[2] delegate(ConstraintPair!N);
 	public{
 		this(
 			in V3 velocity,

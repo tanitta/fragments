@@ -78,9 +78,11 @@
 							- [x] impulseの計算 [2016/04/16 (Sat) 00:56]
 								copy from CollidableConstraint without bias
 								
-					- [ ] ForceConstraint(DynamicEntity, Force)
+					- [x] ForceConstraint(DynamicEntity, Force) [2016/04/17 (Sun) 05:23]
 					
 					- [ ] TorqueConstraint(DynamicEntity, Torque)
+					
+					- [ ] accumImpulse
 			
 		- [ ] ::Update内での並列化を行う
 		

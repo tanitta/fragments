@@ -21,10 +21,16 @@ class ConstraintSolver(NumericType){
 		void solve(
 			ref CollisionConstraintPair!N[] collisionConstraintPairs,
 			ref ConstraintPair!N[] constraintPairs,
+			ref LinearImpulseConstraint!N[] linearImpulseConstraints,
+			ref DynamicEntity!N[] dynamicEntities,
 		){
 			preProcess(collisionConstraintPairs, constraintPairs);
-			iterate(collisionConstraintPairs, constraintPairs);
-			postProcess(collisionConstraintPairs, constraintPairs);
+			iterate(
+				collisionConstraintPairs,
+				constraintPairs,
+				linearImpulseConstraints
+			);
+			postProcess(collisionConstraintPairs, constraintPairs, dynamicEntities);
 		}
 	}//public
 
@@ -63,11 +69,21 @@ class ConstraintSolver(NumericType){
 		void iterate(
 			ref CollisionConstraintPair!N[] collisionConstraintPairs, 
 			ref ConstraintPair!N[] constraintPairs,
+			ref LinearImpulseConstraint!N[] linearImpulseConstraints,
 		){
 			
 			import fragments.entity;
 			//iteration
 			for (int i = 0; i < _iterations; i++) {
+				//force
+				foreach (linearImpulseConstraint; linearImpulseConstraints) {
+					import std.stdio;
+					auto entity = linearImpulseConstraint.entity;
+					V3[2] deltaVelocities = linearImpulseConstraint.deltaVelocities(entity);
+					entity.deltaLinearVelocity  = entity.deltaLinearVelocity + deltaVelocities[0]/_iterations;
+					entity.deltaAngularVelocity = entity.deltaAngularVelocity + deltaVelocities[1]/_iterations;
+				}
+				
 				// collisionConstraint;
 				foreach (ref collisionConstraintPair; collisionConstraintPairs) {
 					DynamicEntity!N entity = collisionConstraintPair.entity;
@@ -96,6 +112,8 @@ class ConstraintSolver(NumericType){
 					}
 				}
 				
+				
+				
 				// foreach (ref constraintPair; constraintPairs) {
 				// 	// linear
 				// 	foreach (ref constraint; constraintPair.linearConstraints) {
@@ -114,29 +132,31 @@ class ConstraintSolver(NumericType){
 		void postProcess(
 			ref CollisionConstraintPair!N[] collisionConstraintPairs, 
 			ref ConstraintPair!N[] constraintPairs,
+			ref DynamicEntity!N[] dynamicEntities,
 		)in{
 			import std.math;
 			assert(!isNaN(_unitTime));
 		}body{
+			//apply deltaVelocity
+			foreach (entity; dynamicEntities) {
+				updateVelocitiesFromDelta(entity);
+				initDeltaVelocity(entity);
+			}
+			
+			//bias
 			import fragments.contactpoint;
 			foreach (ref collisionConstraintPair; collisionConstraintPairs) {
 				auto entity = collisionConstraintPair.entity;
 				
-				updateVelocitiesFromDelta(entity);
-				initDeltaVelocity(entity);
-				
 				immutable contactPoint = collisionConstraintPair.contactPoint;
 				immutable depth = contactPoint.distance * contactPoint.normal;
-				if(entity.bias.norm < depth.norm){
-					entity.bias = depth;
+				if(depth.dotProduct(entity.bias) < depth.norm){
+					entity.bias = entity.bias - (depth.dotProduct(entity.bias) - depth.norm)*depth.normalized;
 				}
-				
-				import std.stdio;
-				writeln("depth\t", depth.norm);
 			}
 			
 			foreach (entity; _dynamicEntities) {
-				entity.position = entity.position + entity.bias;
+				entity.position = entity.position + entity.bias*1.0001;
 			}
 		}
 		

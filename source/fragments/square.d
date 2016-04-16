@@ -36,8 +36,6 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 		
 		///
 		ContactPoint!(N)[] contactPoints(in StaticEntity!(N) staticEntity)const{
-			// import std.stdio;
-			// "bb".writeln;
 			ContactPoint!(N)[] points;
 			
 			foreach (ray; _rays) {
@@ -52,7 +50,6 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 					immutable V3 rayVelocity = _orientationPre.rotatedVector(ray)+_positionPre;
 					immutable V3 rayBeginGlobal    = _orientation.rotatedVector(ray)+_position - rayVelocity;
 					immutable V3 rayEndGlobal    = _orientation.rotatedVector(ray)+_position;
-					
 					detectContactPoint(
 						rayBeginGlobal,
 						rayEndGlobal, 
@@ -100,7 +97,7 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 				immutable a = fabs(d1)/(fabs(d1)+fabs(d2));
 				immutable pContact = (N(1)-a)*pBegin + a*pEnd;
 				
-				immutable isBuried = (d2 < 0 && 0 <= d1);
+				immutable isBuried = (d2 <= 0 && 0 <= d1);
 				// immutable isBuried = (d2 < 0);
 				immutable isIncludedInPolygon =
 				( ( p1 - p0 ).vectorProduct(pContact-p0).dotProduct(pNormal) >= N(0) )&&

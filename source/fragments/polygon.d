@@ -15,7 +15,7 @@ class Polygon(NumericType) : StaticEntity!(NumericType){
 		this(in V3[3] v, in Material!(N) m, V3 clearance = V3.zero){
 			immutable center = (v[0]+v[1]+v[2])/N(3.0);
 			foreach (int index, vertex; v) {
-				_vertices[index] = vertex+(vertex-center).normalized*0.01;
+				_vertices[index] = vertex+(vertex-center).normalized*0.05;
 			}
 			
 			auto tmpStart = V3();
