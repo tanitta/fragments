@@ -224,7 +224,7 @@ class TestApp : ar.BaseApp{
 	fragments.engine.Engine!(N) engine;
 	
 	DynamicEntity!(N)[] _dynamicEntities;
-	ConstraintPair!(N)[] _constraintPair;
+	LinkConstraintPair!(N)[] _linkConstraintPair;
 	
 	Land!(N) _land;
 	// Chip!(N) chip;
@@ -330,7 +330,7 @@ class TestApp : ar.BaseApp{
 	
 	void update(){
 		engine.unitTime = _unitTime;
-		engine.update(_dynamicEntities, _constraintPair);
+		engine.update(_dynamicEntities, _linkConstraintPair);
 		
 		// writeln("speed", _model.chips[0].entity.linearVelocity.norm*3.6, "km/h");
 	}

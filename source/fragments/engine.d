@@ -46,7 +46,10 @@ class Engine(NumericType){
 		
 		/++
 		++/
-		void update(ref DynamicEntity!(N)[] dynamicEntities, ref ConstraintPair!N[] constraintPairs){
+		void update(
+			ref DynamicEntity!(N)[] dynamicEntities,
+			ref LinkConstraintPair!N[] linkConstraintPairs
+		){
 			{
 				import armos;
 				alias V3 = ar.Vector!(N, 3);
@@ -58,7 +61,7 @@ class Engine(NumericType){
 				auto collisionConstraintPairs = _mapConstraintDetector.detectCollisionConstraintPairs( dynamicEntities );
 				_constraintSolver.solve(
 					collisionConstraintPairs,
-					constraintPairs,
+					linkConstraintPairs,
 					linearImpulseConstraints, 
 					dynamicEntities, 
 				);

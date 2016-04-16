@@ -69,18 +69,18 @@
 							
 						- [x] biasの実装 [2016/03/27 (Sun) 18:30]
 							- [x] depthを渡す [2016/03/26 (Sat) 16:07]
+							
 							- [x] timestepを渡す [2016/03/26 (Sat) 16:07]
 							
 						- [x] biasを考慮したimpulseの計算 [2016/03/27 (Sun) 18:30]
-						
 						
 						- [x] friction [2016/04/16 (Sat) 00:56]
 							- [x] impulseの計算 [2016/04/16 (Sat) 00:56]
 								copy from CollidableConstraint without bias
 								
-					- [x] ForceConstraint(DynamicEntity, Force) [2016/04/17 (Sun) 05:23]
+					- [x] LinearImpulseConstraint(DynamicEntity, LinearImpulse) [2016/04/17 (Sun) 05:23]
 					
-					- [ ] TorqueConstraint(DynamicEntity, Torque)
+					- [ ] AngularImpulseConstraint(DynamicEntity, AngularImpulse)
 					
 					- [ ] accumImpulse
 			
@@ -91,6 +91,7 @@
 			- [ ] 必要なパラメータ調べる
 				- [x] DynamicEntityに追加するプロパティ [2016/03/25 (Fri) 12:04]
 					- [x] deltaLinearVelocity [2016/03/26 (Sat) 22:13]
+					
 					- [x] deltaAngularVelocity [2016/03/26 (Sat) 22:13]
 					
 				- [ ] CollidableConstraintPairに追加するproperty

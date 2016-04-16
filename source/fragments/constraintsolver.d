@@ -20,17 +20,17 @@ class ConstraintSolver(NumericType){
 		++/
 		void solve(
 			ref CollisionConstraintPair!N[] collisionConstraintPairs,
-			ref ConstraintPair!N[] constraintPairs,
+			ref LinkConstraintPair!N[] linkConstraintPairs,
 			ref LinearImpulseConstraint!N[] linearImpulseConstraints,
 			ref DynamicEntity!N[] dynamicEntities,
 		){
-			preProcess(collisionConstraintPairs, constraintPairs);
+			preProcess(collisionConstraintPairs, linkConstraintPairs);
 			iterate(
 				collisionConstraintPairs,
-				constraintPairs,
+				linkConstraintPairs,
 				linearImpulseConstraints
 			);
-			postProcess(collisionConstraintPairs, constraintPairs, dynamicEntities);
+			postProcess(collisionConstraintPairs, linkConstraintPairs, dynamicEntities);
 		}
 	}//public
 
@@ -41,7 +41,7 @@ class ConstraintSolver(NumericType){
 
 		void preProcess(
 			ref CollisionConstraintPair!N[] collisionConstraintPairs, 
-			ref ConstraintPair!N[] constraintPairs,
+			ref LinkConstraintPair!N[] linkConstraintPairs,
 		){
 			foreach (ref collisionConstraintPair; collisionConstraintPairs) {
 				_dynamicEntities ~= collisionConstraintPair.entity;
@@ -68,7 +68,7 @@ class ConstraintSolver(NumericType){
 		
 		void iterate(
 			ref CollisionConstraintPair!N[] collisionConstraintPairs, 
-			ref ConstraintPair!N[] constraintPairs,
+			ref LinkConstraintPair!N[] linkConstraintPairs,
 			ref LinearImpulseConstraint!N[] linearImpulseConstraints,
 		){
 			
@@ -131,7 +131,7 @@ class ConstraintSolver(NumericType){
 		
 		void postProcess(
 			ref CollisionConstraintPair!N[] collisionConstraintPairs, 
-			ref ConstraintPair!N[] constraintPairs,
+			ref LinkConstraintPair!N[] linkConstraintPairs,
 			ref DynamicEntity!N[] dynamicEntities,
 		)in{
 			import std.math;

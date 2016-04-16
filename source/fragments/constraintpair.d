@@ -6,13 +6,34 @@ import armos;
 
 /++
 +/
-interface ConstraintPair(NumericType) {
+class LinkConstraintPair(NumericType) {
+	alias N = NumericType;
+	alias V3 = ar.Vector!(N, 3);
+	
+	public{
+		this(){}
+	}//public
+
+	private{
+		DynamicEntity!N[2] _dynamicEntities;
+		LinkConstraint!N[6] _linkConstraints;
+	}//private
+}//class LinkConstraintPair
+
+/++
++/
+struct LinkConstraint(NumericType) {
+	alias N = NumericType;
+	alias V3 = ar.Vector!(N, 3);
+	
 	public{
 	}//public
 
 	private{
 	}//private
-}//interface ConstraintPair
+}//struct LinkConstraint
+
+
 
 /++
 +/
