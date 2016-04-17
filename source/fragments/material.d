@@ -8,7 +8,7 @@ class Material(NumericType){
 	public{
 		this(
 			in N staticFriction = N(0.02),
-			in N dynamicFriction = N(0.05),
+			in N dynamicFriction = N(0.1),
 		){
 			_staticFriction = staticFriction;
 			_dynamicFriction = dynamicFriction;
