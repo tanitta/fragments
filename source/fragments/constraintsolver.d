@@ -78,10 +78,11 @@ class ConstraintSolver(NumericType){
 				//force
 				foreach (linearImpulseConstraint; linearImpulseConstraints) {
 					import std.stdio;
+					import std.conv;
 					auto entity = linearImpulseConstraint.entity;
 					V3[2] deltaVelocities = linearImpulseConstraint.deltaVelocities(entity);
-					entity.deltaLinearVelocity  = entity.deltaLinearVelocity + deltaVelocities[0]/_iterations;
-					entity.deltaAngularVelocity = entity.deltaAngularVelocity + deltaVelocities[1]/_iterations;
+					entity.deltaLinearVelocity  = entity.deltaLinearVelocity + deltaVelocities[0]/_iterations.to!N;
+					entity.deltaAngularVelocity = entity.deltaAngularVelocity + deltaVelocities[1]/_iterations.to!N;
 				}
 				
 				// collisionConstraint;
@@ -156,7 +157,7 @@ class ConstraintSolver(NumericType){
 			}
 			
 			foreach (entity; _dynamicEntities) {
-				entity.position = entity.position + entity.bias*1.0001;
+				entity.position = entity.position + entity.bias * 1.001;
 			}
 		}
 		

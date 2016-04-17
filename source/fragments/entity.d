@@ -91,6 +91,9 @@ interface DynamicEntity(NumericType) : Entity!(NumericType){
 		void linearVelocity(in V3);
 		
 		///
+		V3 linearVelocityPre()const;
+		
+		///
 		Q orientation()const;
 		
 		///
@@ -106,6 +109,9 @@ interface DynamicEntity(NumericType) : Entity!(NumericType){
 		void angularVelocity(in V3);
 		
 		///
+		V3 angularVelocityPre()const;
+		
+		///
 		BoundingBox!(N) boundingBox()const;
 		
 		///
@@ -117,6 +123,9 @@ interface DynamicEntity(NumericType) : Entity!(NumericType){
 		///
 		void updateProperties();
 		
+		///
+		void updatePreVelocity();
+			
 		///
 		ContactPoint!(N)[] contactPoints(in StaticEntity!(N) staticEntity)const;
 		
@@ -188,6 +197,9 @@ template DynamicEntityProperties(NumericType){
 		void linearVelocity(in V3 linearVelocity){_linearVelocity = linearVelocity;};
 		
 		///
+		V3 linearVelocityPre()const{return _linearVelocityPre;};
+		
+		///
 		Q orientation()const{return _orientation;};
 		
 		///
@@ -201,6 +213,9 @@ template DynamicEntityProperties(NumericType){
 		
 		///
 		void angularVelocity(in V3 angularVelocity){_angularVelocity = angularVelocity;};
+		
+		///
+		V3 angularVelocityPre()const{return _angularVelocityPre;};
 		
 		///
 		BoundingBox!(N) boundingBox()const{return _boundingBox;}
@@ -236,7 +251,11 @@ template DynamicEntityProperties(NumericType){
 		void updatePreStatus(){
 			_positionPre = _position;
 			_orientationPre = _orientation;
-			
+		}
+		
+		void updatePreVelocity(){
+			_linearVelocityPre = _linearVelocity;
+			_angularVelocityPre = _angularVelocity;
 		}
 		///
 		void updateProperties(){
@@ -252,9 +271,11 @@ template DynamicEntityProperties(NumericType){
 		V3  _position = V3.zero;
 		V3  _positionPre = V3.zero;
 		V3  _linearVelocity = V3.zero;
+		V3  _linearVelocityPre = V3.zero;
 		Q   _orientation = Q.unit;
 		Q   _orientationPre = Q.unit;
 		V3  _angularVelocity = V3.zero;
+		V3  _angularVelocityPre = V3.zero;
 		M33 _inertia;
 		M33 _inertiaGlobal;
 		M33 _inertiaGlobalInv;

@@ -46,17 +46,16 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 					points
 				);
 				
-				if(!isDetectStaticRay){
-					immutable V3 rayVelocity = _orientationPre.rotatedVector(ray)+_positionPre;
-					immutable V3 rayBeginGlobal    = _orientation.rotatedVector(ray)+_position - rayVelocity;
-					immutable V3 rayEndGlobal    = _orientation.rotatedVector(ray)+_position;
-					detectContactPoint(
-						rayBeginGlobal,
-						rayEndGlobal, 
-						staticEntity, 
-						points
-					);
-				}
+				// if(!isDetectStaticRay){
+					// immutable V3 rayBeginGlobal = _orientationPre.rotatedVector(ray)+_positionPre;
+					// immutable V3 rayEndGlobal   = _orientation.rotatedVector(ray)+_position;
+					// detectContactPoint(
+					// 	rayBeginGlobal,
+					// 	rayEndGlobal, 
+					// 	staticEntity, 
+					// 	points
+					// );
+				// }
 			}
 			
 			detectContactPoint(

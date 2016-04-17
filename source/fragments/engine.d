@@ -77,9 +77,17 @@ class Engine(NumericType){
 			
 			foreach (entity; dynamicEntities) {
 				with(entity){
+					updatePreVelocity;
+				}
+			}
+			
+			foreach (entity; dynamicEntities) {
+				with(entity){
 					updateProperties;
 				}
 			}
+			
+			
 		};
 		
 		void draw(){

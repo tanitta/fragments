@@ -188,8 +188,8 @@ struct CollisionConstraintPair(NumericType) {
 			
 			
 			import std.math;
-			immutable bias = 0.00;
-			immutable slop = N(0.0);
+			immutable bias = 0.0;
+			immutable slop = N(0);
 			immutable biasTerm = (bias * fmax(N(0), contactPoint.distance+slop))/unitTime;
 			
 			immutable jacDiagInv = this.jacDiagInv(
@@ -327,7 +327,15 @@ struct CollisionConstraint(NumericType) {
 			immutable V3 deltaVelocity = dynamicEntity.deltaLinearVelocity + dynamicEntity.deltaAngularVelocity.vectorProduct(_applicationPoint);
 			
 			import std.algorithm;
-			immutable N deltaImpluse = (_initialImpulse - impulse(deltaVelocity)).clamp(0, N.nan);
+			// immutable N oldImpulse = _accumImpulse;
+			// _accumImpulse = (oldImpulse + (_initialImpulse - impulse(deltaVelocity)).clamp(0, N.max)).clamp(0, N.max);
+			// immutable N deltaImpluse = _accumImpulse - oldImpulse;
+			
+			immutable N deltaImpluse = (_initialImpulse - impulse(deltaVelocity)).clamp(0, N.max);
+			
+			// import std.stdio;
+			// _accumImpulse.writeln;
+			
 			_currentImpulse = deltaImpluse;
 			
 			immutable V3 deltaLinearVelocity = deltaImpluse * dynamicEntity.massInv * _direction;
@@ -352,6 +360,7 @@ struct CollisionConstraint(NumericType) {
 		N _biasTerm;
 		
 		N _initialImpulse;
+		N _accumImpulse = N(0);
 		
 		N impulse(V3 deltaVelocity)const
 		in{

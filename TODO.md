@@ -80,9 +80,16 @@
 								
 					- [x] LinearImpulseConstraint(DynamicEntity, LinearImpulse) [2016/04/17 (Sun) 05:23]
 					
-					- [ ] AngularImpulseConstraint(DynamicEntity, AngularImpulse)
+					- [ ] 振動対策
+						- [ ] 前のフレームとの平均速度を用いてintegrate
+							効果無し
+							
+						- [ ] solverでのbias値の調節
+							効果なし
+							
+						- [ ] accumImpulse
 					
-					- [ ] accumImpulse
+					- [ ] AngularImpulseConstraint(DynamicEntity, AngularImpulse)
 			
 		- [ ] ::Update内での並列化を行う
 		
