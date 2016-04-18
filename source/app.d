@@ -279,7 +279,7 @@ class TestApp : ar.BaseApp{
 			auto chip = new Chip!(N);
 			chip.position = V3(3, 80, 2);
 			chip.orientation = Q.unit;
-			chip.addForce(_unitTime, ar.Vector3d(30000, 5000, 0), ar.Vector3d(3, 80, 2));
+			chip.addForce(_unitTime, ar.Vector3d(30000, 20000, 0), ar.Vector3d(3, 80, 2));
 			// chip.addForce(_unitTime, ar.Vector3d(1000, 0, 0), ar.Vector3d(3, 80, 2.1));
 			// chip.addForce(_unitTime, ar.Vector3d(-10, 0, 0), ar.Vector3d(0, 45, -1));
 			_model.addChip(chip);

@@ -53,7 +53,7 @@ struct LinearImpulseConstraint(NumericType) {
 			import std.math;
 			assert(!isNaN(dynamicEntity.deltaLinearVelocity[0]));
 		}body{
-			immutable V3 deltaLinearVelocity = -_impulse * dynamicEntity.massInv;
+			immutable V3 deltaLinearVelocity = _impulse * dynamicEntity.massInv;
 			immutable V3[2] v = [
 				deltaLinearVelocity,
 				V3.zero,
@@ -208,8 +208,6 @@ struct CollisionConstraintPair(NumericType) {
 			);
 			
 			// friction constraint
-			// _dynamicFriction = dynamicEntity.material.
-			
 			_staticFriction = (dynamicEntity.material.staticFriction * staticEntity.material.staticFriction)^^N(0.5);
 			_dynamicFriction = (dynamicEntity.material.dynamicFriction * staticEntity.material.dynamicFriction)^^N(0.5);
 			

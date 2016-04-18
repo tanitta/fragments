@@ -55,7 +55,7 @@ class Engine(NumericType){
 				alias V3 = ar.Vector!(N, 3);
 				LinearImpulseConstraint!N[] linearImpulseConstraints;
 				foreach (entity; dynamicEntities) {
-					linearImpulseConstraints ~= LinearImpulseConstraint!N(entity, V3(0, 9.8*entity.mass*_unitTime, 0));
+					linearImpulseConstraints ~= LinearImpulseConstraint!N(entity, V3(0, -9.8*entity.mass*_unitTime, 0));
 				}
 				
 				auto collisionConstraintPairs = _mapConstraintDetector.detectCollisionConstraintPairs( dynamicEntities );

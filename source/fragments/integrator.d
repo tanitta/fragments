@@ -51,9 +51,10 @@ class Integrator(NumericType) {
 		void integrateOrientation(DynamicEntity!(N) entity){
 			with(entity){
 				if(angularVelocity.norm > 0.0){
-					immutable angularVelocityAvg = (angularVelocity + angularVelocityPre) * 0.5;
-					immutable qAngularVelocityPerUnitTime = Q.angleAxis(angularVelocityAvg.norm*_unitTime, angularVelocityAvg.normalized);
-					// immutable qAngularVelocityPerUnitTime = Q.angleAxis(angularVelocity.norm*_unitTime, angularVelocity.normalized);
+					// immutable angularVelocityAvg = (angularVelocity + angularVelocityPre) * 0.5;
+					// immutable qAngularVelocityPerUnitTime = Q.angleAxis(angularVelocityAvg.norm*_unitTime, angularVelocityAvg.normalized);
+					
+					immutable qAngularVelocityPerUnitTime = Q.angleAxis(angularVelocity.norm*_unitTime, angularVelocity.normalized);
 					orientation = qAngularVelocityPerUnitTime * orientation;
 				}
 			}

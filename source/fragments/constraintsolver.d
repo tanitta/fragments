@@ -71,12 +71,11 @@ class ConstraintSolver(NumericType){
 			ref LinkConstraintPair!N[] linkConstraintPairs,
 			ref LinearImpulseConstraint!N[] linearImpulseConstraints,
 		){
-			
 			import fragments.entity;
 			//iteration
 			for (int i = 0; i < _iterations; i++) {
-				//force
-				foreach (linearImpulseConstraint; linearImpulseConstraints) {
+				//impulse
+				foreach (ref linearImpulseConstraint; linearImpulseConstraints) {
 					import std.stdio;
 					import std.conv;
 					auto entity = linearImpulseConstraint.entity;

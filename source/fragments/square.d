@@ -47,14 +47,14 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 				);
 				
 				// if(!isDetectStaticRay){
-					// immutable V3 rayBeginGlobal = _orientationPre.rotatedVector(ray)+_positionPre;
-					// immutable V3 rayEndGlobal   = _orientation.rotatedVector(ray)+_position;
-					// detectContactPoint(
-					// 	rayBeginGlobal,
-					// 	rayEndGlobal, 
-					// 	staticEntity, 
-					// 	points
-					// );
+				// 	immutable V3 rayBeginGlobal = _orientationPre.rotatedVector(ray)+_positionPre;
+				// 	immutable V3 rayEndGlobal   = _orientation.rotatedVector(ray)+_position;
+				// 	detectContactPoint(
+				// 		rayBeginGlobal,
+				// 		rayEndGlobal, 
+				// 		staticEntity, 
+				// 		points
+				// 	);
 				// }
 			}
 			
@@ -80,6 +80,8 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 			ref ContactPoint!(N)[] points, 
 			in V3 applicationPoint = null
 		)const{
+			bool isSuccess = false;
+			
 			immutable p0 = V3.zero;
 			immutable p1 = staticEntity.vertices[1] -staticEntity.vertices[0];
 			immutable p2 = staticEntity.vertices[2] -staticEntity.vertices[0];
@@ -106,19 +108,17 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 				if(isBuried && isIncludedInPolygon){
 					immutable contactPoint = ContactPoint!(N)(
 						pContact + staticEntity.vertices[0],
-						// rayEndGlobal, 
-						// rayBeginGlobal, 
 						pNormal, 
 						-d2,
 						(!isNaN( applicationPoint[0] ))?applicationPoint:rayEndGlobal
 					);
 					
 					points ~= contactPoint;
-					return true;
+					isSuccess = true;
 				}
-				return false;
 			}
-			return false;
+			
+			return isSuccess;
 		}
 	}//private
 }//class Chip
