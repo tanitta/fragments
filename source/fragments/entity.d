@@ -142,6 +142,8 @@ interface DynamicEntity(NumericType) : Entity!(NumericType){
 		
 		void bias(in V3);
 		
+		bool isColliding()const;
+		
 		CollisionConstraintPair!N[] collisionConstraintPairs();
 	}//public
 }//interface DynamicEntity
@@ -267,9 +269,14 @@ template DynamicEntityProperties(NumericType){
 			_boundingBox = BoundingBox!(N)(_position, _positionPre, _margin);
 		}
 		
+		bool isColliding()const{
+			return _isColliding;
+		};
+		
 		CollisionConstraintPair!N[] collisionConstraintPairs(){
 			return _collisionConstraintPairs;
 		};
+		
 	}//public
 	
 	private{
@@ -293,6 +300,7 @@ template DynamicEntityProperties(NumericType){
 		V3 _deltaAngularVelocity = V3.zero;
 		V3 _bias = V3.zero;
 		
+		bool _isColliding;
 		CollisionConstraintPair!N[] _collisionConstraintPairs;
 	}//private
 }
