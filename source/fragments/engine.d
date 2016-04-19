@@ -89,10 +89,6 @@ class Engine(NumericType){
 			
 			
 		};
-		
-		void draw(){
-			_mapConstraintDetector.draw;
-		}
 	}//public
 
 	private{

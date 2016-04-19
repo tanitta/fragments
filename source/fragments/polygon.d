@@ -15,7 +15,7 @@ class Polygon(NumericType) : StaticEntity!(NumericType){
 		this(in V3[3] v, in Material!(N) m, V3 clearance = V3.zero){
 			immutable center = (v[0]+v[1]+v[2])/N(3.0);
 			foreach (int index, vertex; v) {
-				_vertices[index] = vertex+(vertex-center).normalized*0.05;
+				_vertices[index] = vertex+(vertex-center).normalized*0.0;
 			}
 			
 			auto tmpStart = V3();
@@ -68,7 +68,8 @@ unittest{
 	import fragments.material;
 	auto material = new Material!(double);
 	Polygon!(double) p = new Polygon!(double)(vertices, material);
-
+	import std.stdio;
+	p.boundingBox.start.writeln;
 	assert( p.boundingBox.start == V(0, -1, 0) );
 	assert( p.boundingBox.end == V(1, 1, 2) );
 }

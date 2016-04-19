@@ -22,19 +22,18 @@ class MapConstraintDetector(NumericType){
 		
 		/++
 		++/
-		CollisionConstraintPair!(N)[] detectCollisionConstraintPairs(DynamicEntity!(N)[] dynamicEntities){
-			// broad phase
-			import std.algorithm;
-			CollidablePair!(N)[] collidablePairs;
-			detectCollidablePairs(collidablePairs, dynamicEntities);
-			
+		CollisionConstraintPair!(N)[] detectCollisionConstraintPairs(DynamicEntity!(N) dynamicEntity){
+			import std.algorithm:map;
+			CollidablePair!(N)[] collidablePairs = detectedCollidablePairs(dynamicEntity);
 			return generatedCollidableConstraintPairs(collidablePairs);
 		}
 		
-		void draw(){
-			ar.pushStyle;
-			_root.draw;
-			ar.popStyle;
+		/++
+		++/
+		CollisionConstraintPair!(N)[] detectCollisionConstraintPairs(DynamicEntity!(N)[] dynamicEntities){
+			import std.algorithm:map;
+			import std.array:join;
+			return dynamicEntities.map!(entity => detectCollisionConstraintPairs(entity)).join;
 		}
 		
 		void unitTime(N t){_unitTime = t;}
@@ -45,13 +44,16 @@ class MapConstraintDetector(NumericType){
 		
 		N _unitTime;
 		
-		CollidablePair!N[] detectCollidablePairs(ref CollidablePair!(N)[] collidablePairs, DynamicEntity!(N)[] dynamicEntities){
-			foreach (dynamicEntity; dynamicEntities) {
-				foreach (polygon; _root.detectCollidableStaticEntities(dynamicEntity.boundingBox)) {
-					collidablePairs ~= CollidablePair!(N)(dynamicEntity, polygon);
-				}
-			}
-			return collidablePairs;
+		CollidablePair!N[] detectedCollidablePairs(DynamicEntity!(N) dynamicEntity){
+			import std.algorithm:map;
+			import std.array:array;
+			return _root.detectCollidableStaticEntities(dynamicEntity.boundingBox).map!(polygon => CollidablePair!(N)(dynamicEntity, polygon)).array;
+		}
+		
+		CollidablePair!N[] detectedCollidablePairs(DynamicEntity!(N)[] dynamicEntities){
+			import std.algorithm:map;
+			import std.array:join;
+			return dynamicEntities.map!(entity => detectedCollidablePairs(entity)).join;
 		}
 		
 		CollisionConstraintPair!N[] generatedCollidableConstraintPairs(ref CollidablePair!(N)[] collidablePairs){
@@ -66,8 +68,6 @@ class MapConstraintDetector(NumericType){
 					);
 				}
 			}
-			// import std.stdio;
-			// collisionConstraintPairs.writeln;
 			return collisionConstraintPairs;
 		}
 	}//private
@@ -243,5 +243,4 @@ unittest{
 	foreach (int index, p; polygons) {
 		assert (p.boundingBox.center == resultPolygonsX[index].boundingBox.center);
 	}
-	
 }

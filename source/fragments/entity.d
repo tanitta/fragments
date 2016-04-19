@@ -54,6 +54,7 @@ interface StaticEntity(NumericType) : Entity!(NumericType){
 /++
 ++/
 interface DynamicEntity(NumericType) : Entity!(NumericType){
+	import fragments.constraintpair;
 	alias N = NumericType;
 	alias V3 = ar.Vector!(N, 3);
 	alias Q = ar.Quaternion!(N);
@@ -140,6 +141,8 @@ interface DynamicEntity(NumericType) : Entity!(NumericType){
 		V3 bias()const;
 		
 		void bias(in V3);
+		
+		CollisionConstraintPair!N[] collisionConstraintPairs();
 	}//public
 }//interface DynamicEntity
 
@@ -263,6 +266,10 @@ template DynamicEntityProperties(NumericType){
 			_inertiaGlobalInv = _inertiaGlobal.inverse;
 			_boundingBox = BoundingBox!(N)(_position, _positionPre, _margin);
 		}
+		
+		CollisionConstraintPair!N[] collisionConstraintPairs(){
+			return _collisionConstraintPairs;
+		};
 	}//public
 	
 	private{
@@ -285,5 +292,7 @@ template DynamicEntityProperties(NumericType){
 		V3 _deltaLinearVelocity = V3.zero;
 		V3 _deltaAngularVelocity = V3.zero;
 		V3 _bias = V3.zero;
+		
+		CollisionConstraintPair!N[] _collisionConstraintPairs;
 	}//private
 }
