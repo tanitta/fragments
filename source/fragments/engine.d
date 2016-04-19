@@ -16,9 +16,7 @@ class Engine(NumericType){
 		++/
 		this(){
 			_mapConstraintDetector = new MapConstraintDetector!(N);
-			
 			_integrator = new Integrator!(N);
-			
 			_constraintSolver = new ConstraintSolver!N;
 			
 			_unitTime = N(1.0/30.0);
@@ -40,8 +38,8 @@ class Engine(NumericType){
 		
 		/++
 		++/
-		void setStaticEntities(StaticEntity!(N)[] staticEntities){
-			_mapConstraintDetector.setStaticEntities( staticEntities );
+		void staticEntities(StaticEntity!(N)[] staticEntities){
+			_mapConstraintDetector.setStaticEntities(staticEntities);
 		};
 		
 		/++
@@ -53,12 +51,15 @@ class Engine(NumericType){
 			{
 				import armos;
 				alias V3 = ar.Vector!(N, 3);
-				LinearImpulseConstraint!N[] linearImpulseConstraints;
-				foreach (entity; dynamicEntities) {
-					linearImpulseConstraints ~= LinearImpulseConstraint!N(entity, V3(0, -9.8*entity.mass*_unitTime, 0));
-				}
 				
-				auto collisionConstraintPairs = _mapConstraintDetector.detectCollisionConstraintPairs( dynamicEntities );
+				import std.algorithm:map;
+				import std.array:array,join;
+				LinearImpulseConstraint!N[] linearImpulseConstraints = dynamicEntities.map!(entity => LinearImpulseConstraint!N(entity, V3(0, -9.8*entity.mass*_unitTime, 0))).array;
+				
+				auto collisionConstraintPairs = dynamicEntities
+					.map!(entity => _mapConstraintDetector.detectedCollisionConstraintPairs(entity))
+					.join;
+				
 				_constraintSolver.solve(
 					collisionConstraintPairs,
 					linkConstraintPairs,
@@ -67,27 +68,8 @@ class Engine(NumericType){
 				);
 			}
 			
-			foreach (entity; dynamicEntities) {
-				with(entity){
-					updatePreStatus;
-				}
-			}
-			
-			_integrator.integrate( dynamicEntities );
-			
-			foreach (entity; dynamicEntities) {
-				with(entity){
-					updatePreVelocity;
-				}
-			}
-			
-			foreach (entity; dynamicEntities) {
-				with(entity){
-					updateProperties;
-				}
-			}
-			
-			
+			import std.algorithm.iteration:each;
+			dynamicEntities.each!(entity => entity.updateEntityStatus(_integrator));
 		};
 	}//public
 
@@ -96,5 +78,13 @@ class Engine(NumericType){
 		MapConstraintDetector!N _mapConstraintDetector;
 		Integrator!N _integrator;
 		ConstraintSolver!N _constraintSolver;
+		
 	}//private
 }//class Engine
+
+private void updateEntityStatus(N)(DynamicEntity!N entity, Integrator!N integrator){
+	entity.updatePreStatus;
+	integrator.integrate(entity);
+	entity.updatePreVelocity;
+	entity.updateProperties;
+}

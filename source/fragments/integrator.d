@@ -31,10 +31,13 @@ class Integrator(NumericType) {
 		}
 		
 		void integrate(ref DynamicEntity!(N)[] dynamicEntities){
-			foreach (entity; dynamicEntities) {
-				integratePosition(entity);
-				integrateOrientation(entity);
-			}
+			import std.algorithm.iteration:each;
+			dynamicEntities.each!(entity => integrate(entity));
+		}
+		
+		void integrate(DynamicEntity!(N) entity){
+			integratePosition(entity);
+			integrateOrientation(entity);
 		}
 	}//public
 

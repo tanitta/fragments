@@ -250,7 +250,7 @@ class TestApp : ar.BaseApp{
 		
 		//Engine
 		engine = new fragments.engine.Engine!(N);
-		engine.setStaticEntities(_land.staticEntities);
+		engine.staticEntities = _land.staticEntities;
 		
 		setupGui;
 	}
