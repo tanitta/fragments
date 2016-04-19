@@ -19,12 +19,12 @@ class ConstraintSolver(NumericType){
 		/++
 		++/
 		void solve(
+			ref DynamicEntity!N[] dynamicEntities,
 			ref CollisionConstraintPair!N[] collisionConstraintPairs,
 			ref LinkConstraintPair!N[] linkConstraintPairs,
 			ref LinearImpulseConstraint!N[] linearImpulseConstraints,
-			ref DynamicEntity!N[] dynamicEntities,
 		){
-			preProcess(collisionConstraintPairs, linkConstraintPairs);
+			preProcess(dynamicEntities, collisionConstraintPairs, linkConstraintPairs);
 			iterate(
 				collisionConstraintPairs,
 				linkConstraintPairs,
@@ -40,30 +40,18 @@ class ConstraintSolver(NumericType){
 		DynamicEntity!N[] _dynamicEntities;
 
 		void preProcess(
+			ref DynamicEntity!N[] dynamicEntities, 
 			ref CollisionConstraintPair!N[] collisionConstraintPairs, 
 			ref LinkConstraintPair!N[] linkConstraintPairs,
 		){
-			foreach (ref collisionConstraintPair; collisionConstraintPairs) {
-				_dynamicEntities ~= collisionConstraintPair.entity;
-			}
-			import std.algorithm.iteration:uniq;
-			import std.array;
-			_dynamicEntities = _dynamicEntities.uniq.array;
+			import std.algorithm.iteration:map, uniq, each;
+			import std.array:array;
+			_dynamicEntities = collisionConstraintPairs
+				.map!(collisionConstraintPair => collisionConstraintPair.entity)
+				.uniq
+				.array;
 			
-			foreach (ref entity; _dynamicEntities) {
-				entity.bias = V3.zero;
-			}
-			// foreach (ref constraintPair; constraintPairs) {
-			// 	// linear
-			// 	foreach (ref constraint; constraintPair.linearConstraints) {
-			//		
-			// 	}
-			//	
-			// 	// angular
-			// 	foreach (ref constraint; constraintPair.angularConstraints) {
-			//
-			// 	}
-			// }
+			_dynamicEntities.each!(entity => entity.bias = V3.zero);
 		}
 		
 		void iterate(
@@ -76,7 +64,6 @@ class ConstraintSolver(NumericType){
 			for (int i = 0; i < _iterations; i++) {
 				//impulse
 				foreach (ref linearImpulseConstraint; linearImpulseConstraints) {
-					import std.stdio;
 					import std.conv;
 					auto entity = linearImpulseConstraint.entity;
 					V3[2] deltaVelocities = linearImpulseConstraint.deltaVelocities(entity);

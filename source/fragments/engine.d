@@ -61,10 +61,10 @@ class Engine(NumericType){
 					.join;
 				
 				_constraintSolver.solve(
+					dynamicEntities, 
 					collisionConstraintPairs,
 					linkConstraintPairs,
 					linearImpulseConstraints, 
-					dynamicEntities, 
 				);
 			}
 			

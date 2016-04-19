@@ -28,7 +28,7 @@ class MapConstraintDetector(NumericType){
 		++/
 		CollisionConstraintPair!(N)[] detectedCollisionConstraintPairs(DynamicEntity!(N) dynamicEntity){
 			CollidablePair!(N)[] collidablePairs = detectedCollidablePairs(dynamicEntity);
-			return generatedCollidableConstraintPairs(collidablePairs);
+			return generatedCollisionConstraintPairs(collidablePairs);
 		}
 		
 		/++
@@ -57,7 +57,7 @@ class MapConstraintDetector(NumericType){
 				.join;
 		}
 		
-		CollisionConstraintPair!N[] generatedCollidableConstraintPairs(ref CollidablePair!(N) collidablePair){
+		CollisionConstraintPair!N[] generatedCollisionConstraintPairs(ref CollidablePair!(N) collidablePair){
 			return collidablePair.dynamicEntity.contactPoints(collidablePair.staticEntity)
 				.map!(
 					contactPoint => CollisionConstraintPair!N(
@@ -70,9 +70,9 @@ class MapConstraintDetector(NumericType){
 				.array;
 		}
 		
-		CollisionConstraintPair!N[] generatedCollidableConstraintPairs(ref CollidablePair!(N)[] collidablePairs){
+		CollisionConstraintPair!N[] generatedCollisionConstraintPairs(ref CollidablePair!(N)[] collidablePairs){
 			return collidablePairs
-				.map!(collidablePair => generatedCollidableConstraintPairs(collidablePair))
+				.map!(collidablePair => generatedCollisionConstraintPairs(collidablePair))
 				.join;
 		}
 	}//private
