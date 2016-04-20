@@ -75,7 +75,7 @@ private void updateBias(N)(
 	foreach (ref collisionConstraintPair; collisionConstraintPairs) {
 		auto entity = collisionConstraintPair.entity;
 		
-		immutable contactPoint = collisionConstraintPair.contactPoint;
+		const contactPoint = collisionConstraintPair.contactPoint;
 		immutable depth = contactPoint.distance * contactPoint.normal;
 		if(depth.dotProduct(entity.bias) < depth.norm){
 			entity.bias = entity.bias - (depth.dotProduct(entity.bias) - depth.norm)*depth.normalized;

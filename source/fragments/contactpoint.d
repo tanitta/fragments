@@ -1,6 +1,7 @@
 module fragments.contactpoint;
 
 import armos;
+import fragments.entity;
 
 /++
 ++/
@@ -9,11 +10,18 @@ struct ContactPoint(NumericType) {
 	alias V3 = ar.Vector!(N, 3);
 	public{
 		///
-		this(in V3 coordination, in V3 normal, in N distance, in V3 applicationPoint){
+		this(
+			in V3 coordination,
+			in V3 normal,
+			in N distance,
+			in V3 applicationPoint, 
+			in StaticEntity!N staticEntity
+		){
 			_coordination = coordination;
 			_normal = normal;
 			_distance = distance;
 			_applicationPoint = applicationPoint;
+			_staticEntity = staticEntity;
 		}
 		
 		///
@@ -27,6 +35,9 @@ struct ContactPoint(NumericType) {
 		
 		///
 		V3 applicationPoint()const{return _applicationPoint;}
+		
+		///
+		const(StaticEntity!N) staticEntity()const{return _staticEntity;}
 	}//public
 
 	private{
@@ -36,10 +47,13 @@ struct ContactPoint(NumericType) {
 		///
 		V3 _normal;
 		
-		///
+		///めり込み量
 		N _distance;
 		
 		///
 		V3 _applicationPoint;
+		
+		///
+		const(StaticEntity!N) _staticEntity;
 	}//private
 }//struct ContactPoint
