@@ -12,8 +12,8 @@ import fragments.ray;
 class Square(NumericType) : DynamicEntity!(NumericType){
 	alias N = NumericType;
 	alias V3 = ar.Vector!(N, 3);
-	alias Q = ar.Quaternion!(N);
-	mixin DynamicEntityProperties!(N);
+	alias Q = ar.Quaternion!N;
+	mixin DynamicEntityProperties!N;
 	
 	public{
 		this(in Material!(N) m, in N size = N(1.0)){
@@ -37,7 +37,10 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 			// _collisionConstraintPairs
 		}
 		
-		void updateCollisionConstraintPairs(in StaticEntity!(N)[] staticEntities){
+		void updateCollisionConstraintPairs(in StaticEntity!N[] staticEntities)
+		in{
+			assert(_collisionConstraintPairs.length == 9);
+		}body{
 			{
 				ContactPoint!N[] points;
 				detectMostCloselyContactPoint(
@@ -79,8 +82,8 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 		}
 		
 		///
-		ContactPoint!(N)[] contactPoints(in StaticEntity!(N) staticEntity)const{
-			ContactPoint!(N)[] points;
+		ContactPoint!N[] contactPoints(in StaticEntity!N staticEntity)const{
+			ContactPoint!N[] points;
 			
 			detectContactPoint(
 				_positionPre,
@@ -205,8 +208,8 @@ unittest{
 private bool detectContactPoint(N, V3 = ar.Vector!(N, 3))(
 	in V3 rayBeginGlobal,
 	in V3 rayEndGlobal,
-	in StaticEntity!(N) staticEntity,
-	ref ContactPoint!(N)[] points, 
+	in StaticEntity!N staticEntity,
+	ref ContactPoint!N[] points, 
 	in V3 applicationPoint = null
 ){
 	bool isSuccess = false;
@@ -235,11 +238,11 @@ private bool detectContactPoint(N, V3 = ar.Vector!(N, 3))(
 		( ( p0 - p2 ).vectorProduct(pContact-p2).dotProduct(pNormal) >= N(0) );
 		
 		if(isBuried && isIncludedInPolygon){
-			const contactPoint = ContactPoint!(N)(
+			const contactPoint = ContactPoint!N(
 				pContact + staticEntity.vertices[0],
 				pNormal, 
 				-d2,
-				(!isNaN( applicationPoint[0] ))?applicationPoint:rayEndGlobal,
+				!isNaN(applicationPoint[0])?applicationPoint:rayEndGlobal,
 				staticEntity
 			);
 			
