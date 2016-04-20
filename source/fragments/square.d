@@ -72,54 +72,6 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 	
 	private{
 		V3[8] _rays;
-		
-		bool detectContactPoint(
-			in V3 rayBeginGlobal,
-			in V3 rayEndGlobal,
-			in StaticEntity!(N) staticEntity,
-			ref ContactPoint!(N)[] points, 
-			in V3 applicationPoint = null
-		)const{
-			bool isSuccess = false;
-			
-			immutable p0 = V3.zero;
-			immutable p1 = staticEntity.vertices[1] -staticEntity.vertices[0];
-			immutable p2 = staticEntity.vertices[2] -staticEntity.vertices[0];
-			
-			immutable pBegin = rayBeginGlobal - staticEntity.vertices[0];
-			immutable pEnd = rayEndGlobal - staticEntity.vertices[0];
-			immutable pNormal= staticEntity.normal;
-			
-			immutable isCollidingLineToPlane = ( (pBegin.dotProduct(pNormal)) * (pEnd.dotProduct(pNormal)) <= N(0) );
-			if( isCollidingLineToPlane ){
-				import std.math;
-				immutable d1 = pNormal.dotProduct(pBegin);
-				immutable d2 = pNormal.dotProduct(pEnd);
-				immutable a = fabs(d1)/(fabs(d1)+fabs(d2));
-				immutable pContact = (N(1)-a)*pBegin + a*pEnd;
-				
-				immutable isBuried = (d2 <= 0 && 0 <= d1);
-				// immutable isBuried = (d2 < 0);
-				immutable isIncludedInPolygon =
-				( ( p1 - p0 ).vectorProduct(pContact-p0).dotProduct(pNormal) >= N(0) )&&
-				( ( p2 - p1 ).vectorProduct(pContact-p1).dotProduct(pNormal) >= N(0) )&&
-				( ( p0 - p2 ).vectorProduct(pContact-p2).dotProduct(pNormal) >= N(0) );
-				
-				if(isBuried && isIncludedInPolygon){
-					immutable contactPoint = ContactPoint!(N)(
-						pContact + staticEntity.vertices[0],
-						pNormal, 
-						-d2,
-						(!isNaN( applicationPoint[0] ))?applicationPoint:rayEndGlobal
-					);
-					
-					points ~= contactPoint;
-					isSuccess = true;
-				}
-			}
-			
-			return isSuccess;
-		}
 	}//private
 }//class Chip
 unittest{
@@ -127,3 +79,66 @@ unittest{
 	auto material = new Material!(double);
 	auto square = new Square!(double)(material);
 };
+
+private ContactPoint!(N)[] detectedContactPoints(N, V3 = ar.Vector!(N, 3))(
+	in V3 rayBeginGlobal,
+	in V3 rayEndGlobal,
+	in StaticEntity!(N) staticEntity
+){
+	ContactPoint!(N)[] points;
+	detectContactPoint(
+		rayBeginGlobal,
+		rayEndGlobal,
+		staticEntity,
+		points,
+	);
+	return points;
+}
+
+private bool detectContactPoint(N, V3 = ar.Vector!(N, 3))(
+	in V3 rayBeginGlobal,
+	in V3 rayEndGlobal,
+	in StaticEntity!(N) staticEntity,
+	ref ContactPoint!(N)[] points, 
+	in V3 applicationPoint = null
+){
+	bool isSuccess = false;
+	
+	immutable p0 = V3.zero;
+	immutable p1 = staticEntity.vertices[1] -staticEntity.vertices[0];
+	immutable p2 = staticEntity.vertices[2] -staticEntity.vertices[0];
+	
+	immutable pBegin = rayBeginGlobal - staticEntity.vertices[0];
+	immutable pEnd = rayEndGlobal - staticEntity.vertices[0];
+	immutable pNormal= staticEntity.normal;
+	
+	immutable isCollidingLineToPlane = ( (pBegin.dotProduct(pNormal)) * (pEnd.dotProduct(pNormal)) <= N(0) );
+	if( isCollidingLineToPlane ){
+		import std.math;
+		immutable d1 = pNormal.dotProduct(pBegin);
+		immutable d2 = pNormal.dotProduct(pEnd);
+		immutable a = fabs(d1)/(fabs(d1)+fabs(d2));
+		immutable pContact = (N(1)-a)*pBegin + a*pEnd;
+		
+		immutable isBuried = (d2 <= 0 && 0 <= d1);
+		// immutable isBuried = (d2 < 0);
+		immutable isIncludedInPolygon =
+		( ( p1 - p0 ).vectorProduct(pContact-p0).dotProduct(pNormal) >= N(0) )&&
+		( ( p2 - p1 ).vectorProduct(pContact-p1).dotProduct(pNormal) >= N(0) )&&
+		( ( p0 - p2 ).vectorProduct(pContact-p2).dotProduct(pNormal) >= N(0) );
+		
+		if(isBuried && isIncludedInPolygon){
+			immutable contactPoint = ContactPoint!(N)(
+				pContact + staticEntity.vertices[0],
+				pNormal, 
+				-d2,
+				(!isNaN( applicationPoint[0] ))?applicationPoint:rayEndGlobal
+			);
+			
+			points ~= contactPoint;
+			isSuccess = true;
+		}
+	}
+	
+	return isSuccess;
+}
