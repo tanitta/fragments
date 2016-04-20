@@ -20,24 +20,30 @@ class MapConstraintDetector(NumericType){
 	public{
 		/++
 		++/
-		void setStaticEntities(ref StaticEntity!(N)[] staticEntities){
-			_root = AABBNode!(N)(staticEntities);
+		void setStaticEntities(ref StaticEntity!N[] staticEntities){
+			_root = AABBNode!N(staticEntities);
 		}
 		
 		/++
 		++/
-		CollisionConstraintPair!(N)[] detectedCollisionConstraintPairs(DynamicEntity!(N) dynamicEntity){
+		CollisionConstraintPair!N[] detectedCollisionConstraintPairs(DynamicEntity!N dynamicEntity){
 			CollidablePair!(N)[] collidablePairs = detectedCollidablePairs(dynamicEntity);
 			return generatedCollisionConstraintPairs(collidablePairs);
 		}
 		
 		/++
 		++/
-		CollisionConstraintPair!(N)[] detectedCollisionConstraintPairs(DynamicEntity!(N)[] dynamicEntities){
+		CollisionConstraintPair!N[] detectedCollisionConstraintPairs(DynamicEntity!N[] dynamicEntities){
 			return dynamicEntities.map!(entity => detectedCollisionConstraintPairs(entity)).join;
 		}
 		
-		void unitTime(N t){_unitTime = t;}
+		StaticEntity!N[] detectedStaticEntities(DynamicEntity!N dynamicEntity){
+			import std.algorithm.iteration:map;
+			import std.array:array;
+			return detectedCollidablePairs(dynamicEntity).map!(pair => pair.staticEntity).array;
+		}
+		
+		void unitTime(in N t){_unitTime = t;}
 	}//public
 
 	private{
@@ -64,7 +70,6 @@ class MapConstraintDetector(NumericType){
 						collidablePair.dynamicEntity,
 						collidablePair.staticEntity,
 						contactPoint,
-						_unitTime,
 					)
 				)
 				.array;
