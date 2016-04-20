@@ -34,7 +34,7 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 				V3(-size, 0, size ), 
 			];
 			
-			// _collisionConstraintPairs
+			//TODO: Implement initializing _collisionConstraintPairs
 		}
 		
 		void updateCollisionConstraintPairs(in StaticEntity!N[] staticEntities)

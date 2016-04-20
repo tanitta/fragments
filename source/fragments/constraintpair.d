@@ -171,6 +171,7 @@ struct CollisionConstraintPair(NumericType) {
 	
 	public{
 		/++
+			TODO: initialize without collision
 		+/
 		this(
 			ref DynamicEntity!N dynamicEntity,
@@ -226,10 +227,17 @@ struct CollisionConstraintPair(NumericType) {
 			}
 		}
 		
+		/++
+			TODO:Implement
+		+/
 		void update(
 			in ContactPoint!(N) contactPoint,
 		){
 		};
+		
+		/++
+			TODO: Add bool isColliding
+		+/
 		
 		/++
 		+/
@@ -295,7 +303,9 @@ struct CollisionConstraint(NumericType) {
 	alias N = NumericType;
 	alias V3 = ar.Vector!(N, 3);
 	public{
-		/// 
+		/++
+			TODO: Initialize without collision
+		++/
 		this(
 			in V3 velocity,
 			in N jacDiagInv,
