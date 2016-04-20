@@ -68,8 +68,6 @@ unittest{
 	import fragments.material;
 	auto material = new Material!(double);
 	Polygon!(double) p = new Polygon!(double)(vertices, material);
-	import std.stdio;
-	p.boundingBox.start.writeln;
 	assert( p.boundingBox.start == V(0, -1, 0) );
 	assert( p.boundingBox.end == V(1, 1, 2) );
 }

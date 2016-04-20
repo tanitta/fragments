@@ -12,19 +12,19 @@ struct Ray(NumericType){
 			_begin = begin;
 			_end = end;
 			_length = (begin - end).norm;
-			_normal = (begin - end).normalised;
+			_normal = (begin - end).normalized;
 		}
 		
 		V3 begin()const{return _begin;}
 		V3 end()const{return _end;}
-		V3 normalised()const{return _normalized;}
+		V3 normal()const{return _normal;}
 		N length()const{return _length;}
 	}
 	
 	private{
 		V3 _begin;
 		V3 _end;
-		V3 _normalized;
+		V3 _normal;
 		N _length;
 	}
 }
