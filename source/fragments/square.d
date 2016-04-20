@@ -164,7 +164,7 @@ unittest{
 	alias V3 = ar.Vector!(N, 3);
 	
 	import fragments.material;
-	auto material = new Material!(double);
+	auto material = new Material!N;
 	
 	import fragments.polygon;
 	Polygon!N[] polygons;
@@ -252,4 +252,44 @@ private bool detectContactPoint(N, V3 = ar.Vector!(N, 3))(
 	}
 	
 	return isSuccess;
+}
+unittest{
+	alias N = double;
+	alias V3 = ar.Vector!(N, 3);
+	
+	import fragments.material;
+	auto material = new Material!N;
+	
+	import fragments.polygon;
+	Polygon!N[] polygons;
+	auto polygon= new Polygon!N(
+		[
+			V3(1, -4, 1), 
+			V3(1, 4, 1), 
+			V3(1, 0, -2), 
+		],
+		material
+	);
+	
+	{
+		V3 begin = V3(0, 0, 0);
+		V3 end = V3(10, 0, 0);
+		
+		ContactPoint!N[] contactPoints;
+		detectContactPoint(begin, end, polygon, contactPoints);
+		
+		assert(contactPoints.length == 1);
+		assert(contactPoints[0].distance == 9);
+		assert(contactPoints[0].coordination == V3(1, 0, 0));
+	}
+
+	{
+		V3 begin = V3(0, 0, 0);
+		V3 end = V3(10, 0, 20);
+		
+		ContactPoint!N[] contactPoints;
+		detectContactPoint(begin, end, polygon, contactPoints);
+		
+		assert(contactPoints.length == 0);
+	}
 }
