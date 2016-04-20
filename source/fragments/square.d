@@ -38,44 +38,44 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 		}
 		
 		void updateCollisionConstraintPairs(in StaticEntity!(N)[] staticEntities){
-			// {
-			// 	ContactPoint!N[] points;
-			// 	detectContactPoint(
-			// 		_positionPre,
-			// 		_position,
-			// 		staticEntity,
-			// 		points 
-			// 	);
-			//	
-			// 	if(points.length > 0){
-			// 		_collisionConstraintPairs[0].update(staticEntity, points[0]);
-			// 	}
-			// }
-			//
-			// foreach (int index, ray; _rays) {
-			// 	ContactPoint!N[] points;
-			// 	immutable isDetectStaticRay = detectContactPoint(
-			// 		_position,
-			// 		_orientation.rotatedVector(ray)+_position, 
-			// 		staticEntity, 
-			// 		points
-			// 	);
-			//	
-			// 	// if(!isDetectStaticRay){
-			// 	// 	immutable V3 rayBeginGlobal = _orientationPre.rotatedVector(ray)+_positionPre;
-			// 	// 	immutable V3 rayEndGlobal   = _orientation.rotatedVector(ray)+_position;
-			// 	// 	detectContactPoint(
-			// 	// 		rayBeginGlobal,
-			// 	// 		rayEndGlobal, 
-			// 	// 		staticEntity, 
-			// 	// 		points
-			// 	// 	);
-			// 	// }
-			//	
-			// 	if(points.length > 0){
-			// 		_collisionConstraintPairs[index+1].update(staticEntity, points[0]);
-			// 	}
-			// }
+			{
+				ContactPoint!N[] points;
+				detectMostCloselyContactPoint(
+					_positionPre,
+					_position,
+					staticEntities,
+					points 
+				);
+				
+				if(points.length > 0){
+					_collisionConstraintPairs[0].update(points[0]);
+				}
+			}
+			
+			foreach (int index, ray; _rays) {
+				ContactPoint!N[] points;
+				immutable isDetectStaticRay = detectMostCloselyContactPoint(
+					_position,
+					_orientation.rotatedVector(ray)+_position, 
+					staticEntities, 
+					points
+				);
+				
+				if(!isDetectStaticRay){
+					immutable V3 rayBeginGlobal = _orientationPre.rotatedVector(ray)+_positionPre;
+					immutable V3 rayEndGlobal   = _orientation.rotatedVector(ray)+_position;
+					detectMostCloselyContactPoint(
+						rayBeginGlobal,
+						rayEndGlobal, 
+						staticEntities, 
+						points
+					);
+				}
+				
+				if(points.length > 0){
+					_collisionConstraintPairs[index+1].update(points[0]);
+				}
+			}
 		}
 		
 		///
@@ -125,39 +125,25 @@ unittest{
 	auto square = new Square!(double)(material);
 };
 
-private ContactPoint!(N)[] detectedContactPoints(N, V3 = ar.Vector!(N, 3))(
-	in V3 rayBeginGlobal,
-	in V3 rayEndGlobal,
-	in StaticEntity!(N) staticEntity
-){
-	ContactPoint!(N)[] points;
-	detectContactPoint(
-		rayBeginGlobal,
-		rayEndGlobal,
-		staticEntity,
-		points,
-	);
-	return points;
-}
-
 private bool detectMostCloselyContactPoint(N, V3 = ar.Vector!(N, 3), StaticEntities)(
 	in V3 rayBeginGlobal,
 	in V3 rayEndGlobal,
 	in StaticEntities staticEntities,
 	ref ContactPoint!N[] contactPoints, 
 ){
-	bool isDetect = false;
+	bool isDetected = false;
 	
 	ContactPoint!N[] points;
 	foreach (staticEntity; staticEntities) {
-		isDetect= isDetect|| detectContactPoint(
+		isDetected = isDetected || detectContactPoint(
 			rayBeginGlobal,
 			rayEndGlobal,
 			staticEntity,
 			points, 
 		);
 	}
-	if(isDetect){
+	
+	if(isDetected){
 		int closelyIndex = 0;
 		N closelyDistance = N.max;
 		foreach (int index, point; points) {
@@ -168,10 +154,7 @@ private bool detectMostCloselyContactPoint(N, V3 = ar.Vector!(N, 3), StaticEntit
 		}
 		contactPoints ~= points[closelyIndex];
 	}
-	// import std.math;
-	// import std.algorithm:reduce;
-	// contactPoints = points.reduce!((a, b) => a.distance<b.distance?a:b);
-	return isDetect;
+	return isDetected;
 }
 unittest{
 	alias N = double;

@@ -176,7 +176,6 @@ struct CollisionConstraintPair(NumericType) {
 			ref DynamicEntity!N dynamicEntity,
 			ref StaticEntity!N staticEntity,
 			ref ContactPoint!(N) contactPoint,
-			ref N unitTime, 
 		){
 			_entity = dynamicEntity;
 			_contactPoint = contactPoint;
@@ -190,7 +189,8 @@ struct CollisionConstraintPair(NumericType) {
 			import std.math;
 			immutable bias = 0.0;
 			immutable slop = N(0);
-			immutable biasTerm = (bias * fmax(N(0), contactPoint.distance+slop))/unitTime;
+			// immutable biasTerm = (bias * fmax(N(0), contactPoint.distance+slop))/unitTime;
+			immutable biasTerm = N(0);
 			
 			immutable jacDiagInv = this.jacDiagInv(
 				applicationPoint,
@@ -225,6 +225,11 @@ struct CollisionConstraintPair(NumericType) {
 				);
 			}
 		}
+		
+		void update(
+			in ContactPoint!(N) contactPoint,
+		){
+		};
 		
 		/++
 		+/
