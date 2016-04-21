@@ -52,13 +52,18 @@ class Engine(NumericType){
 				import armos;
 				alias V3 = ar.Vector!(N, 3);
 				
-				import std.algorithm:map;
+				import std.algorithm:map, each;
 				import std.array:array,join;
 				LinearImpulseConstraint!N[] linearImpulseConstraints = dynamicEntities.map!(entity => LinearImpulseConstraint!N(entity, V3(0, -9.8*entity.mass*_unitTime, 0))).array;
 				
-				auto collisionConstraintPairs = dynamicEntities
-					.map!(entity => _mapConstraintDetector.detectedCollisionConstraintPairs(entity))
-					.join;
+				// dynamicEntities.
+				// auto collisionConstraintPairs = dynamicEntities
+				// 	.map!(entity => _mapConstraintDetector.detectedCollisionConstraintPairs(entity))
+				// 	.join;
+				
+				dynamicEntities.each!((ref entity) => entity.updateCollisionConstraintPairs(_mapConstraintDetector.detectedStaticEntities(entity)));
+				
+				CollisionConstraintPair!N[] collisionConstraintPairs;
 				
 				_constraintSolver.solve(
 					dynamicEntities, 

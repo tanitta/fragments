@@ -68,7 +68,6 @@ class MapConstraintDetector(NumericType){
 				.map!(
 					contactPoint => CollisionConstraintPair!N(
 						collidablePair.dynamicEntity,
-						collidablePair.staticEntity,
 						contactPoint,
 					)
 				)

@@ -173,26 +173,27 @@ struct CollisionConstraintPair(NumericType) {
 		/++
 			TODO: initialize without collision
 		+/
+		
 		this(
 			ref DynamicEntity!N dynamicEntity,
-			ref StaticEntity!N staticEntity,
-			ref ContactPoint!(N) contactPoint,
+			ref ContactPoint!N contactPoint,
 		){
-			_entity = dynamicEntity;
-			_contactPoint = contactPoint;
+			_dynamicEntity = dynamicEntity;
 			
-			//set constraints
+			// _contactPoint = contactPoint;
+			
+			auto staticEntity = contactPoint.staticEntity;
+			
 			immutable V3 applicationPoint = contactPoint.applicationPoint - dynamicEntity.position;
-			
 			immutable relativeVelocity = dynamicEntity.linearVelocity + dynamicEntity.angularVelocity.vectorProduct(applicationPoint);
-			
-			
-			import std.math;
+				
 			immutable bias = 0.0;
 			immutable slop = N(0);
+			import std.math;
+			immutable unitTime = 1.0/30.0;
 			// immutable biasTerm = (bias * fmax(N(0), contactPoint.distance+slop))/unitTime;
 			immutable biasTerm = N(0);
-			
+
 			immutable jacDiagInv = this.jacDiagInv(
 				applicationPoint,
 				dynamicEntity.massInv,
@@ -200,6 +201,7 @@ struct CollisionConstraintPair(NumericType) {
 				staticEntity.normal
 			);
 			
+			//set constraints
 			collisionConstraint = CollisionConstraint!N(
 				relativeVelocity,
 				jacDiagInv, 
@@ -209,47 +211,130 @@ struct CollisionConstraintPair(NumericType) {
 			);
 			
 			// friction constraint
-			_staticFriction = (dynamicEntity.material.staticFriction * staticEntity.material.staticFriction)^^N(0.5);
-			_dynamicFriction = (dynamicEntity.material.dynamicFriction * staticEntity.material.dynamicFriction)^^N(0.5);
-			
-			
-			V3[2] frictionAxes;
-			frictionAxes[0] = (staticEntity.vertices[1] - staticEntity.vertices[0]).normalized;
-			frictionAxes[1] = frictionAxes[0].vectorProduct(staticEntity.normal);
-			
-			foreach (int index, frictionAxis; frictionAxes) {
-				frictionConstraints[index] = FrictionConstraint!N(
-					relativeVelocity,
-					jacDiagInv,
-					applicationPoint,
-					frictionAxis,
-				);
+			{
+				_staticFriction = (dynamicEntity.material.staticFriction * staticEntity.material.staticFriction)^^N(0.5);
+				_dynamicFriction = (dynamicEntity.material.dynamicFriction * staticEntity.material.dynamicFriction)^^N(0.5);
+
+				V3[2] frictionAxes;
+				frictionAxes[0] = (staticEntity.vertices[1] - staticEntity.vertices[0]).normalized;
+				frictionAxes[1] = frictionAxes[0].vectorProduct(staticEntity.normal);
+
+				foreach (int index, frictionAxis; frictionAxes) {
+					frictionConstraints[index] = FrictionConstraint!N(
+						relativeVelocity,
+						jacDiagInv,
+						applicationPoint,
+						frictionAxis,
+					);
+				}
 			}
+		}
+		
+		this(DynamicEntity!N dynamicEntity){
+			_dynamicEntity = dynamicEntity;
 		}
 		
 		/++
 			TODO:Implement
 		+/
 		void update(
-			in ContactPoint!(N) contactPoint,
+			in ContactPoint!(N)[] contactPoints,
 		){
+			_isColliding = contactPoints.length > 0;
+			_depth = V3.zero;
+			
+			if(isColliding){
+				
+				const contactPoint = contactPoints[0];
+				import std.stdio;
+				// typeid(contactPoint).writeln;
+				// typeid(_contactPoint).writeln;
+				// _contactPoint = contactPoint;
+				// _contactPoint = ContactPoint!N(
+				// 	contactPoint.coordination, 
+				// 	contactPoint.normal, 
+				// 	contactPoint.distance, 
+				// 	contactPoint.applicationPoint, 
+				// 	contactPoint.staticEntity, 
+				// );
+				
+				immutable V3 applicationPoint = contactPoint.applicationPoint - _dynamicEntity.position;
+				immutable relativeVelocity = _dynamicEntity.linearVelocity + _dynamicEntity.angularVelocity.vectorProduct(applicationPoint);
+
+				// immutable bias = 0.0;
+				// immutable slop = N(0);
+				// import std.math;
+				// immutable biasTerm = (bias * fmax(N(0), contactPoint.distance+slop))/unitTime;
+				immutable biasTerm = N(0);
+
+				
+				const staticEntity = contactPoints[0].staticEntity;
+				
+				immutable jacDiagInv = this.jacDiagInv(
+					applicationPoint,
+					_dynamicEntity.massInv,
+					_dynamicEntity.inertiaGlobalInv,
+					staticEntity.normal
+				);
+
+				
+				//set constraints
+				collisionConstraint = CollisionConstraint!N(
+					relativeVelocity,
+					jacDiagInv, 
+					applicationPoint, 
+					staticEntity.normal,
+					biasTerm,
+				);
+				
+				// friction constraint
+				{
+					_staticFriction = (_dynamicEntity.material.staticFriction * staticEntity.material.staticFriction)^^N(0.5);
+					_dynamicFriction = (_dynamicEntity.material.dynamicFriction * staticEntity.material.dynamicFriction)^^N(0.5);
+
+					V3[2] frictionAxes;
+					frictionAxes[0] = (staticEntity.vertices[1] - staticEntity.vertices[0]).normalized;
+					frictionAxes[1] = frictionAxes[0].vectorProduct(staticEntity.normal);
+
+					foreach (int index, frictionAxis; frictionAxes) {
+						frictionConstraints[index] = FrictionConstraint!N(
+							relativeVelocity,
+							jacDiagInv,
+							applicationPoint,
+							frictionAxis,
+						);
+					}
+				}
+				
+				_depth = contactPoint.distance * contactPoint.normal;
+			}
 		};
 		
-		/++
-			TODO: Add bool isColliding
-		+/
+		bool isColliding()const{return _isColliding;}
 		
 		/++
 		+/
-		ContactPoint!N contactPoint(){return _contactPoint;}
+		// const(ContactPoint!N) contactPoint()const{return _contactPoint;}
 		
 		/++
 		+/
-		DynamicEntity!(N) entity(){return _entity;};
+		DynamicEntity!(N) entity(){return _dynamicEntity;};
 		
 		/++
 		+/
 		CollisionConstraint!(N) collisionConstraint;
+		
+		// /++
+		// +/
+		// V3 bias(in V3 currentBias)const{
+		// 	return currentBias - (_depth.dotProduct(currentBias) - _depth.norm)*_depth.normalized;
+		// };
+		
+		/++
+		+/
+		V3 depth()const{
+			return _depth;
+		};
 		
 		/++
 		+/
@@ -267,8 +352,12 @@ struct CollisionConstraintPair(NumericType) {
 	}//public
 
 	private{
-		DynamicEntity!(N) _entity;
-		ContactPoint!(N) _contactPoint;
+		DynamicEntity!(N) _dynamicEntity;
+		
+		// ContactPoint!(N) _contactPoint;
+		V3 _depth;
+		
+		bool _isColliding;
 		
 		N _staticFriction;
 		N _dynamicFriction;

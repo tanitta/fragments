@@ -145,6 +145,8 @@ interface DynamicEntity(NumericType) : Entity!(NumericType){
 		bool isColliding()const;
 		
 		CollisionConstraintPair!N[] collisionConstraintPairs();
+		
+		void updateCollisionConstraintPairs(in StaticEntity!N[] staticEntities);
 	}//public
 }//interface DynamicEntity
 

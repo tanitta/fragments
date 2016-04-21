@@ -21,7 +21,6 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 
 			_margin = V3(0.5, 0.5, 0.5);
 			
-			//set some rays used in method : contactPoints
 			_rays = [
 				V3(size,  0, 0    ), 
 				V3(-size, 0, 0    ), 
@@ -35,25 +34,35 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 			];
 			
 			//TODO: Implement initializing _collisionConstraintPairs
+			_collisionConstraintPairs = [
+				CollisionConstraintPair!N(this), 
+				CollisionConstraintPair!N(this), 
+				CollisionConstraintPair!N(this), 
+				CollisionConstraintPair!N(this), 
+				CollisionConstraintPair!N(this), 
+				CollisionConstraintPair!N(this), 
+				CollisionConstraintPair!N(this), 
+				CollisionConstraintPair!N(this), 
+				CollisionConstraintPair!N(this), 
+			];
 		}
 		
 		void updateCollisionConstraintPairs(in StaticEntity!N[] staticEntities)
 		in{
 			assert(_collisionConstraintPairs.length == 9);
 		}body{
-			{
-				ContactPoint!N[] points;
-				detectMostCloselyContactPoint(
-					_positionPre,
-					_position,
-					staticEntities,
-					points 
-				);
-				
-				if(points.length > 0){
-					_collisionConstraintPairs[0].update(points[0]);
-				}
-			}
+			_isColliding = false;
+			// {
+			// 	ContactPoint!N[] points;
+			// 	detectMostCloselyContactPoint(
+			// 		_positionPre,
+			// 		_position,
+			// 		staticEntities,
+			// 		points 
+			// 	);
+			// 	_isColliding = _isColliding || points.length > 0;
+			// 	_collisionConstraintPairs[0].update(points);
+			// }
 			
 			foreach (int index, ray; _rays) {
 				ContactPoint!N[] points;
@@ -74,10 +83,8 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 						points
 					);
 				}
-				
-				if(points.length > 0){
-					_collisionConstraintPairs[index+1].update(points[0]);
-				}
+				_isColliding = _isColliding || points.length > 0;
+				_collisionConstraintPairs[index+1].update(points);
 			}
 		}
 		
