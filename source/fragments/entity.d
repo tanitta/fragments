@@ -127,9 +127,6 @@ interface DynamicEntity(NumericType) : Entity!(NumericType){
 		///
 		void updatePreVelocity();
 			
-		///
-		ContactPoint!(N)[] contactPoints(in StaticEntity!(N) staticEntity)const;
-		
 		V3 deltaLinearVelocity()const;
 		
 		void deltaLinearVelocity(in V3);

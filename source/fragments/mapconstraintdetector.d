@@ -26,23 +26,14 @@ class MapConstraintDetector(NumericType){
 		
 		/++
 		++/
-		CollisionConstraintPair!N[] detectedCollisionConstraintPairs(DynamicEntity!N dynamicEntity){
-			CollidablePair!(N)[] collidablePairs = detectedCollidablePairs(dynamicEntity);
-			return generatedCollisionConstraintPairs(collidablePairs);
-		}
-		
-		/++
-		++/
-		CollisionConstraintPair!N[] detectedCollisionConstraintPairs(DynamicEntity!N[] dynamicEntities){
-			return dynamicEntities.map!(entity => detectedCollisionConstraintPairs(entity)).join;
-		}
-		
 		StaticEntity!N[] detectedStaticEntities(DynamicEntity!N dynamicEntity){
 			import std.algorithm.iteration:map;
 			import std.array:array;
 			return detectedCollidablePairs(dynamicEntity).map!(pair => pair.staticEntity).array;
 		}
 		
+		/++
+		++/
 		void unitTime(in N t){_unitTime = t;}
 	}//public
 
@@ -60,23 +51,6 @@ class MapConstraintDetector(NumericType){
 		CollidablePair!N[] detectedCollidablePairs(DynamicEntity!(N)[] dynamicEntities){
 			return dynamicEntities
 				.map!(entity => detectedCollidablePairs(entity))
-				.join;
-		}
-		
-		CollisionConstraintPair!N[] generatedCollisionConstraintPairs(ref CollidablePair!(N) collidablePair){
-			return collidablePair.dynamicEntity.contactPoints(collidablePair.staticEntity)
-				.map!(
-					contactPoint => CollisionConstraintPair!N(
-						collidablePair.dynamicEntity,
-						contactPoint,
-					)
-				)
-				.array;
-		}
-		
-		CollisionConstraintPair!N[] generatedCollisionConstraintPairs(ref CollidablePair!(N)[] collidablePairs){
-			return collidablePairs
-				.map!(collidablePair => generatedCollisionConstraintPairs(collidablePair))
 				.join;
 		}
 	}//private

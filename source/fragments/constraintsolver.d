@@ -66,27 +66,18 @@ private void updateBias(N)(
 	import std.array:array;
 	auto collidingEntities = dynamicEntities.filter!(entity => entity.isColliding).array;
 	
-	import std.stdio;
-	
 	foreach (ref collidingEntity; collidingEntities){
 		alias V3 = ar.Vector!(N, 3);
 		collidingEntity.bias = V3.zero;
 		foreach (ref collisionConstraintPair; collidingEntity.collisionConstraintPairs) {
 			if(collisionConstraintPair.isColliding){
-				// const contactPoint = collisionConstraintPair.contactPoint;
-				// immutable bias = collisionConstraintPair.bias(collidingEntity.bias);
-				immutable depthVelocity = collisionConstraintPair.depth;
-				// if(depthVelocity.dotProduct(collidingEntity.bias) < depthVelocity.norm){
-				if(collidingEntity.bias.norm < depthVelocity.norm){
-				// 	// collidingEntity.bias = collidingEntity.bias - (depth.dotProduct(collidingEntity.bias) - depth.norm)*depth.normalized;
-					collidingEntity.bias = depthVelocity*1.0;
+				immutable depth= collisionConstraintPair.depth;
+				if(collidingEntity.bias.norm < depth.norm){
+					collidingEntity.bias = depth;
 				}
-
 			}
 		}
-		// collidingEntity.bias.norm.writeln;
 		collidingEntity.position = collidingEntity.position + collidingEntity.bias;
-		// collidingEntity.bias.writeln;
 	}
 }
 
@@ -140,43 +131,6 @@ private void iterate(N)(
 				}
 			}
 		}
-		
-		
-		
-		import std.algorithm.iteration:filter;
-		import std.array:array;
-		import std.stdio;
-		auto collidingEntities = dynamicEntities.filter!(entity => entity.isColliding).array;
-		foreach (entity; collidingEntities) {
-			// entity.deltaLinearVelocity.norm.writeln;
-		}
-		// collisionConstraint;
-		// foreach (ref collisionConstraintPair; collisionConstraintPairs) {
-		// 	DynamicEntity!N entity = collisionConstraintPair.entity;
-		//	
-		// 	//collision
-		// 	{
-		// 		V3[2] deltaVelocities = collisionConstraintPair.collisionConstraint.deltaVelocities(entity);
-		// 		entity.deltaLinearVelocity  = entity.deltaLinearVelocity + deltaVelocities[0];
-		// 		entity.deltaAngularVelocity = entity.deltaAngularVelocity + deltaVelocities[1];
-		//		
-		// 		import std.math;
-		// 		immutable maxFriction = fabs(collisionConstraintPair.collisionConstraint.currentImpulse) * collisionConstraintPair.dynamicFriction;
-		// 		foreach (ref frictionConstraint; collisionConstraintPair.frictionConstraints) {
-		// 			frictionConstraint.lowerLimit = -maxFriction;
-		// 			frictionConstraint.upperLimit = maxFriction;
-		// 		}
-		// 	}
-		//	
-		// 	//friction
-		// 	{
-		// 		foreach (int index, frictionConstraint; collisionConstraintPair.frictionConstraints) {
-		// 			V3[2] deltaVelocities = frictionConstraint.deltaVelocities(entity);
-		// 			entity.deltaLinearVelocity  = entity.deltaLinearVelocity + deltaVelocities[0];
-		// 			entity.deltaAngularVelocity = entity.deltaAngularVelocity + deltaVelocities[1];
-		// 		}
-		// 	}
-		// }
 	}
 }
 

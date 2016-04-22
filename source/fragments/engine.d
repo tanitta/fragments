@@ -56,11 +56,6 @@ class Engine(NumericType){
 				import std.array:array,join;
 				LinearImpulseConstraint!N[] linearImpulseConstraints = dynamicEntities.map!(entity => LinearImpulseConstraint!N(entity, V3(0, -9.8*entity.mass*_unitTime, 0))).array;
 				
-				// dynamicEntities.
-				// auto collisionConstraintPairs = dynamicEntities
-				// 	.map!(entity => _mapConstraintDetector.detectedCollisionConstraintPairs(entity))
-				// 	.join;
-				
 				dynamicEntities.each!((ref entity) => entity.updateCollisionConstraintPairs(_mapConstraintDetector.detectedStaticEntities(entity)));
 				
 				CollisionConstraintPair!N[] collisionConstraintPairs;

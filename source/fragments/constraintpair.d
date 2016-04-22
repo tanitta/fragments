@@ -170,17 +170,11 @@ struct CollisionConstraintPair(NumericType) {
 	alias M33 = ar.Matrix!(N, 3, 3);
 	
 	public{
-		/++
-			TODO: initialize without collision
-		+/
-		
 		this(
 			ref DynamicEntity!N dynamicEntity,
 			ref ContactPoint!N contactPoint,
 		){
 			_dynamicEntity = dynamicEntity;
-			
-			// _contactPoint = contactPoint;
 			
 			auto staticEntity = contactPoint.staticEntity;
 			
@@ -234,9 +228,6 @@ struct CollisionConstraintPair(NumericType) {
 			_dynamicEntity = dynamicEntity;
 		}
 		
-		/++
-			TODO:Implement
-		+/
 		void update(
 			in ContactPoint!(N)[] contactPoints,
 		){
@@ -244,19 +235,7 @@ struct CollisionConstraintPair(NumericType) {
 			_depth = V3.zero;
 			
 			if(isColliding){
-				
 				const contactPoint = contactPoints[0];
-				import std.stdio;
-				// typeid(contactPoint).writeln;
-				// typeid(_contactPoint).writeln;
-				// _contactPoint = contactPoint;
-				// _contactPoint = ContactPoint!N(
-				// 	contactPoint.coordination, 
-				// 	contactPoint.normal, 
-				// 	contactPoint.distance, 
-				// 	contactPoint.applicationPoint, 
-				// 	contactPoint.staticEntity, 
-				// );
 				
 				immutable V3 applicationPoint = contactPoint.applicationPoint - _dynamicEntity.position;
 				immutable relativeVelocity = _dynamicEntity.linearVelocity + _dynamicEntity.angularVelocity.vectorProduct(applicationPoint);
@@ -314,21 +293,11 @@ struct CollisionConstraintPair(NumericType) {
 		
 		/++
 		+/
-		// const(ContactPoint!N) contactPoint()const{return _contactPoint;}
-		
-		/++
-		+/
 		DynamicEntity!(N) entity(){return _dynamicEntity;};
 		
 		/++
 		+/
 		CollisionConstraint!(N) collisionConstraint;
-		
-		// /++
-		// +/
-		// V3 bias(in V3 currentBias)const{
-		// 	return currentBias - (_depth.dotProduct(currentBias) - _depth.norm)*_depth.normalized;
-		// };
 		
 		/++
 		+/
@@ -354,7 +323,6 @@ struct CollisionConstraintPair(NumericType) {
 	private{
 		DynamicEntity!(N) _dynamicEntity;
 		
-		// ContactPoint!(N) _contactPoint;
 		V3 _depth;
 		
 		bool _isColliding;
@@ -392,9 +360,6 @@ struct CollisionConstraint(NumericType) {
 	alias N = NumericType;
 	alias V3 = ar.Vector!(N, 3);
 	public{
-		/++
-			TODO: Initialize without collision
-		++/
 		this(
 			in V3 velocity,
 			in N jacDiagInv,

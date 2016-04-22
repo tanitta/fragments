@@ -33,7 +33,6 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 				V3(-size, 0, size ), 
 			];
 			
-			//TODO: Implement initializing _collisionConstraintPairs
 			_collisionConstraintPairs = [
 				CollisionConstraintPair!N(this), 
 				CollisionConstraintPair!N(this), 
@@ -52,28 +51,28 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 			assert(_collisionConstraintPairs.length == 9);
 		}body{
 			_isColliding = false;
-			// {
-			// 	ContactPoint!N[] points;
-			// 	detectMostCloselyContactPoint(
-			// 		_positionPre,
-			// 		_position,
-			// 		staticEntities,
-			// 		points 
-			// 	);
-			// 	_isColliding = _isColliding || points.length > 0;
-			// 	_collisionConstraintPairs[0].update(points);
-			// }
+			{
+				ContactPoint!N[] points;
+				// detectMostCloselyContactPoint(
+				// 	_positionPre,
+				// 	_position,
+				// 	staticEntities,
+				// 	points 
+				// );
+				_isColliding = _isColliding || points.length > 0;
+				_collisionConstraintPairs[0].update(points);
+			}
 			
 			foreach (int index, ray; _rays) {
 				ContactPoint!N[] points;
-				immutable isDetectStaticRay = detectMostCloselyContactPoint(
-					_position,
-					_orientation.rotatedVector(ray)+_position, 
-					staticEntities, 
-					points
-				);
+				// immutable isDetectStaticRay = detectMostCloselyContactPoint(
+				// 	_position,
+				// 	_orientation.rotatedVector(ray)+_position, 
+				// 	staticEntities, 
+				// 	points
+				// );
 				
-				if(!isDetectStaticRay){
+				// if(!isDetectStaticRay){
 					immutable V3 rayBeginGlobal = _orientationPre.rotatedVector(ray)+_positionPre;
 					immutable V3 rayEndGlobal   = _orientation.rotatedVector(ray)+_position;
 					detectMostCloselyContactPoint(
@@ -82,46 +81,10 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 						staticEntities, 
 						points
 					);
-				}
+				// }
 				_isColliding = _isColliding || points.length > 0;
 				_collisionConstraintPairs[index+1].update(points);
 			}
-		}
-		
-		///
-		ContactPoint!N[] contactPoints(in StaticEntity!N staticEntity)const{
-			ContactPoint!N[] points;
-			
-			detectContactPoint(
-				_positionPre,
-				_position,
-				staticEntity, 
-				points
-			);
-				
-			foreach (ray; _rays) {
-				immutable isDetectStaticRay = detectContactPoint(
-					_position,
-					_orientation.rotatedVector(ray)+_position, 
-					staticEntity, 
-					points
-				);
-				
-				// if(!isDetectStaticRay){
-				// 	immutable V3 rayBeginGlobal = _orientationPre.rotatedVector(ray)+_positionPre;
-				// 	immutable V3 rayEndGlobal   = _orientation.rotatedVector(ray)+_position;
-				// 	detectContactPoint(
-				// 		rayBeginGlobal,
-				// 		rayEndGlobal, 
-				// 		staticEntity, 
-				// 		points
-				// 	);
-				// }
-			}
-			
-			
-			// points.writeln;
-			return points;
 		}
 	}//public
 	
