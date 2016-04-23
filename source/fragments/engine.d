@@ -68,6 +68,13 @@ class Engine(NumericType){
 				);
 			}
 			
+			import std.algorithm.iteration:filter;
+			import std.array:array;
+			auto collidingEntities = dynamicEntities.filter!(entity => entity.isColliding).array;
+			foreach(entity; collidingEntities){
+				entity.updateCollisionConstraintPairs(_mapConstraintDetector.detectedStaticEntities(entity));
+			}
+			
 			import std.algorithm.iteration:each;
 			dynamicEntities.each!(entity => entity.updateEntityStatus(_integrator));
 		};

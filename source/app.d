@@ -101,7 +101,7 @@ class Chip(NumericType){
 				}ar.popStyle;
 				
 			ar.popMatrix;
-			entity.boundingBox.drawBoundingBox;
+			// entity.boundingBox.drawBoundingBox;
 		}
 		
 		/++
@@ -183,13 +183,13 @@ class Land(NumericType) {
 		+/
 		void draw(){
 			_model.drawFill;
-			ar.pushStyle;
-			ar.setLineWidth = 2;
-			ar.setColor(255, 128, 0);
-			foreach (staticEntity; _staticEntities) {
-				// staticEntity.boundingBox.drawBoundingBox;
-			}
-			ar.popStyle;
+			// ar.pushStyle;
+			// ar.setLineWidth = 2;
+			// ar.setColor(255, 128, 0);
+			// foreach (staticEntity; _staticEntities) {
+			// 	staticEntity.boundingBox.drawBoundingBox;
+			// }
+			// ar.popStyle;
 		}
 		
 		/++
@@ -210,9 +210,10 @@ class Land(NumericType) {
 /++
 ++/
 class TestApp : ar.BaseApp{
-	alias N = float;
+	alias N = double;
 	alias V3 = ar.Vector!(N, 3);
 	alias Q = ar.Quaternion!(N);
+	
 	float c = 0;
 	float h = 10;
 	float d = 10;
@@ -259,20 +260,20 @@ class TestApp : ar.BaseApp{
 		_model = new Model!N;
 		
 		import std.random;
-		// for (int i = 0; i < 64; i++) {
-		// 	auto chip = new Chip!(N);
-		// 	chip.position = V3(uniform(-5.0, 5.0), 45+uniform(0.0, 5.0), uniform(-5.0, 5.0));
-		// 	chip.orientation = Q.unit;
-		// 	chip.addForce(
-		// 		_unitTime,
-		// 		V3(
-		// 			uniform(-1.0, 1.0),
-		// 			uniform(0.0, 1.0),
-		// 			uniform(-1.0, 1.0)
-		// 		)*210.0*10,
-		// 		chip.position + V3(uniform(-1.0, 1.0), uniform(-1.0, 1.0), uniform(-1.0, 1.0)));
-		// 	_model.addChip(chip);
-		// }
+		for (int i = 0; i < 64; i++) {
+			auto chip = new Chip!(N);
+			chip.position = V3(uniform(-5.0, 5.0), 45+uniform(0.0, 5.0), uniform(-5.0, 5.0));
+			chip.orientation = Q.unit;
+			chip.addForce(
+				_unitTime,
+				V3(
+					uniform(-1.0, 1.0),
+					uniform(0.0, 1.0),
+					uniform(-1.0, 1.0)
+				)*210.0*10,
+				chip.position + V3(uniform(-1.0, 1.0), uniform(-1.0, 1.0), uniform(-1.0, 1.0)));
+			_model.addChip(chip);
+		}
 		
 		// {
 		// 	auto chip = new Chip!(N);
@@ -282,18 +283,18 @@ class TestApp : ar.BaseApp{
 		// 	_model.addChip(chip);
 		// }
 		
-		{
-			auto chip = new Chip!(N);
-			chip.position = V3(-300, 80, 0);
-			chip.orientation = Q.unit;
-			// chip.addForce(_unitTime, ar.Vector3d(300000, 20000, 0), chip.position);
-			chip.addForce(_unitTime, V3(300000, 0, 0), chip.position);
-			
-			// chip.addForce(_unitTime, ar.Vector3d(0, 0.0, 100.0)*210.0, chip.position);
-			// chip.addForce(_unitTime, ar.Vector3d(1000, 0, 0), ar.Vector3d(3, 80, 2.1));
-			// chip.addForce(_unitTime, ar.Vector3d(-10, 0, 0), ar.Vector3d(0, 45, -1));
-			_model.addChip(chip);
-		}
+		// {
+		// 	auto chip = new Chip!(N);
+		// 	chip.position = V3(0, 80, 0);
+		// 	chip.orientation = Q.unit;
+		// 	// chip.addForce(_unitTime, ar.Vector3d(300000, 20000, 0), chip.position);
+		// 	chip.addForce(_unitTime, V3(0, 20, -20)*210.0, chip.position);
+		//	
+		// 	// chip.addForce(_unitTime, ar.Vector3d(0, 0.0, 100.0)*210.0, chip.position);
+		// 	// chip.addForce(_unitTime, ar.Vector3d(1000, 0, 0), ar.Vector3d(3, 80, 2.1));
+		// 	// chip.addForce(_unitTime, ar.Vector3d(-10, 0, 0), ar.Vector3d(0, 45, -1));
+		// 	_model.addChip(chip);
+		// }
 		
 		// {
 		// 	auto chip = new Chip!(N);
@@ -343,6 +344,7 @@ class TestApp : ar.BaseApp{
 		engine.update(_dynamicEntities, _linkConstraintPair);
 		
 		// writeln("speed", _model.chips[0].entity.linearVelocity.norm*3.6, "km/h");
+		writeln("position : ", _model.chips[0].entity.position[1], "m");
 	}
 	
 	void draw(){

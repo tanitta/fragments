@@ -42,48 +42,25 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 				CollisionConstraintPair!N(this), 
 				CollisionConstraintPair!N(this), 
 				CollisionConstraintPair!N(this), 
-				CollisionConstraintPair!N(this), 
 			];
 		}
 		
 		void updateCollisionConstraintPairs(in StaticEntity!N[] staticEntities)
 		in{
-			assert(_collisionConstraintPairs.length == 9);
+			assert(_collisionConstraintPairs.length == 8);
 		}body{
-			_isColliding = false;
-			{
-				ContactPoint!N[] points;
-				// detectMostCloselyContactPoint(
-				// 	_positionPre,
-				// 	_position,
-				// 	staticEntities,
-				// 	points 
-				// );
-				_isColliding = _isColliding || points.length > 0;
-				_collisionConstraintPairs[0].update(points);
-			}
-			
 			foreach (int index, ray; _rays) {
 				ContactPoint!N[] points;
-				// immutable isDetectStaticRay = detectMostCloselyContactPoint(
-				// 	_position,
-				// 	_orientation.rotatedVector(ray)+_position, 
-				// 	staticEntities, 
-				// 	points
-				// );
-				
-				// if(!isDetectStaticRay){
-					immutable V3 rayBeginGlobal = _orientationPre.rotatedVector(ray)+_positionPre;
-					immutable V3 rayEndGlobal   = _orientation.rotatedVector(ray)+_position;
-					detectMostCloselyContactPoint(
-						rayBeginGlobal,
-						rayEndGlobal, 
-						staticEntities, 
-						points
-					);
-				// }
+				immutable V3 rayBeginGlobal = _orientationPre.rotatedVector(ray)+_positionPre;
+				immutable V3 rayEndGlobal   = _orientation.rotatedVector(ray)+_position;
+				detectMostCloselyContactPoint(
+					rayBeginGlobal,
+					rayEndGlobal, 
+					staticEntities, 
+					points
+				);
 				_isColliding = _isColliding || points.length > 0;
-				_collisionConstraintPairs[index+1].update(points);
+				_collisionConstraintPairs[index].update(points);
 			}
 		}
 	}//public
