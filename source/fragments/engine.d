@@ -83,8 +83,13 @@ class Engine(NumericType){
 }//class Engine
 
 private void updateEntityStatus(N)(DynamicEntity!N entity, Integrator!N integrator){
-	entity.updatePreStatus;
+	if(!entity.isColliding){
+		entity.updatePreStatus;
+	}
 	integrator.integrate(entity);
-	entity.updatePreVelocity;
+	
+	if(!entity.isColliding){
+		entity.updatePreVelocity;
+	}
 	entity.updateProperties;
 }

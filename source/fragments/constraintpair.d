@@ -398,7 +398,7 @@ struct CollisionConstraint(NumericType) {
 			// _accumImpulse = (oldImpulse + (_initialImpulse - impulse(deltaVelocity)).clamp(0, N.max)).clamp(0, N.max);
 			// immutable N deltaImpluse = _accumImpulse - oldImpulse;
 			
-			immutable N deltaImpluse = (_initialImpulse - impulse(deltaVelocity)).clamp(0, N.max);
+			immutable N deltaImpluse = (_initialImpulse - impulse(deltaVelocity)).clamp(N(0), N.max);
 			
 			// import std.stdio;
 			// _accumImpulse.writeln;

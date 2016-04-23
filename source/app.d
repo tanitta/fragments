@@ -210,7 +210,7 @@ class Land(NumericType) {
 /++
 ++/
 class TestApp : ar.BaseApp{
-	alias N = double;
+	alias N = float;
 	alias V3 = ar.Vector!(N, 3);
 	alias Q = ar.Quaternion!(N);
 	float c = 0;
@@ -240,7 +240,7 @@ class TestApp : ar.BaseApp{
 		ar.enableDepthTest;
 		camera.target= ar.Vector3f(0, 45, 0);
 		
-		_unitTime = 0.033;
+		_unitTime = 1.0/30.0;
 		
 		//Land
 		_land = new Land!(N);
@@ -259,11 +259,18 @@ class TestApp : ar.BaseApp{
 		_model = new Model!N;
 		
 		import std.random;
-		// for (int i = 0; i < 1024; i++) {
+		// for (int i = 0; i < 64; i++) {
 		// 	auto chip = new Chip!(N);
 		// 	chip.position = V3(uniform(-5.0, 5.0), 45+uniform(0.0, 5.0), uniform(-5.0, 5.0));
 		// 	chip.orientation = Q.unit;
-		// 	chip.addForce(_unitTime, ar.Vector3d(uniform(-10.0, 10.0) ,uniform(-100.0, 0.0), uniform(-10.0, 10.0)), chip.position + ar.Vector3d(uniform(-1.0, 1.0), uniform(-1.0, 1.0), uniform(-1.0, 1.0)));
+		// 	chip.addForce(
+		// 		_unitTime,
+		// 		V3(
+		// 			uniform(-1.0, 1.0),
+		// 			uniform(0.0, 1.0),
+		// 			uniform(-1.0, 1.0)
+		// 		)*210.0*10,
+		// 		chip.position + V3(uniform(-1.0, 1.0), uniform(-1.0, 1.0), uniform(-1.0, 1.0)));
 		// 	_model.addChip(chip);
 		// }
 		
@@ -279,8 +286,10 @@ class TestApp : ar.BaseApp{
 			auto chip = new Chip!(N);
 			chip.position = V3(-300, 80, 0);
 			chip.orientation = Q.unit;
-			// chip.addForce(_unitTime, ar.Vector3d(300000, 20000, 0), ar.Vector3d(3, 80, 2));
-			chip.addForce(_unitTime, ar.Vector3d(0, 0.0, 100.0)*210.0, chip.position);
+			// chip.addForce(_unitTime, ar.Vector3d(300000, 20000, 0), chip.position);
+			chip.addForce(_unitTime, V3(300000, 0, 0), chip.position);
+			
+			// chip.addForce(_unitTime, ar.Vector3d(0, 0.0, 100.0)*210.0, chip.position);
 			// chip.addForce(_unitTime, ar.Vector3d(1000, 0, 0), ar.Vector3d(3, 80, 2.1));
 			// chip.addForce(_unitTime, ar.Vector3d(-10, 0, 0), ar.Vector3d(0, 45, -1));
 			_model.addChip(chip);
@@ -337,7 +346,7 @@ class TestApp : ar.BaseApp{
 	}
 	
 	void draw(){
-		// camera.position = ar.Vector3f(0, h, -d);
+		// camera.position = camera.target + ar.Vector3f(0, -h, -d);
 		camera.target = cast(ar.Vector3f)(_model.chips[0].position);
 		camera.position = cast(ar.Vector3f)( _model.chips[0].position+V3(-d*sin(c/360.0*PI), h, -d*cos(c/360.0*PI)) );
 		camera.begin;
