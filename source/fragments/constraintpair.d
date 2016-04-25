@@ -6,6 +6,27 @@ import armos;
 
 /++
 +/
+template BallJoint(NumericType) {
+	alias N = NumericType;
+	alias V3 = ar.Vector!(N, 3);
+	alias M33 = ar.Matrix!(N, 3, 3);
+	public{
+		LinkConstraintPair!N BallJoint(){
+			return new LinkConstraintPair!N();
+		};
+	}//public
+
+	private{
+	}//private
+}//template BallJoint
+unittest{
+	assert(__traits(compiles, {
+		auto ballJoint = BallJoint!double();
+	}));
+}
+
+/++
++/
 class LinkConstraintPair(NumericType) {
 	alias N = NumericType;
 	alias V3 = ar.Vector!(N, 3);
@@ -16,9 +37,15 @@ class LinkConstraintPair(NumericType) {
 
 	private{
 		DynamicEntity!N[2] _dynamicEntities;
-		LinkConstraint!N[6] _linkConstraints;
+		LinkConstraint!N[3] _linearLinkConstraints;
+		LinkConstraint!N[3] _angularLinkConstraints;
 	}//private
 }//class LinkConstraintPair
+unittest{
+	assert(__traits(compiles, {
+		auto linkConstraintPair = new LinkConstraintPair!double();
+	}));
+}
 
 /++
 +/
@@ -32,8 +59,11 @@ struct LinkConstraint(NumericType) {
 	private{
 	}//private
 }//struct LinkConstraint
-
-
+unittest{
+	assert(__traits(compiles, {
+		auto linkConstraint= LinkConstraint!double();
+	}));
+}
 
 /++
 +/
@@ -42,10 +72,12 @@ struct LinearImpulseConstraint(NumericType) {
 	alias V3 = ar.Vector!(N, 3);
 	
 	public{
+		/// 
 		this(DynamicEntity!N dynamicEntity, in V3 impulse){
 			this.entity = dynamicEntity; 
 			_impulse = impulse;
 		}
+		
 		/// 
 		V3[2] deltaVelocities(DynamicEntity!N dynamicEntity)
 		in{
@@ -68,99 +100,44 @@ struct LinearImpulseConstraint(NumericType) {
 		V3 _impulse;
 		N _initialImpulse;
 	}//private
-}//struct ForceConstraint
+}//struct LinearImpulseConstraint
 
 /++
 +/
-// template forceConstraintPair(NumericType) {
-// 	alias N = NumericType;
-// 	alias V3 = ar.Vector!(N, 3);
-// 	public{
-// 		ConstraintPair!N forceConstraintPair(DynamicEntity!N entity, in V3 force){
-// 			auto constraintPair = ConstraintPair!N(entity);
-// 			// constraintPair.linearConstraints[0] = Constraint!N(
-// 			// 	force.normalized
-// 			// );
-// 			return constraintPair;
-// 		}
-// 	}//public
-//
-// 	private{
-// 	}//private
-// }//template forceConstraintPair
-unittest{
-	alias N = double;
+struct AngularImpulseConstraint(NumericType) {
+	alias N = NumericType;
 	alias V3 = ar.Vector!(N, 3);
 	
-	import fragments.material;
-	auto material = new Material!N;
-	
-	import fragments.square;
-	auto entity = new Square!N(material);
-	
-	// assert(__traits(compiles,(){
-	// 	ConstraintPair!N forceConstraint = forceConstraintPair!N(entity, V3.zero);
-	// }));
-}
+	public{
+		/// 
+		this(DynamicEntity!N dynamicEntity, in V3 impulse){
+			this.entity = dynamicEntity; 
+			_impulse = impulse;
+		}
+		
+		/// 
+		V3[2] deltaVelocities(DynamicEntity!N dynamicEntity)
+		in{
+			assert(dynamicEntity);
+			import std.math;
+			assert(!isNaN(dynamicEntity.deltaAngularVelocityVelocity[0]));
+		}body{
+			immutable V3 deltaAngularVelocity = _impulse * dynamicEntity.inertiaGlobalInv;
+			immutable V3[2] v = [
+				V3.zero,
+				deltaAngularVelocity
+			];
+			return v;
+		};
+		
+		DynamicEntity!N entity;
+	}//public
 
-
-/++
-++/
-// struct ConstraintPair(NumericType) {
-// 	alias N = NumericType;
-// 	alias V3 = ar.Vector!(N, 3);
-//	
-// 	public{
-// 		this(DynamicEntity!(N) entityA, DynamicEntity!(N) entityB = null){
-// 			_entities[0] = entityA;
-// 			_entities[1] = entityB;
-// 		}
-//		
-// 		DynamicEntity!(N)[2] entities(){return _entities;};
-//		
-// 		Constraint!(N)[3] linearConstraints;
-// 		Constraint!(N)[3] angularConstraints;
-//		
-// 	}//public
-//
-// 	private{
-// 		DynamicEntity!(N)[2] _entities;
-// 	}//private
-// }//class ConstraintPair
-
-/++
-+/
-// struct Constraint(NumericType) {
-// 	alias N = NumericType;
-// 	alias V3 = ar.Vector!(N, 3);
-// 	alias ImpulseFunction = N delegate(V3 deltaVelocity);
-//	
-// 	public{
-// 		// ContactPoint!(N) contactPoint;
-// 		this(
-// 			in V3 initialDeltaVelocity,
-// 			in V3 applicationPoint, 
-// 			in V3 axis,
-// 			in N biasTerm, 
-// 			in ImpulseFunction impulseFunction,
-// 		){
-// 			_impulseFunction = impulseFunction;
-// 			_axis = axis;
-// 			_initialImpulse = _impulseFunction(initialDeltaVelocity);
-// 		}
-//		
-// 		@property{
-// 			V3 axis(){return _axis;};
-// 			ImpulseFunction _impulseFunction;
-// 			V3 initialImpulse(){return _initialImpulse;};
-// 		}
-// 	}//public
-//
-// 	private{
-// 		V3 _axis;
-// 		V3 _initialImpulse;
-// 	}//private
-// }//struct Constraint
+	private{
+		V3 _impulse;
+		N _initialImpulse;
+	}//private
+}//struct AngularImpulseConstraint
 
 /++
 +/
