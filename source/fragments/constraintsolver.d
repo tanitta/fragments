@@ -20,19 +20,16 @@ class ConstraintSolver(NumericType){
 		++/
 		void solve(
 			ref DynamicEntity!N[]           dynamicEntities,
-			ref CollisionConstraintPair!N[] collisionConstraintPairs,
 			ref LinkConstraintPair!N[]      linkConstraintPairs,
 			ref LinearImpulseConstraint!N[] linearImpulseConstraints,
 		){
 			_iterations.iterate(
 				dynamicEntities,
-				collisionConstraintPairs,
 				linkConstraintPairs,
 				linearImpulseConstraints
 			);
 			
 			postProcess(
-				collisionConstraintPairs,
 				linkConstraintPairs,
 				dynamicEntities
 			);
@@ -42,12 +39,10 @@ class ConstraintSolver(NumericType){
 	private{
 		N _unitTime;
 		int _iterations = 10;
-		DynamicEntity!N[] _dynamicEntities;
 	}//private
 }//class ConstraintSolver
 
 private void postProcess(N)(
-	ref CollisionConstraintPair!N[] collisionConstraintPairs, 
 	ref LinkConstraintPair!N[]      linkConstraintPairs,
 	ref DynamicEntity!N[]           dynamicEntities,
 ){
@@ -83,50 +78,89 @@ private void updateBias(N)(
 
 private void iterate(N)(
 	in int iterations, 
-	ref DynamicEntity!N[] dynamicEntities, 
-	ref CollisionConstraintPair!N[] collisionConstraintPairs, 
+	ref DynamicEntity!N[] collidingEntities, 
 	ref LinkConstraintPair!N[]      linkConstraintPairs,
 	ref LinearImpulseConstraint!N[] linearImpulseConstraints,
 ){
 	alias V3 = ar.Vector!(N, 3);
 	alias M33 = ar.Matrix!(N, 3, 3);
-	import fragments.entity;
 	//iteration
 	for (int i = 0; i < iterations; i++) {
-		//impulse
-		foreach (ref linearImpulseConstraint; linearImpulseConstraints) {
-			import std.conv;
-			auto entity = linearImpulseConstraint.entity;
-			V3[2] deltaVelocities = linearImpulseConstraint.deltaVelocities(entity);
-			entity.deltaLinearVelocity  = entity.deltaLinearVelocity + deltaVelocities[0]/iterations.to!N;
-			entity.deltaAngularVelocity = entity.deltaAngularVelocity + deltaVelocities[1]/iterations.to!N;
+		linearImpulseConstraints.updateDeltaLinearVelocities(iterations);
+		linkConstraintPairs.updateDeltaLinearVelocities;
+		collidingEntities.updateDeltaLinearVelocities;
+	}
+}
+
+private void updateDeltaLinearVelocities(N, V3 = ar.Vector!(N, 3))(ref LinearImpulseConstraint!N[] linearImpulseConstraints, int iterations){
+	foreach (ref linearImpulseConstraint; linearImpulseConstraints) {
+		import std.conv;
+		auto entity = linearImpulseConstraint.entity;
+		V3[2] deltaVelocities = linearImpulseConstraint.deltaVelocities(entity);
+		entity.deltaLinearVelocity  = entity.deltaLinearVelocity + deltaVelocities[0]/iterations.to!N;
+		entity.deltaAngularVelocity = entity.deltaAngularVelocity + deltaVelocities[1]/iterations.to!N;
+	}
+}
+
+private void updateDeltaLinearVelocities(N, V3 = ar.Vector!(N, 3))(ref LinkConstraintPair!N[] linkConstraintPairs){
+	foreach (ref linkConstraintPair; linkConstraintPairs){
+		auto entities = linkConstraintPair.dynamicEntities;
+		foreach (ref linearConstraint; linkConstraintPair.linearLinkConstraints) {
+			V3[2] deltaVelocities = linearConstraint.deltaVelocities(entities[0], entities[1]);
+			{
+				auto entity = entities[0];
+				entity.deltaLinearVelocity  = entity.deltaLinearVelocity + deltaVelocities[0];
+				entity.deltaAngularVelocity = entity.deltaAngularVelocity + deltaVelocities[1];
+			}
+
+			{
+				auto entity = entities[1];
+				entity.deltaLinearVelocity  = entity.deltaLinearVelocity - deltaVelocities[0];
+				entity.deltaAngularVelocity = entity.deltaAngularVelocity - deltaVelocities[1];
+			}
 		}
-		
-		foreach (entity; dynamicEntities) {
-			foreach (ref collisionConstraintPair; entity.collisionConstraintPairs) {
-				if(collisionConstraintPair.isColliding){
-					//collision
-					{
-						V3[2] deltaVelocities = collisionConstraintPair.collisionConstraint.deltaVelocities(entity);
+
+		foreach (ref angularConstraint; linkConstraintPair.linearLinkConstraints) {
+			V3[2] deltaVelocities = angularConstraint.deltaVelocities(entities[0], entities[1]);
+			{
+				auto entity = entities[0];
+				entity.deltaLinearVelocity  = entity.deltaLinearVelocity + deltaVelocities[0];
+				entity.deltaAngularVelocity = entity.deltaAngularVelocity + deltaVelocities[1];
+			}
+
+			{
+				auto entity = entities[1];
+				entity.deltaLinearVelocity  = entity.deltaLinearVelocity - deltaVelocities[0];
+				entity.deltaAngularVelocity = entity.deltaAngularVelocity - deltaVelocities[1];
+			}
+		}
+	}
+}
+
+private void updateDeltaLinearVelocities(N, V3 = ar.Vector!(N, 3))(ref DynamicEntity!N[] collidingEntities){
+	foreach (entity; collidingEntities) {
+		foreach (ref collisionConstraintPair; entity.collisionConstraintPairs) {
+			if(collisionConstraintPair.isColliding){
+				{
+					V3[2] deltaVelocities = collisionConstraintPair.collisionConstraint.deltaVelocities(entity);
+					entity.deltaLinearVelocity  = entity.deltaLinearVelocity + deltaVelocities[0];
+					entity.deltaAngularVelocity = entity.deltaAngularVelocity + deltaVelocities[1];
+				}
+				
+				import std.math;
+				immutable maxFriction = fabs(collisionConstraintPair.collisionConstraint.currentImpulse) * collisionConstraintPair.dynamicFriction;
+				foreach (ref frictionConstraint; collisionConstraintPair.frictionConstraints) {
+					frictionConstraint.lowerLimit = -maxFriction;
+					frictionConstraint.upperLimit = maxFriction;
+				}
+				
+				
+				//friction
+				{
+					foreach (int index, ref frictionConstraint; collisionConstraintPair.frictionConstraints) {
+						V3[2] deltaVelocities = frictionConstraint.deltaVelocities(entity);
 						entity.deltaLinearVelocity  = entity.deltaLinearVelocity + deltaVelocities[0];
 						entity.deltaAngularVelocity = entity.deltaAngularVelocity + deltaVelocities[1];
-					}
-					
-					import std.math;
-					immutable maxFriction = fabs(collisionConstraintPair.collisionConstraint.currentImpulse) * collisionConstraintPair.dynamicFriction;
-					foreach (ref frictionConstraint; collisionConstraintPair.frictionConstraints) {
-						frictionConstraint.lowerLimit = -maxFriction;
-						frictionConstraint.upperLimit = maxFriction;
-					}
-					
-					
-					//friction
-					{
-						foreach (int index, ref frictionConstraint; collisionConstraintPair.frictionConstraints) {
-							V3[2] deltaVelocities = frictionConstraint.deltaVelocities(entity);
-							entity.deltaLinearVelocity  = entity.deltaLinearVelocity + deltaVelocities[0];
-							entity.deltaAngularVelocity = entity.deltaAngularVelocity + deltaVelocities[1];
-						}
 					}
 				}
 			}

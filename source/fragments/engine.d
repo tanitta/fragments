@@ -58,11 +58,8 @@ class Engine(NumericType){
 				
 				dynamicEntities.each!((ref entity) => entity.updateCollisionConstraintPairs(_mapConstraintDetector.detectedStaticEntities(entity)));
 				
-				CollisionConstraintPair!N[] collisionConstraintPairs;
-				
 				_constraintSolver.solve(
 					dynamicEntities, 
-					collisionConstraintPairs,
 					linkConstraintPairs,
 					linearImpulseConstraints, 
 				);

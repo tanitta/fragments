@@ -11,8 +11,12 @@ template BallJoint(NumericType) {
 	alias V3 = ar.Vector!(N, 3);
 	alias M33 = ar.Matrix!(N, 3, 3);
 	public{
-		LinkConstraintPair!N BallJoint(){
-			return new LinkConstraintPair!N();
+		LinkConstraintPair!N BallJoint(
+			DynamicEntity!N entityA, DynamicEntity!N entityB, 
+			in V3 applicationPointA, in V3 applicationPointB,
+			in V3 direction
+		){
+			return new LinkConstraintPair!N(entityA, entityB, applicationPointA, applicationPointB, direction);
 		};
 	}//public
 
@@ -20,9 +24,15 @@ template BallJoint(NumericType) {
 	}//private
 }//template BallJoint
 unittest{
-	assert(__traits(compiles, {
-		auto ballJoint = BallJoint!double();
-	}));
+	import fragments.square;
+	import fragments.material;
+	alias N = double;
+	auto material = new Material!N;
+	auto entityA = new Square!N(material);
+	auto entityB = new Square!N(material);
+	// assert(__traits(compiles, {
+	// 	auto ballJoint = BallJoint!N(entityA, entityB);
+	// }));
 }
 
 /++
@@ -30,21 +40,66 @@ unittest{
 class LinkConstraintPair(NumericType) {
 	alias N = NumericType;
 	alias V3 = ar.Vector!(N, 3);
+	alias M33 = ar.Matrix!(N, 3, 3);
 	
 	public{
-		this(){}
+		this(
+			DynamicEntity!N entityA, DynamicEntity!N entityB,
+			in V3 applicationPointA, in V3 applicationPointB,
+			in V3 direction
+		){
+			_dynamicEntities[0] = entityA;
+			_dynamicEntities[1] = entityB;
+			foreach (ref k; _k) {
+				k = massAndInertiaTermInv(applicationPointA, entityA.massInv, entityA.inertiaGlobalInv);
+			}
+			// jacDiagInv[0] = 
+			// jacDiagInv[1] = jacDiagInv(applicationPointB, entityB.massInv, entityB.inertiaGlobalInv, direction);
+		}
+		
+		DynamicEntity!N[] dynamicEntities(){
+			return _dynamicEntities;
+		}
+		
+		void updateDirection(){}
+		
+		LinkConstraint!N[] linearLinkConstraints(){
+			return _linearLinkConstraints;
+		}
+		
+		LinkConstraint!N[] angularLinkConstraints(){
+			return _angularLinkConstraints;
+		}
+		
 	}//public
 
 	private{
 		DynamicEntity!N[2] _dynamicEntities;
-		LinkConstraint!N[3] _linearLinkConstraints;
-		LinkConstraint!N[3] _angularLinkConstraints;
+		M33[2] _k;
+		LinkConstraint!N[] _linearLinkConstraints;
+		LinkConstraint!N[] _angularLinkConstraints;
+		
 	}//private
 }//class LinkConstraintPair
 unittest{
-	assert(__traits(compiles, {
-		auto linkConstraintPair = new LinkConstraintPair!double();
-	}));
+	import fragments.square;
+	import fragments.material;
+	alias N = double;
+	auto material = new Material!N;
+	auto entityA = new Square!N(material);
+	auto entityB = new Square!N(material);
+	// assert(__traits(compiles, {
+	// 	auto linkConstraintPair = new LinkConstraintPair!N(entityA, entityB);
+	// }));
+}
+unittest{
+	import fragments.square;
+	import fragments.material;
+	alias N = double;
+	auto material = new Material!N;
+	auto entityA = new Square!N(material);
+	auto entityB = new Square!N(material);
+	// auto linkConstraintPair = new LinkConstraintPair!N(entityA, entityB);
 }
 
 /++
@@ -54,14 +109,46 @@ struct LinkConstraint(NumericType) {
 	alias V3 = ar.Vector!(N, 3);
 	
 	public{
+		this(in N jacDiagInv){
+			_jacDiagInv = jacDiagInv;
+		}
+		
+		V3[2] deltaVelocities(DynamicEntity!N entityA, DynamicEntity!N entityB){
+			immutable V3[2] v = [
+				V3.zero, 
+				V3.zero, 
+			];
+			return v;
+		}
 	}//public
 
 	private{
+		N _initialImpulse;
+		V3 _direction;
+		N _jacDiagInv;
+		V3[2] _applicationPoints;
+		
+		N impulse(V3 deltaVelocity)const
+		in{
+			import std.math;
+			assert(!isNaN(deltaVelocity[0]));
+		}body{
+			immutable N impulse = _jacDiagInv * _direction.dotProduct(deltaVelocity);
+			
+			return impulse;
+		}
 	}//private
 }//struct LinkConstraint
 unittest{
+	import fragments.square;
+	import fragments.material;
+	alias N = double;
+	auto material = new Material!N;
+	auto entityA = new Square!N(material);
+	auto entityB = new Square!N(material);
+	
 	assert(__traits(compiles, {
-		auto linkConstraint= LinkConstraint!double();
+		auto linkConstraint= LinkConstraint!N();
 	}));
 }
 
@@ -165,7 +252,7 @@ struct CollisionConstraintPair(NumericType) {
 			// immutable biasTerm = (bias * fmax(N(0), contactPoint.distance+slop))/unitTime;
 			immutable biasTerm = N(0);
 
-			immutable jacDiagInv = this.jacDiagInv(
+			immutable jacDiagInv = jacDiagInv(
 				applicationPoint,
 				dynamicEntity.massInv,
 				dynamicEntity.inertiaGlobalInv,
@@ -226,7 +313,7 @@ struct CollisionConstraintPair(NumericType) {
 				
 				const staticEntity = contactPoints[0].staticEntity;
 				
-				immutable jacDiagInv = this.jacDiagInv(
+				immutable jacDiagInv = jacDiagInv(
 					applicationPoint,
 					_dynamicEntity.massInv,
 					_dynamicEntity.inertiaGlobalInv,
@@ -306,28 +393,6 @@ struct CollisionConstraintPair(NumericType) {
 		
 		N _staticFriction;
 		N _dynamicFriction;
-		
-		N jacDiagInv(
-			V3 applicationPoint,
-			N massInv,
-			M33 inertiaGlobalInv, 
-			V3 normal, 
-		)const in{
-			import std.math;
-			assert(!isNaN(applicationPoint[0]));
-			assert(!isNaN(massInv));
-			assert(!isNaN(inertiaGlobalInv[0][0]));
-			assert(!isNaN(normal[0]));
-		}body{
-			immutable rCrossMatrix = M33(
-				[0,                    -applicationPoint[2], applicationPoint[1] ],
-				[applicationPoint[2],  0,                    -applicationPoint[0]],
-				[-applicationPoint[1], applicationPoint[0],  0                   ],
-			);
-			immutable M33 k = massInv * M33.identity - rCrossMatrix * inertiaGlobalInv * rCrossMatrix;
-			
-			return N(1)/((k * normal).dotProduct(normal));
-		}
 	}//private
 }//struct CollisionConstraintPair
 
@@ -491,3 +556,36 @@ struct FrictionConstraint(NumericType) {
 		}
 	}//private
 }//struct CollisionConstraint
+
+private N jacDiagInv(N, V3 = ar.Vector!(N, 3), M33 = ar.Matrix!(N, 3, 3))(
+	in V3 applicationPoint,
+	in N massInv,
+	in M33 inertiaGlobalInv, 
+	in V3 normal, 
+)in{
+	import std.math;
+	assert(!isNaN(applicationPoint[0]));
+	assert(!isNaN(massInv));
+	assert(!isNaN(inertiaGlobalInv[0][0]));
+	assert(!isNaN(normal[0]));
+}body{
+	immutable M33 k = massAndInertiaTermInv(
+		applicationPoint,
+		massInv,
+		inertiaGlobalInv, 
+	);
+	return N(1)/((k * normal).dotProduct(normal));
+}
+
+private M33 massAndInertiaTermInv(N, V3 = ar.Vector!(N, 3), M33 = ar.Matrix!(N, 3, 3))(
+	in V3 applicationPoint,
+	in N massInv,
+	in M33 inertiaGlobalInv, 
+){
+	immutable rCrossMatrix = M33(
+		[0,                    -applicationPoint[2], applicationPoint[1] ],
+		[applicationPoint[2],  0,                    -applicationPoint[0]],
+		[-applicationPoint[1], applicationPoint[0],  0                   ],
+	);
+	return massInv * M33.identity - rCrossMatrix * inertiaGlobalInv * rCrossMatrix;
+}
