@@ -128,10 +128,10 @@ class LinkConstraintPair(NumericType) {
 		
 		void updateConstraints(){
 			foreach (linearLinkConstraint; _linearLinkConstraints) {
-				linearLinkConstraint.update(_rotatedLocalDirection, _massAndInertiaTermInv);
+				linearLinkConstraint.update(_dynamicEntities[0].orientation, _massAndInertiaTermInv);
 			}
 			foreach (angularLinkConstraint; _angularLinkConstraints) {
-				angularLinkConstraint.update(_rotatedLocalDirection, _massAndInertiaTermInv);
+				angularLinkConstraint.update(_dynamicEntities[0].orientation, _massAndInertiaTermInv);
 			}
 		}
 	}//private
@@ -163,14 +163,17 @@ struct LinkConstraint(NumericType) {
 	alias N = NumericType;
 	alias V3 = ar.Vector!(N, 3);
 	alias M33 = ar.Matrix!(N, 3, 3);
+	alias Q = ar.Quaternion!(N);
 	
 	public{
-		this(V3 rotatedConstraintDirection, in M33 massAndInertiaTermInv){
-			_direction = rotatedConstraintDirection;
-			_massAndInertiaTermInv = massAndInertiaTermInv;
-			_jacDiagInv = N(1)/((_massAndInertiaTermInv*_direction).dotProduct(_direction));
+		/++
+		+/
+		this(in V3 localDirection){
+			_localDirection = localDirection;
 		}
 		
+		/++
+		+/
 		V3[2] deltaVelocities(DynamicEntity!N entityA, DynamicEntity!N entityB){
 			immutable V3[2] v = [
 				V3.zero, 
@@ -179,17 +182,26 @@ struct LinkConstraint(NumericType) {
 			return v;
 		}
 		
-		void update(in V3 rotatedConstraintDirection, in M33 massAndInertiaTermInv){
-			_direction = rotatedConstraintDirection;
-			_massAndInertiaTermInv = massAndInertiaTermInv;
-			_jacDiagInv = N(1)/((_massAndInertiaTermInv*_direction).dotProduct(_direction));
+		/++
+		+/
+		void update(in Q orientation, in M33 massAndInertiaTermInv){
+			_rotatedDirection = orientation.rotatedVector(_localDirection);
+			_jacDiagInv = N(1)/((massAndInertiaTermInv*_rotatedDirection).dotProduct(_rotatedDirection));
+		}
+		
+		/++
+		+/
+		void localDirection(in V3 localDirection){
+			_localDirection = localDirection;
 		}
 	}//public
 
 	private{
 		N _initialImpulse;
-		V3 _direction;
-		M33 _massAndInertiaTermInv;
+		
+		V3 _localDirection;
+		V3 _rotatedDirection;
+		
 		N _jacDiagInv;
 		V3[2] _applicationPoints;
 		
@@ -198,8 +210,7 @@ struct LinkConstraint(NumericType) {
 			import std.math;
 			assert(!isNaN(deltaVelocity[0]));
 		}body{
-			immutable N impulse = _jacDiagInv * _direction.dotProduct(deltaVelocity);
-			
+			immutable N impulse = _jacDiagInv * _rotatedDirection.dotProduct(deltaVelocity);
 			return impulse;
 		}
 	}//private
