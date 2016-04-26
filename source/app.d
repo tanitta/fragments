@@ -5,7 +5,6 @@ import fragments.engine;
 import fragments.boundingbox;
 import fragments.constraintpair;
 
-
 void drawBoundingBox(B)(B boundingBox){
 	with( boundingBox ){
 		drawBoxFrame(start, end);
@@ -123,16 +122,22 @@ class Model(N) {
 			_chips ~= chip;
 		}
 		
+		void addLink(LinkConstraintPair!N link){
+			_links ~= link;
+		}
+		
 		void draw()const{
 			import std.algorithm;
 			_chips.each!(c => c.draw);
 		}
 		
 		Chip!N[] chips(){return _chips;};
+		LinkConstraintPair!N[] links(){return _links;};
 	}//public
 
 	private{
 		Chip!N[] _chips;
+		LinkConstraintPair!N[] _links;
 	}//private
 }//class Model
 
@@ -225,7 +230,7 @@ class TestApp : ar.BaseApp{
 	fragments.engine.Engine!(N) engine;
 	
 	DynamicEntity!(N)[] _dynamicEntities;
-	LinkConstraintPair!(N)[] _linkConstraintPair;
+	LinearImpulseConstraint!N[] _linearImpulseConstraints;
 	
 	Land!(N) _land;
 	// Chip!(N) chip;
@@ -260,20 +265,20 @@ class TestApp : ar.BaseApp{
 		_model = new Model!N;
 		
 		import std.random;
-		for (int i = 0; i < 64; i++) {
-			auto chip = new Chip!(N);
-			chip.position = V3(uniform(-5.0, 5.0), 45+uniform(0.0, 5.0), uniform(-5.0, 5.0));
-			chip.orientation = Q.unit;
-			chip.addForce(
-				_unitTime,
-				V3(
-					uniform(-1.0, 1.0),
-					uniform(0.0, 1.0),
-					uniform(-1.0, 1.0)
-				)*210.0*10,
-				chip.position + V3(uniform(-1.0, 1.0), uniform(-1.0, 1.0), uniform(-1.0, 1.0)));
-			_model.addChip(chip);
-		}
+		// for (int i = 0; i < 64; i++) {
+		// 	auto chip = new Chip!(N);
+		// 	chip.position = V3(uniform(-5.0, 5.0), 45+uniform(0.0, 5.0), uniform(-5.0, 5.0));
+		// 	chip.orientation = Q.unit;
+		// 	chip.addForce(
+		// 		_unitTime,
+		// 		V3(
+		// 			uniform(-1.0, 1.0),
+		// 			uniform(0.0, 1.0),
+		// 			uniform(-1.0, 1.0)
+		// 		)*210.0*10,
+		// 		chip.position + V3(uniform(-1.0, 1.0), uniform(-1.0, 1.0), uniform(-1.0, 1.0)));
+		// 	_model.addChip(chip);
+		// }
 		
 		// {
 		// 	auto chip = new Chip!(N);
@@ -296,18 +301,36 @@ class TestApp : ar.BaseApp{
 		// 	_model.addChip(chip);
 		// }
 		
-		// {
-		// 	auto chip = new Chip!(N);
-		// 	chip.position = V3(200, 50, 0);
-		// 	chip.orientation = Q.unit;
-		// 	chip.addForce(_unitTime, V3(210*120*5, 0, 0), V3(200, 50.0, 0));
-		// 	_model.addChip(chip);
-		// }
+		{
+			{
+				auto chip = new Chip!(N);
+				chip.position = V3(0, 50, 0);
+				chip.orientation = Q.unit;
+				chip.addForce(_unitTime, V3(10, 0, 0)*210.0, chip.position);
+				_model.addChip(chip);
+			}
+			{
+				auto chip = new Chip!(N);
+				chip.position = V3(0, 50, 0.6);
+				chip.orientation = Q.unit;
+				_model.addChip(chip);
+			}
+
+			_model.addLink(BallJoint!N(
+				_model.chips[0].entity, _model.chips[1].entity,
+				V3(0, 0, 0.3), V3(0, 0, -0.3),
+				V3(0, 0, 1)
+			));
+		}
 		
 		import std.algorithm : map;
 		import std.array : array;
 		import std.conv;
 		_dynamicEntities = _model.chips.map!(c => c.entity.to!(DynamicEntity!N)).array;
+		
+		//set gravity
+		import std.array:array,join;
+		_linearImpulseConstraints = _dynamicEntities.map!(entity => LinearImpulseConstraint!N(entity, V3(0, -9.8*entity.mass*_unitTime, 0))).array;
 	}
 
 	void setupGui(){
@@ -341,10 +364,10 @@ class TestApp : ar.BaseApp{
 	
 	void update(){
 		engine.unitTime = _unitTime;
-		engine.update(_dynamicEntities, _linkConstraintPair);
+		engine.update(_dynamicEntities, _model.links,_linearImpulseConstraints);
 		
 		// writeln("speed", _model.chips[0].entity.linearVelocity.norm*3.6, "km/h");
-		writeln("position : ", _model.chips[0].entity.position[1], "m");
+		// writeln("position : ", _model.chips[0].entity.position[1], "m");
 	}
 	
 	void draw(){

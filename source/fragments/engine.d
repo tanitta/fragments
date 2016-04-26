@@ -45,25 +45,20 @@ class Engine(NumericType){
 		/++
 		++/
 		void update(
-			ref DynamicEntity!(N)[] dynamicEntities,
-			ref LinkConstraintPair!N[] linkConstraintPairs
+			ref DynamicEntity!N[] dynamicEntities,
+			LinkConstraintPair!N[] linkConstraintPairs, 
+			ref LinearImpulseConstraint!N[] linearImpulseConstraints,
 		){
-			{
-				import armos;
-				alias V3 = ar.Vector!(N, 3);
+			import std.algorithm:map, each;
+			linkConstraintPairs.each!(pair => pair.updateRotatedLocalApplicationPoints);
+			
+			dynamicEntities.each!((ref entity) => entity.updateCollisionConstraintPairs(_mapConstraintDetector.detectedStaticEntities(entity)));
 				
-				import std.algorithm:map, each;
-				import std.array:array,join;
-				LinearImpulseConstraint!N[] linearImpulseConstraints = dynamicEntities.map!(entity => LinearImpulseConstraint!N(entity, V3(0, -9.8*entity.mass*_unitTime, 0))).array;
-				
-				dynamicEntities.each!((ref entity) => entity.updateCollisionConstraintPairs(_mapConstraintDetector.detectedStaticEntities(entity)));
-				
-				_constraintSolver.solve(
-					dynamicEntities, 
-					linkConstraintPairs,
-					linearImpulseConstraints, 
-				);
-			}
+			_constraintSolver.solve(
+				dynamicEntities, 
+				linkConstraintPairs,
+				linearImpulseConstraints, 
+			);
 			
 			import std.algorithm.iteration:filter;
 			import std.array:array;
@@ -90,10 +85,12 @@ private void updateEntityStatus(N)(DynamicEntity!N entity, Integrator!N integrat
 	if(!entity.isColliding){
 		entity.updatePreStatus;
 	}
+	
 	integrator.integrate(entity);
 	
 	if(!entity.isColliding){
 		entity.updatePreVelocity;
 	}
+	
 	entity.updateProperties;
 }

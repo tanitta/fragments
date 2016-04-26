@@ -45,23 +45,39 @@ class LinkConstraintPair(NumericType) {
 	public{
 		this(
 			DynamicEntity!N entityA, DynamicEntity!N entityB,
-			in V3 applicationPointA, in V3 applicationPointB,
-			in V3 direction
+			in V3 localApplicationPointA, in V3 localApplicationPointB,
+			in V3 localDirection
 		){
 			_dynamicEntities[0] = entityA;
 			_dynamicEntities[1] = entityB;
-			foreach (ref k; _k) {
-				k = massAndInertiaTermInv(applicationPointA, entityA.massInv, entityA.inertiaGlobalInv);
+			
+			_localApplicationPoints[0] = localApplicationPointA;
+			_localApplicationPoints[1] = localApplicationPointB;
+			updateRotatedLocalApplicationPoints;
+			
+			foreach (int index, ref k; _k) {
+				k = massAndInertiaTermInv(_localApplicationPoints[index], _dynamicEntities[index].massInv, _dynamicEntities[index].inertiaGlobalInv);
 			}
-			// jacDiagInv[0] = 
-			// jacDiagInv[1] = jacDiagInv(applicationPointB, entityB.massInv, entityB.inertiaGlobalInv, direction);
 		}
 		
 		DynamicEntity!N[] dynamicEntities(){
 			return _dynamicEntities;
 		}
 		
-		void updateDirection(){}
+		void updateRotatedLocalApplicationPoints(){
+			foreach (int index, ref rotatedLocalApplicationPoint; _rotatedLocalApplicationPoints) {
+				rotatedLocalApplicationPoint = _dynamicEntities[index].orientation.rotatedVector(_localApplicationPoints[index]);
+			}
+		}
+		
+		void updateDirection(in V3 direction){
+			foreach (linearLinkConstraint; _linearLinkConstraints) {
+				linearLinkConstraint.direction = direction;
+			}
+			foreach (angularLinkConstraint; _angularLinkConstraints) {
+				angularLinkConstraint.direction = direction;
+			}
+		}
 		
 		LinkConstraint!N[] linearLinkConstraints(){
 			return _linearLinkConstraints;
@@ -76,6 +92,8 @@ class LinkConstraintPair(NumericType) {
 	private{
 		DynamicEntity!N[2] _dynamicEntities;
 		M33[2] _k;
+		V3[2] _localApplicationPoints;
+		V3[2] _rotatedLocalApplicationPoints;
 		LinkConstraint!N[] _linearLinkConstraints;
 		LinkConstraint!N[] _angularLinkConstraints;
 		
@@ -107,10 +125,13 @@ unittest{
 struct LinkConstraint(NumericType) {
 	alias N = NumericType;
 	alias V3 = ar.Vector!(N, 3);
+	alias M33 = ar.Matrix!(N, 3, 3);
 	
 	public{
-		this(in N jacDiagInv){
-			_jacDiagInv = jacDiagInv;
+		this(V3 direction, in M33 massAndInertiaTermInv){
+			_direction = direction;
+			_massAndInertiaTermInv = massAndInertiaTermInv;
+			_jacDiagInv = N(1)/((_massAndInertiaTermInv*_direction).dotProduct(_direction));
 		}
 		
 		V3[2] deltaVelocities(DynamicEntity!N entityA, DynamicEntity!N entityB){
@@ -120,11 +141,17 @@ struct LinkConstraint(NumericType) {
 			];
 			return v;
 		}
+		
+		void direction(in V3 direction){
+			_direction = direction;
+			_jacDiagInv = N(1)/((_massAndInertiaTermInv*_direction).dotProduct(_direction));
+		};
 	}//public
 
 	private{
 		N _initialImpulse;
 		V3 _direction;
+		M33 _massAndInertiaTermInv;
 		N _jacDiagInv;
 		V3[2] _applicationPoints;
 		
