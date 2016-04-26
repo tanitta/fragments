@@ -50,7 +50,7 @@ class Engine(NumericType){
 			ref LinearImpulseConstraint!N[] linearImpulseConstraints,
 		){
 			import std.algorithm:map, each;
-			linkConstraintPairs.each!(pair => pair.updateRotatedLocalApplicationPoints);
+			linkConstraintPairs.each!(pair => pair.update);
 			
 			dynamicEntities.each!((ref entity) => entity.updateCollisionConstraintPairs(_mapConstraintDetector.detectedStaticEntities(entity)));
 				
@@ -67,7 +67,6 @@ class Engine(NumericType){
 				entity.updateCollisionConstraintPairs(_mapConstraintDetector.detectedStaticEntities(entity));
 			}
 			
-			import std.algorithm.iteration:each;
 			dynamicEntities.each!(entity => entity.updateEntityStatus(_integrator));
 		};
 	}//public

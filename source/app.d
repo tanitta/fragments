@@ -118,20 +118,31 @@ class Chip(NumericType){
 +/
 class Model(N) {
 	public{
+		/++
+		++/
 		void addChip(Chip!N chip){
 			_chips ~= chip;
 		}
 		
+		/++
+		++/
 		void addLink(LinkConstraintPair!N link){
 			_links ~= link;
 		}
 		
+		/++
+		++/
 		void draw()const{
 			import std.algorithm;
 			_chips.each!(c => c.draw);
 		}
 		
+		/++
+		++/
 		Chip!N[] chips(){return _chips;};
+		
+		/++
+		++/
 		LinkConstraintPair!N[] links(){return _links;};
 	}//public
 

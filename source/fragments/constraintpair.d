@@ -43,6 +43,8 @@ class LinkConstraintPair(NumericType) {
 	alias M33 = ar.Matrix!(N, 3, 3);
 	
 	public{
+		/++
+		++/
 		this(
 			DynamicEntity!N entityA, DynamicEntity!N entityB,
 			in V3 localApplicationPointA, in V3 localApplicationPointB,
@@ -53,24 +55,24 @@ class LinkConstraintPair(NumericType) {
 			
 			_localApplicationPoints[0] = localApplicationPointA;
 			_localApplicationPoints[1] = localApplicationPointB;
-			updateRotatedLocalApplicationPoints;
-			
-			foreach (int index, ref k; _k) {
-				k = massAndInertiaTermInv(_localApplicationPoints[index], _dynamicEntities[index].massInv, _dynamicEntities[index].inertiaGlobalInv);
-			}
 		}
 		
+		/++
+		++/
 		DynamicEntity!N[] dynamicEntities(){
 			return _dynamicEntities;
 		}
 		
-		void updateRotatedLocalApplicationPoints(){
-			foreach (int index, ref rotatedLocalApplicationPoint; _rotatedLocalApplicationPoints) {
-				rotatedLocalApplicationPoint = _dynamicEntities[index].orientation.rotatedVector(_localApplicationPoints[index]);
-			}
+		/++
+		++/
+		void update(){
+			updateRotatedLocalApplicationPoints;
+			updateMassAndInertiaTermInv;
 		}
 		
-		void updateDirection(in V3 direction){
+		/++
+		++/
+		void direction(in V3 direction){
 			foreach (linearLinkConstraint; _linearLinkConstraints) {
 				linearLinkConstraint.direction = direction;
 			}
@@ -79,10 +81,14 @@ class LinkConstraintPair(NumericType) {
 			}
 		}
 		
+		/++
+		++/
 		LinkConstraint!N[] linearLinkConstraints(){
 			return _linearLinkConstraints;
 		}
 		
+		/++
+		++/
 		LinkConstraint!N[] angularLinkConstraints(){
 			return _angularLinkConstraints;
 		}
@@ -91,12 +97,28 @@ class LinkConstraintPair(NumericType) {
 
 	private{
 		DynamicEntity!N[2] _dynamicEntities;
-		M33[2] _k;
+		M33 _massAndInertiaTermInv;
 		V3[2] _localApplicationPoints;
 		V3[2] _rotatedLocalApplicationPoints;
 		LinkConstraint!N[] _linearLinkConstraints;
 		LinkConstraint!N[] _angularLinkConstraints;
 		
+		void updateRotatedLocalApplicationPoints(){
+			foreach (int index, ref rotatedLocalApplicationPoint; _rotatedLocalApplicationPoints) {
+				rotatedLocalApplicationPoint = _dynamicEntities[index].orientation.rotatedVector(_localApplicationPoints[index]);
+			}
+		}
+		
+		void updateMassAndInertiaTermInv(){
+			_massAndInertiaTermInv = M33.zero;
+			for (int i = 0; i < 2; i++) {
+				_massAndInertiaTermInv = _massAndInertiaTermInv + massAndInertiaTermInv(
+					_rotatedLocalApplicationPoints[i],
+					_dynamicEntities[i].massInv,
+					_dynamicEntities[i].inertiaGlobalInv
+				);
+			}
+		}
 	}//private
 }//class LinkConstraintPair
 unittest{
@@ -615,4 +637,23 @@ private M33 massAndInertiaTermInv(N, V3 = ar.Vector!(N, 3), M33 = ar.Matrix!(N, 
 		[-applicationPoint[1], applicationPoint[0],  0                   ],
 	);
 	return massInv * M33.identity - rCrossMatrix * inertiaGlobalInv * rCrossMatrix;
+}
+
+private M33 massAndInertiaTermInv(N, V3 = ar.Vector!(N, 3), M33 = ar.Matrix!(N, 3, 3))(
+	in V3 applicationPointA,
+	in N massInvA,
+	in M33 inertiaGlobalInvA, 
+	in V3 applicationPointB,
+	in N massInvB,
+	in M33 inertiaGlobalInvB, 
+){
+	return massAndInertiaTermInv(applicationPointA, massInvA, inertiaGlobalInvA) + massAndInertiaTermInv(applicationPointB, massInvB, inertiaGlobalInvB);
+}
+
+private M33 crossMatrix(N, V3 = ar.Vector!(N, 3))(V3 vector){
+	return M33(
+		[0,                    -vector[2], vector[1] ],
+		[vector[2],  0,                    -vector[0]],
+		[-vector[1], vector[0],  0                   ],
+	);
 }
