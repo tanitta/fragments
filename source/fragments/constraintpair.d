@@ -83,6 +83,18 @@ class LinkConstraintPair(NumericType) {
 		
 		/++
 		++/
+		void addLinearLinkConstraint(LinkConstraint!N[] linearConstraint){
+			_linearLinkConstraints ~= linearConstraint;
+		}
+		
+		/++
+		++/
+		void addAngularLinkConstraint(LinkConstraint!N[] angularConstraint){
+			_angularLinkConstraints ~= angularConstraint;
+		}
+		
+		/++
+		++/
 		LinkConstraint!N[] linearLinkConstraints(){
 			return _linearLinkConstraints;
 		}
@@ -100,6 +112,7 @@ class LinkConstraintPair(NumericType) {
 		M33 _massAndInertiaTermInv;
 		V3[2] _localApplicationPoints;
 		V3[2] _rotatedLocalApplicationPoints;
+		
 		LinkConstraint!N[] _linearLinkConstraints;
 		LinkConstraint!N[] _angularLinkConstraints;
 		
@@ -631,11 +644,7 @@ private M33 massAndInertiaTermInv(N, V3 = ar.Vector!(N, 3), M33 = ar.Matrix!(N, 
 	in N massInv,
 	in M33 inertiaGlobalInv, 
 ){
-	immutable rCrossMatrix = M33(
-		[0,                    -applicationPoint[2], applicationPoint[1] ],
-		[applicationPoint[2],  0,                    -applicationPoint[0]],
-		[-applicationPoint[1], applicationPoint[0],  0                   ],
-	);
+	immutable rCrossMatrix = applicationPoint.crossMatrix;
 	return massInv * M33.identity - rCrossMatrix * inertiaGlobalInv * rCrossMatrix;
 }
 
@@ -650,7 +659,7 @@ private M33 massAndInertiaTermInv(N, V3 = ar.Vector!(N, 3), M33 = ar.Matrix!(N, 
 	return massAndInertiaTermInv(applicationPointA, massInvA, inertiaGlobalInvA) + massAndInertiaTermInv(applicationPointB, massInvB, inertiaGlobalInvB);
 }
 
-private M33 crossMatrix(N, V3 = ar.Vector!(N, 3))(V3 vector){
+private M33 crossMatrix(V3, M33 = ar.Matrix!(typeof(V3[0]), 3, 3))(in V3 vector){
 	return M33(
 		[0,                    -vector[2], vector[1] ],
 		[vector[2],  0,                    -vector[0]],
