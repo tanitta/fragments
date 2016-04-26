@@ -86,13 +86,13 @@ private void iterate(N)(
 	alias M33 = ar.Matrix!(N, 3, 3);
 	//iteration
 	for (int i = 0; i < iterations; i++) {
-		linearImpulseConstraints.updateDeltaLinearVelocities(iterations);
-		linkConstraintPairs.updateDeltaLinearVelocities;
-		collidingEntities.updateDeltaLinearVelocities;
+		linearImpulseConstraints.updateDeltaVelocities(iterations);
+		linkConstraintPairs.updateDeltaVelocities;
+		collidingEntities.updateDeltaVelocities;
 	}
 }
 
-private void updateDeltaLinearVelocities(N, V3 = ar.Vector!(N, 3))(ref LinearImpulseConstraint!N[] linearImpulseConstraints, int iterations){
+private void updateDeltaVelocities(N, V3 = ar.Vector!(N, 3))(ref LinearImpulseConstraint!N[] linearImpulseConstraints, int iterations){
 	foreach (ref linearImpulseConstraint; linearImpulseConstraints) {
 		import std.conv;
 		auto entity = linearImpulseConstraint.entity;
@@ -102,7 +102,7 @@ private void updateDeltaLinearVelocities(N, V3 = ar.Vector!(N, 3))(ref LinearImp
 	}
 }
 
-private void updateDeltaLinearVelocities(N, V3 = ar.Vector!(N, 3))(ref LinkConstraintPair!N[] linkConstraintPairs){
+private void updateDeltaVelocities(N, V3 = ar.Vector!(N, 3))(ref LinkConstraintPair!N[] linkConstraintPairs){
 	foreach (ref linkConstraintPair; linkConstraintPairs){
 		auto entities = linkConstraintPair.dynamicEntities;
 		foreach (ref linearConstraint; linkConstraintPair.linearLinkConstraints) {
@@ -137,7 +137,7 @@ private void updateDeltaLinearVelocities(N, V3 = ar.Vector!(N, 3))(ref LinkConst
 	}
 }
 
-private void updateDeltaLinearVelocities(N, V3 = ar.Vector!(N, 3))(ref DynamicEntity!N[] collidingEntities){
+private void updateDeltaVelocities(N, V3 = ar.Vector!(N, 3))(ref DynamicEntity!N[] collidingEntities){
 	foreach (entity; collidingEntities) {
 		foreach (ref collisionConstraintPair; entity.collisionConstraintPairs) {
 			if(collisionConstraintPair.isColliding){
