@@ -68,17 +68,7 @@ class LinkConstraintPair(NumericType) {
 		void update(){
 			updateRotatedLocalApplicationPoints;
 			updateMassAndInertiaTermInv;
-		}
-		
-		/++
-		++/
-		void direction(in V3 direction){
-			foreach (linearLinkConstraint; _linearLinkConstraints) {
-				linearLinkConstraint.direction = direction;
-			}
-			foreach (angularLinkConstraint; _angularLinkConstraints) {
-				angularLinkConstraint.direction = direction;
-			}
+			updateConstraints;
 		}
 		
 		/++
@@ -113,6 +103,9 @@ class LinkConstraintPair(NumericType) {
 		V3[2] _localApplicationPoints;
 		V3[2] _rotatedLocalApplicationPoints;
 		
+		V3 _localDirection;
+		V3 _rotatedLocalDirection;
+		
 		LinkConstraint!N[] _linearLinkConstraints;
 		LinkConstraint!N[] _angularLinkConstraints;
 		
@@ -130,6 +123,15 @@ class LinkConstraintPair(NumericType) {
 					_dynamicEntities[i].massInv,
 					_dynamicEntities[i].inertiaGlobalInv
 				);
+			}
+		}
+		
+		void updateConstraints(){
+			foreach (linearLinkConstraint; _linearLinkConstraints) {
+				linearLinkConstraint.update(_rotatedLocalDirection, _massAndInertiaTermInv);
+			}
+			foreach (angularLinkConstraint; _angularLinkConstraints) {
+				angularLinkConstraint.update(_rotatedLocalDirection, _massAndInertiaTermInv);
 			}
 		}
 	}//private
@@ -163,8 +165,8 @@ struct LinkConstraint(NumericType) {
 	alias M33 = ar.Matrix!(N, 3, 3);
 	
 	public{
-		this(V3 direction, in M33 massAndInertiaTermInv){
-			_direction = direction;
+		this(V3 rotatedConstraintDirection, in M33 massAndInertiaTermInv){
+			_direction = rotatedConstraintDirection;
 			_massAndInertiaTermInv = massAndInertiaTermInv;
 			_jacDiagInv = N(1)/((_massAndInertiaTermInv*_direction).dotProduct(_direction));
 		}
@@ -177,10 +179,11 @@ struct LinkConstraint(NumericType) {
 			return v;
 		}
 		
-		void direction(in V3 direction){
-			_direction = direction;
+		void update(in V3 rotatedConstraintDirection, in M33 massAndInertiaTermInv){
+			_direction = rotatedConstraintDirection;
+			_massAndInertiaTermInv = massAndInertiaTermInv;
 			_jacDiagInv = N(1)/((_massAndInertiaTermInv*_direction).dotProduct(_direction));
-		};
+		}
 	}//public
 
 	private{
