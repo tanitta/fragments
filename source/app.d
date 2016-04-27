@@ -322,7 +322,13 @@ class TestApp : ar.BaseApp{
 			}
 			{
 				auto chip = new Chip!(N);
-				chip.position = V3(0, 50, 0.6);
+				chip.position = V3(1, 50, 0.6);
+				chip.orientation = Q.unit;
+				_model.addChip(chip);
+			}
+			{
+				auto chip = new Chip!(N);
+				chip.position = V3(2, 50, 1.6);
 				chip.orientation = Q.unit;
 				_model.addChip(chip);
 			}
@@ -331,6 +337,11 @@ class TestApp : ar.BaseApp{
 				_model.chips[0].entity, _model.chips[1].entity,
 				V3(0, 0, 0.3), V3(0, 0, -0.3),
 			));
+			//
+			// _model.addLink(BallJoint!N(
+			// 	_model.chips[1].entity, _model.chips[2].entity,
+			// 	V3(0, 0, 0.3), V3(0, 0, -0.3),
+			// ));
 		}
 		
 		import std.algorithm : map;

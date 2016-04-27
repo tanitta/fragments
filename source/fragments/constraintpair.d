@@ -74,10 +74,10 @@ class LinkConstraintPair(NumericType) {
 		
 		/++
 		++/
-		void update(){
+		void update(in N unitTime){
 			updateRotatedLocalApplicationPoints;
 			updateMassAndInertiaTermInv;
-			updateConstraints;
+			updateConstraints(unitTime);
 		}
 		
 		/++
@@ -123,12 +123,24 @@ class LinkConstraintPair(NumericType) {
 			}
 		}
 		
-		void updateConstraints(){
-			foreach (linearLinkConstraint; _linearLinkConstraints) {
-				linearLinkConstraint.update(_dynamicEntities[0].orientation, _massAndInertiaTermInv);
+		void updateConstraints(in N unitTime){
+			immutable velocity = (_dynamicEntities[0].linearVelocity + _dynamicEntities[0].angularVelocity.vectorProduct(_rotatedLocalApplicationPoints[0]))-
+			(_dynamicEntities[1].linearVelocity + _dynamicEntities[1].angularVelocity.vectorProduct(_rotatedLocalApplicationPoints[1]));
+			
+			import std.math;
+			immutable gain = 0.4;
+			immutable slop = N(0);
+			immutable distance = (_dynamicEntities[1].position+_rotatedLocalApplicationPoints[1])-(_dynamicEntities[0].position+_rotatedLocalApplicationPoints[0]);
+			
+			foreach (ref linearLinkConstraint; _linearLinkConstraints) {
+				linearLinkConstraint.update(_dynamicEntities[0].orientation, _massAndInertiaTermInv, _rotatedLocalApplicationPoints);
+				linearLinkConstraint.updateBias(gain, slop, distance, unitTime);
+				linearLinkConstraint.updateInitialImpulse(velocity);
 			}
-			foreach (angularLinkConstraint; _angularLinkConstraints) {
-				angularLinkConstraint.update(_dynamicEntities[0].orientation, _massAndInertiaTermInv);
+			foreach (ref angularLinkConstraint; _angularLinkConstraints) {
+				angularLinkConstraint.update(_dynamicEntities[0].orientation, _massAndInertiaTermInv, _rotatedLocalApplicationPoints);
+				angularLinkConstraint.updateBias(gain, slop, -distance, unitTime);
+				angularLinkConstraint.updateInitialImpulse(velocity);
 			}
 		}
 	}//private
@@ -171,21 +183,59 @@ struct LinkConstraint(NumericType) {
 		
 		/++
 		+/
-		V3[2] deltaVelocities(DynamicEntity!N entityA, DynamicEntity!N entityB)const{
-			// immutable V3 deltaLinearVelocity = _impulse * dynamicEntity.massInv;
-			immutable V3[2] v = [
-				V3.zero, 
-				V3.zero, 
+		V3[2][2] deltaVelocities(DynamicEntity!N[] entities)const in{
+			import std.math;
+			assert(!isNaN(_initialImpulse));
+		}body{
+			immutable V3 deltaVelocity = (entities[0].deltaLinearVelocity + entities[0].deltaAngularVelocity.vectorProduct(_applicationPoints[0]))
+			- (entities[1].deltaLinearVelocity + entities[1].deltaAngularVelocity.vectorProduct(_applicationPoints[1]));
+			
+			import std.stdio;
+			deltaVelocity.print;
+			
+			import std.algorithm;
+			immutable N deltaImpluse = (_initialImpulse - impulse(deltaVelocity));
+			
+			// immutable V3 deltaLinearVelocity = deltaImpluse * dynamicEntity.massInv * _direction;
+			// immutable V3 deltaAngularVelocity = deltaImpluse * dynamicEntity.inertiaGlobalInv * _applicationPoint.vectorProduct(_rotatedDirection);
+			
+			immutable V3[2][2] v = [
+				[deltaImpluse * entities[0].massInv * _rotatedDirection, V3.zero], 
+				[deltaImpluse * entities[1].massInv * _rotatedDirection, V3.zero], 
 			];
+			
+			// immutable V3[2][2] v = [
+			// 	[V3.zero, V3.zero], 
+			// 	[V3.zero, V3.zero]
+			// ];
 			return v;
 		}
 		
 		/++
 		+/
-		void update(in Q orientation, in M33 massAndInertiaTermInv){
+		void update(in Q orientation, in M33 massAndInertiaTermInv, in V3[] rotatedLocalApplicationPoints)in{
+			import std.math;
+			assert(!isNaN(orientation[0]));
+			assert(!isNaN(massAndInertiaTermInv[0][0]));
+		}body{
 			_rotatedDirection = orientation.rotatedVector(_localDirection);
 			_jacDiagInv = N(1)/((massAndInertiaTermInv*_rotatedDirection).dotProduct(_rotatedDirection));
+			_applicationPoints = rotatedLocalApplicationPoints;
 		}
+		
+		void updateInitialImpulse(in V3 velocity)in{
+			import std.math;
+			assert(!isNaN(velocity[0]));
+		}body{
+			_initialImpulse = -impulse(velocity);
+		}
+		
+		void updateBias(in N gain, in N slop, in V3 distance, in N unitTime){
+			import std.math;
+			_biasTerm = (gain * fmax(N(0), _rotatedDirection.dotProduct(distance)+slop))/unitTime;
+			import std.stdio;
+			_biasTerm.writeln;
+		};
 		
 		/++
 		+/
@@ -203,12 +253,14 @@ struct LinkConstraint(NumericType) {
 		N _jacDiagInv;
 		V3[2] _applicationPoints;
 		
+		N _biasTerm;
+		
 		N impulse(in V3 deltaVelocity)const
 		in{
 			import std.math;
 			assert(!isNaN(deltaVelocity[0]));
 		}body{
-			immutable N impulse = _jacDiagInv * _rotatedDirection.dotProduct(deltaVelocity);
+			immutable N impulse = _jacDiagInv * (_rotatedDirection.dotProduct(deltaVelocity) - _biasTerm);
 			return impulse;
 		}
 	}//private

@@ -42,40 +42,6 @@ class ConstraintSolver(NumericType){
 	}//private
 }//class ConstraintSolver
 
-private void postProcess(N)(
-	ref LinkConstraintPair!N[]      linkConstraintPairs,
-	ref DynamicEntity!N[]           dynamicEntities,
-){
-	import std.algorithm.iteration:each;
-	dynamicEntities.each!(entity => entity.updateVelocitiesFromDelta);
-	dynamicEntities.each!(entity => entity.initDeltaVelocity);
-	
-	dynamicEntities.updateBias;
-}
-
-private void updateBias(N)(
-	ref DynamicEntity!N[] dynamicEntities, 
-){
-	import fragments.contactpoint;
-	import std.algorithm.iteration:filter;
-	import std.array:array;
-	auto collidingEntities = dynamicEntities.filter!(entity => entity.isColliding).array;
-	
-	foreach (ref collidingEntity; collidingEntities){
-		alias V3 = ar.Vector!(N, 3);
-		collidingEntity.bias = V3.zero;
-		foreach (ref collisionConstraintPair; collidingEntity.collisionConstraintPairs) {
-			if(collisionConstraintPair.isColliding){
-				immutable depth= collisionConstraintPair.depth;
-				if(collidingEntity.bias.norm < depth.norm){
-					collidingEntity.bias = depth;
-				}
-			}
-		}
-		collidingEntity.position = collidingEntity.position + collidingEntity.bias;
-	}
-}
-
 private void iterate(N)(
 	in int iterations, 
 	ref DynamicEntity!N[] collidingEntities, 
@@ -106,32 +72,32 @@ private void updateDeltaVelocities(N, V3 = ar.Vector!(N, 3))(ref LinkConstraintP
 	foreach (ref linkConstraintPair; linkConstraintPairs){
 		auto entities = linkConstraintPair.dynamicEntities;
 		foreach (ref linearConstraint; linkConstraintPair.linearLinkConstraints) {
-			V3[2] deltaVelocities = linearConstraint.deltaVelocities(entities[0], entities[1]);
+			V3[2][2] deltaVelocities = linearConstraint.deltaVelocities(entities);
 			{
 				auto entity = entities[0];
-				entity.deltaLinearVelocity  = entity.deltaLinearVelocity + deltaVelocities[0];
-				entity.deltaAngularVelocity = entity.deltaAngularVelocity + deltaVelocities[1];
+				entity.deltaLinearVelocity  = entity.deltaLinearVelocity + deltaVelocities[0][0];
+				entity.deltaAngularVelocity = entity.deltaAngularVelocity + deltaVelocities[0][1];
 			}
 
 			{
 				auto entity = entities[1];
-				entity.deltaLinearVelocity  = entity.deltaLinearVelocity - deltaVelocities[0];
-				entity.deltaAngularVelocity = entity.deltaAngularVelocity - deltaVelocities[1];
+				entity.deltaLinearVelocity  = entity.deltaLinearVelocity - deltaVelocities[0][0];
+				entity.deltaAngularVelocity = entity.deltaAngularVelocity - deltaVelocities[0][1];
 			}
 		}
 
 		foreach (ref angularConstraint; linkConstraintPair.linearLinkConstraints) {
-			V3[2] deltaVelocities = angularConstraint.deltaVelocities(entities[0], entities[1]);
+			V3[2][2] deltaVelocities = angularConstraint.deltaVelocities(entities);
 			{
 				auto entity = entities[0];
-				entity.deltaLinearVelocity  = entity.deltaLinearVelocity + deltaVelocities[0];
-				entity.deltaAngularVelocity = entity.deltaAngularVelocity + deltaVelocities[1];
+				entity.deltaLinearVelocity  = entity.deltaLinearVelocity + deltaVelocities[0][0];
+				entity.deltaAngularVelocity = entity.deltaAngularVelocity + deltaVelocities[0][1];
 			}
 
 			{
 				auto entity = entities[1];
-				entity.deltaLinearVelocity  = entity.deltaLinearVelocity - deltaVelocities[0];
-				entity.deltaAngularVelocity = entity.deltaAngularVelocity - deltaVelocities[1];
+				entity.deltaLinearVelocity  = entity.deltaLinearVelocity - deltaVelocities[0][0];
+				entity.deltaAngularVelocity = entity.deltaAngularVelocity - deltaVelocities[0][1];
 			}
 		}
 	}
@@ -165,6 +131,40 @@ private void updateDeltaVelocities(N, V3 = ar.Vector!(N, 3))(ref DynamicEntity!N
 				}
 			}
 		}
+	}
+}
+
+private void postProcess(N)(
+	ref LinkConstraintPair!N[]      linkConstraintPairs,
+	ref DynamicEntity!N[]           dynamicEntities,
+){
+	import std.algorithm.iteration:each;
+	dynamicEntities.each!(entity => entity.updateVelocitiesFromDelta);
+	dynamicEntities.each!(entity => entity.initDeltaVelocity);
+	
+	dynamicEntities.updateBias;
+}
+
+private void updateBias(N)(
+	ref DynamicEntity!N[] dynamicEntities, 
+){
+	import fragments.contactpoint;
+	import std.algorithm.iteration:filter;
+	import std.array:array;
+	auto collidingEntities = dynamicEntities.filter!(entity => entity.isColliding).array;
+	
+	foreach (ref collidingEntity; collidingEntities){
+		alias V3 = ar.Vector!(N, 3);
+		collidingEntity.bias = V3.zero;
+		foreach (ref collisionConstraintPair; collidingEntity.collisionConstraintPairs) {
+			if(collisionConstraintPair.isColliding){
+				immutable depth= collisionConstraintPair.depth;
+				if(collidingEntity.bias.norm < depth.norm){
+					collidingEntity.bias = depth;
+				}
+			}
+		}
+		collidingEntity.position = collidingEntity.position + collidingEntity.bias;
 	}
 }
 
