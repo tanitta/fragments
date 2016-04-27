@@ -34,17 +34,15 @@ struct BoundingBox(NumericType) {
 		V3 center()const{return _center;};
 		
 		///
-		bool opBinary(string op)(BoundingBox!(N) b)const if(op == "&"){
-			import std.math;
-			if(
-				b.start[0] < this.end[0] && this.start[0] < b.end[0] &&
-				b.start[1] < this.end[1] && this.start[1] < b.end[1] &&
-				b.start[2] < this.end[2] && this.start[2] < b.end[2]
-			){
-				return true;
-			}else{
-				return false;
+		bool opBinary(string op)(in BoundingBox!(N) b)const if(op == "&"){
+			immutable diff1 = this.end - b.start;
+			immutable diff2 = b.end - this.start;
+			immutable diff3 = diff1 * diff2;
+			bool isIncluding = true;
+			foreach (elem; diff3.data) {
+				isIncluding = isIncluding && N(0) < elem;
 			}
+			return isIncluding;
 		}
 		unittest{
 			alias Vec = ar.Vector3d;

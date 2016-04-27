@@ -14,9 +14,16 @@ template BallJoint(NumericType) {
 		LinkConstraintPair!N BallJoint(
 			DynamicEntity!N entityA, DynamicEntity!N entityB, 
 			in V3 applicationPointA, in V3 applicationPointB,
-			in V3 direction
 		){
-			return new LinkConstraintPair!N(entityA, entityB, applicationPointA, applicationPointB, direction);
+			return new LinkConstraintPair!N(
+				entityA, entityB,
+				applicationPointA, applicationPointB, 
+				[
+					LinkConstraint!N(V3(1, 0, 0)), 
+					LinkConstraint!N(V3(0, 1, 0)), 
+					LinkConstraint!N(V3(0, 0, 1)), 
+				]
+			);
 		};
 	}//public
 
@@ -48,13 +55,15 @@ class LinkConstraintPair(NumericType) {
 		this(
 			DynamicEntity!N entityA, DynamicEntity!N entityB,
 			in V3 localApplicationPointA, in V3 localApplicationPointB,
-			in V3 localDirection
+			LinkConstraint!N[] linkConstraints, 
 		){
 			_dynamicEntities[0] = entityA;
 			_dynamicEntities[1] = entityB;
 			
 			_localApplicationPoints[0] = localApplicationPointA;
 			_localApplicationPoints[1] = localApplicationPointB;
+			
+			_linearLinkConstraints = linkConstraints;
 		}
 		
 		/++
@@ -69,18 +78,6 @@ class LinkConstraintPair(NumericType) {
 			updateRotatedLocalApplicationPoints;
 			updateMassAndInertiaTermInv;
 			updateConstraints;
-		}
-		
-		/++
-		++/
-		void addLinearLinkConstraint(LinkConstraint!N[] linearConstraint){
-			_linearLinkConstraints ~= linearConstraint;
-		}
-		
-		/++
-		++/
-		void addAngularLinkConstraint(LinkConstraint!N[] angularConstraint){
-			_angularLinkConstraints ~= angularConstraint;
 		}
 		
 		/++
@@ -174,7 +171,8 @@ struct LinkConstraint(NumericType) {
 		
 		/++
 		+/
-		V3[2] deltaVelocities(DynamicEntity!N entityA, DynamicEntity!N entityB){
+		V3[2] deltaVelocities(DynamicEntity!N entityA, DynamicEntity!N entityB)const{
+			// immutable V3 deltaLinearVelocity = _impulse * dynamicEntity.massInv;
 			immutable V3[2] v = [
 				V3.zero, 
 				V3.zero, 
@@ -205,7 +203,7 @@ struct LinkConstraint(NumericType) {
 		N _jacDiagInv;
 		V3[2] _applicationPoints;
 		
-		N impulse(V3 deltaVelocity)const
+		N impulse(in V3 deltaVelocity)const
 		in{
 			import std.math;
 			assert(!isNaN(deltaVelocity[0]));
@@ -547,7 +545,7 @@ struct CollisionConstraint(NumericType) {
 		N _initialImpulse;
 		N _accumImpulse = N(0);
 		
-		N impulse(V3 deltaVelocity)const
+		N impulse(in V3 deltaVelocity)const
 		in{
 			import std.math;
 			assert(!isNaN(deltaVelocity[0]));
@@ -587,7 +585,7 @@ struct FrictionConstraint(NumericType) {
 		}
 		
 		/// 
-		V3[2] deltaVelocities(DynamicEntity!N dynamicEntity)
+		V3[2] deltaVelocities(DynamicEntity!N dynamicEntity)const
 		in{
 			assert(dynamicEntity);
 			import std.math;

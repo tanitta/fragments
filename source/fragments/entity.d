@@ -3,6 +3,7 @@ import armos;
 import fragments.boundingbox;
 import fragments.contactpoint;
 import fragments.material;
+import fragments.constraintpair;
 /++
 ++/
 interface Entity(NumericType) {
@@ -54,7 +55,6 @@ interface StaticEntity(NumericType) : Entity!(NumericType){
 /++
 ++/
 interface DynamicEntity(NumericType) : Entity!(NumericType){
-	import fragments.constraintpair;
 	alias N = NumericType;
 	alias V3 = ar.Vector!(N, 3);
 	alias Q = ar.Quaternion!(N);

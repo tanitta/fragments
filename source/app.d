@@ -276,7 +276,7 @@ class TestApp : ar.BaseApp{
 		_model = new Model!N;
 		
 		import std.random;
-		// for (int i = 0; i < 64; i++) {
+		// for (int i = 0; i < 128; i++) {
 		// 	auto chip = new Chip!(N);
 		// 	chip.position = V3(uniform(-5.0, 5.0), 45+uniform(0.0, 5.0), uniform(-5.0, 5.0));
 		// 	chip.orientation = Q.unit;
@@ -326,11 +326,10 @@ class TestApp : ar.BaseApp{
 				chip.orientation = Q.unit;
 				_model.addChip(chip);
 			}
-
+		
 			_model.addLink(BallJoint!N(
 				_model.chips[0].entity, _model.chips[1].entity,
 				V3(0, 0, 0.3), V3(0, 0, -0.3),
-				V3(0, 0, 1)
 			));
 		}
 		
