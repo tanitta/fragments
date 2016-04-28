@@ -3,6 +3,7 @@ description "A rigid body dynamics simulator"
 copyright "Copyright © 2015, tanitta"
 authors "tanitta"
 dependency "armos" version=">=0.0.2"
+targetType "library"
 
 buildType "debug-profile" {
 	buildOptions "debugMode" "debugInfo" "profile"
