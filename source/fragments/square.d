@@ -50,6 +50,7 @@ class Square(NumericType) : DynamicEntity!(NumericType){
 		in{
 			assert(_collisionConstraintPairs.length == 8);
 		}body{
+			_isColliding = false;
 			foreach (int index, ray; _rays) {
 				ContactPoint!N[] points;
 				immutable V3 rayBeginGlobal = _orientationPre.rotatedVector(ray)+_positionPre;

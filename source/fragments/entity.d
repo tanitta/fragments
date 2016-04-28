@@ -4,6 +4,8 @@ import fragments.boundingbox;
 import fragments.contactpoint;
 import fragments.material;
 import fragments.constraintpair;
+import fragments.integrator;
+import fragments.mapconstraintdetector;
 /++
 ++/
 interface Entity(NumericType) {
@@ -117,16 +119,10 @@ interface DynamicEntity(NumericType) : Entity!(NumericType){
 		
 		///
 		const( Material!(N) ) material()const;
-		
-		///
-		void updatePreStatus();
 			
 		///
-		void updateProperties();
-		
-		///
-		void updatePreVelocity();
-			
+		void updateStatus(Integrator!N integrator, MapConstraintDetector!N mapConstraintDetector);
+
 		V3 deltaLinearVelocity()const;
 		
 		void deltaLinearVelocity(in V3);
@@ -252,19 +248,41 @@ template DynamicEntityProperties(NumericType){
 		void bias(in V3 b){
 			_bias = b;
 		}
-		void updatePreStatus(){
-			_positionPre = _position;
-			_orientationPre = _orientation;
-		}
 		
-		void updatePreVelocity(){
-			_linearVelocityPre = _linearVelocity;
-			_angularVelocityPre = _angularVelocity;
-		}
-		///
-		void updateProperties(){
+		import fragments.integrator;
+		import fragments.mapconstraintdetector;
+		void updateStatus(Integrator!N integrator, MapConstraintDetector!N mapConstraintDetector){
+			// pre?
+			V3 positionAppliedBias = _position;
+			Q orientationAppliedBias = _orientation;
+
+			integrator.integrate(this);
+			
 			_inertiaGlobal = _orientation.matrix33*_inertiaGlobal*_orientation.matrix33.inverse;
 			_inertiaGlobalInv = _inertiaGlobal.inverse;
+			
+			//updatePrevalue
+			if(isColliding){
+				_boundingBox = BoundingBox!(N)(_position, _positionPre, _margin);
+				updateCollisionConstraintPairs(mapConstraintDetector.detectedStaticEntities(this));
+				
+				if(isColliding){
+					
+				}else{
+					_positionPre = positionAppliedBias;
+					_orientationPre = orientationAppliedBias;
+					
+					_linearVelocityPre = _linearVelocity;
+					_angularVelocityPre = _angularVelocity;
+				}
+			}else{
+				_positionPre = positionAppliedBias;
+				_orientationPre = orientationAppliedBias;
+				
+				_linearVelocityPre = _linearVelocity;
+				_angularVelocityPre = _angularVelocity;
+
+			}
 			_boundingBox = BoundingBox!(N)(_position, _positionPre, _margin);
 		}
 		

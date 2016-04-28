@@ -60,14 +60,7 @@ class Engine(NumericType){
 				linearImpulseConstraints, 
 			);
 			
-			import std.algorithm.iteration:filter;
-			import std.array:array;
-			auto collidingEntities = dynamicEntities.filter!(entity => entity.isColliding).array;
-			foreach(entity; collidingEntities){
-				entity.updateCollisionConstraintPairs(_mapConstraintDetector.detectedStaticEntities(entity));
-			}
-			
-			dynamicEntities.each!(entity => entity.updateEntityStatus(_integrator));
+			dynamicEntities.each!(entity => entity.updateStatus(_integrator, _mapConstraintDetector));
 		};
 	}//public
 
@@ -79,17 +72,3 @@ class Engine(NumericType){
 		
 	}//private
 }//class Engine
-
-private void updateEntityStatus(N)(DynamicEntity!N entity, Integrator!N integrator){
-	if(!entity.isColliding){
-		entity.updatePreStatus;
-	}
-	
-	integrator.integrate(entity);
-	
-	if(!entity.isColliding){
-		entity.updatePreVelocity;
-	}
-	
-	entity.updateProperties;
-}
