@@ -22,7 +22,8 @@ template BallJoint(NumericType) {
 					LinearLinkConstraint!N(V3(1, 0, 0)), 
 					LinearLinkConstraint!N(V3(0, 1, 0)), 
 					LinearLinkConstraint!N(V3(0, 0, 1)), 
-				]
+				],
+				[]
 			);
 		};
 	}//public
@@ -34,13 +35,50 @@ unittest{
 	import fragments.square;
 	import fragments.material;
 	alias N = double;
+	alias V3 = ar.Vector!(N, 3);
 	auto material = new Material!N;
 	auto entityA = new Square!N(material);
 	auto entityB = new Square!N(material);
-	// assert(__traits(compiles, {
-	// 	auto ballJoint = BallJoint!N(entityA, entityB);
-	// }));
+	assert(__traits(compiles, {
+		auto ballJoint = BallJoint!N(
+			entityA, entityB,
+			V3(0, 0, 1), 
+			V3(0, 0, -1), 
+		);
+	}));
 }
+
+/++
+++/
+template FixedJoint(NumericType) {
+	alias N = NumericType;
+	alias V3 = ar.Vector!(N, 3);
+	alias M33 = ar.Matrix!(N, 3, 3);
+	public{
+		LinkConstraintPair!N FixedJoint(
+			DynamicEntity!N entityA, DynamicEntity!N entityB, 
+			in V3 applicationPointA, in V3 applicationPointB,
+		){
+			return new LinkConstraintPair!N(
+				entityA, entityB,
+				applicationPointA, applicationPointB, 
+				[
+					LinearLinkConstraint!N(V3(1, 0, 0)), 
+					LinearLinkConstraint!N(V3(0, 1, 0)), 
+					LinearLinkConstraint!N(V3(0, 0, 1)), 
+				],
+				[
+					AngularLinkConstraint!N(V3(1, 0, 0)), 
+					AngularLinkConstraint!N(V3(0, 1, 0)), 
+					AngularLinkConstraint!N(V3(0, 0, 1)), 
+				]
+			);
+		};
+	}//public
+
+	private{
+	}//private
+}//template BallJoint
 
 /++
 +/
@@ -55,7 +93,8 @@ class LinkConstraintPair(NumericType) {
 		this(
 			DynamicEntity!N entityA, DynamicEntity!N entityB,
 			in V3 localApplicationPointA, in V3 localApplicationPointB,
-			LinearLinkConstraint!N[] linkConstraints, 
+			LinearLinkConstraint!N[] linearLinkConstraints, 
+			AngularLinkConstraint!N[] angularLinkConstraints, 
 		){
 			_dynamicEntities[0] = entityA;
 			_dynamicEntities[1] = entityB;
@@ -63,7 +102,8 @@ class LinkConstraintPair(NumericType) {
 			_localApplicationPoints[0] = localApplicationPointA;
 			_localApplicationPoints[1] = localApplicationPointB;
 			
-			_linearLinkConstraints = linkConstraints;
+			_linearLinkConstraints = linearLinkConstraints;
+			_angularLinkConstraints = angularLinkConstraints;
 		}
 		
 		/++
@@ -112,7 +152,15 @@ class LinkConstraintPair(NumericType) {
 			}
 		}
 		
-		void updateMassAndInertiaTermInv(){
+		void updateMassAndInertiaTermInv()in{
+			import std.math;
+			assert(!isNaN(_dynamicEntities[0].inertiaGlobalInv[0][0]));
+			assert(!isNaN(_dynamicEntities[0].massInv));
+			assert(!isNaN(_dynamicEntities[1].inertiaGlobalInv[0][0]));
+			assert(!isNaN(_dynamicEntities[1].massInv));
+			assert(!isNaN(_rotatedLocalApplicationPoints[0][0]));
+			assert(!isNaN(_rotatedLocalApplicationPoints[1][0]));
+		}body{
 			_massAndInertiaTermInv = M33.zero;
 			for (int i = 0; i < 2; i++) {
 				_massAndInertiaTermInv = _massAndInertiaTermInv + massAndInertiaTermInv(
@@ -124,26 +172,38 @@ class LinkConstraintPair(NumericType) {
 		}
 		
 		void updateConstraints(in N unitTime){
-			immutable velocity = (_dynamicEntities[0].linearVelocity + _dynamicEntities[0].angularVelocity.vectorProduct(_rotatedLocalApplicationPoints[0]))-
-			(_dynamicEntities[1].linearVelocity + _dynamicEntities[1].angularVelocity.vectorProduct(_rotatedLocalApplicationPoints[1]));
 			
 			import std.math;
-			immutable gain = N(0.5);
-			immutable slop = N(0);
-			immutable distance = (_dynamicEntities[1].position+_rotatedLocalApplicationPoints[1])-(_dynamicEntities[0].position+_rotatedLocalApplicationPoints[0]);
-			import std.stdio;
-			writeln("distance : ", distance.norm);
+			{
+				immutable velocity = (_dynamicEntities[0].linearVelocity + _dynamicEntities[0].angularVelocity.vectorProduct(_rotatedLocalApplicationPoints[0]))-
+				(_dynamicEntities[1].linearVelocity + _dynamicEntities[1].angularVelocity.vectorProduct(_rotatedLocalApplicationPoints[1]));
 			
-			
-			foreach (ref linearLinkConstraint; _linearLinkConstraints) {
-				linearLinkConstraint.update(_dynamicEntities[0].orientation, _massAndInertiaTermInv, _rotatedLocalApplicationPoints);
-				linearLinkConstraint.updateBias(gain, slop, distance, unitTime);
-				linearLinkConstraint.updateInitialImpulse(velocity);
+				immutable gain = N(0.5);
+				immutable slop = N(0);
+				immutable distance = (_dynamicEntities[1].position+_rotatedLocalApplicationPoints[1])-(_dynamicEntities[0].position+_rotatedLocalApplicationPoints[0]);
+
+
+				foreach (ref linearLinkConstraint; _linearLinkConstraints) {
+					linearLinkConstraint.update(_dynamicEntities[0].orientation, _massAndInertiaTermInv, _rotatedLocalApplicationPoints);
+					linearLinkConstraint.updateBias(gain, slop, distance, unitTime);
+					linearLinkConstraint.updateInitialImpulse(velocity);
+				}
 			}
-			foreach (ref angularLinkConstraint; _angularLinkConstraints) {
-				angularLinkConstraint.update(_dynamicEntities[0].orientation, _massAndInertiaTermInv, _rotatedLocalApplicationPoints);
-				angularLinkConstraint.updateBias(gain, slop, -distance, unitTime);
-				angularLinkConstraint.updateInitialImpulse(velocity);
+			{
+				immutable velocity = _dynamicEntities[0].angularVelocity - _dynamicEntities[1].angularVelocity;
+				// immutable velocity = V3.zero;
+				import std.stdio;
+				writeln("ang : ", velocity.norm);
+				
+				immutable gain = N(0.0);
+				immutable slop = N(0);
+				// immutable distance = (_dynamicEntities[1].orientation)-(_dynamicEntities[0].orientation);
+				immutable distance = _dynamicEntities[1].orientation;
+				foreach (ref angularLinkConstraint; _angularLinkConstraints) {
+					angularLinkConstraint.update(_dynamicEntities[0].orientation, _massAndInertiaTermInv, _rotatedLocalApplicationPoints);
+					angularLinkConstraint.updateBias(gain, slop, -distance, unitTime);
+					angularLinkConstraint.updateInitialImpulse(velocity);
+				}
 			}
 		}
 	}//private
@@ -234,10 +294,6 @@ struct LinearLinkConstraint(NumericType) {
 		void updateBias(in N gain, in N slop, in V3 distance, in N unitTime){
 			import std.math;
 			_biasTerm = (gain * (_rotatedDirection.dotProduct(distance)))/unitTime;
-			import std.stdio;
-			writeln("bias : ", _biasTerm);
-			// import std.stdio;
-			// _biasTerm.writeln;
 		};
 		
 		/++
@@ -301,26 +357,45 @@ struct AngularLinkConstraint(NumericType){
 		V3[2][2] deltaVelocities(DynamicEntity!N[] entities)const in{
 			import std.math;
 			assert(!isNaN(_initialImpulse));
+		}out(v){
+			import std.math;
+			assert(!isNaN(v[0][0][0]));
+			assert(!isNaN(v[0][1][0]));
+			assert(!isNaN(v[1][0][0]));
+			assert(!isNaN(v[1][1][0]));
 		}body{
-			immutable V3 deltaVelocity = (entities[0].deltaLinearVelocity + entities[0].deltaAngularVelocity.vectorProduct(_applicationPoints[0]))
-			- (entities[1].deltaLinearVelocity + entities[1].deltaAngularVelocity.vectorProduct(_applicationPoints[1]));
+			immutable V3 deltaVelocity = (entities[0].deltaAngularVelocity - entities[1].deltaAngularVelocity);
+			import std.stdio;
+			entities[0].deltaAngularVelocity.writeln;
+			// immutable V3 deltaVelocity = V3.zero;
 			
 			import std.algorithm;
-			immutable N deltaImpluse = (_initialImpulse - impulse(deltaVelocity));
-			
-			// immutable V3 deltaLinearVelocity = deltaImpluse * dynamicEntity.massInv * _direction;
-			// immutable V3 deltaAngularVelocity = deltaImpluse * dynamicEntity.inertiaGlobalInv * _applicationPoint.vectorProduct(_rotatedDirection);
+			immutable N deltaImpluse = (_initialImpulse - impulse(deltaVelocity))*0.01;
+			writeln("deltaImpluse : ", deltaImpluse);
 			
 			immutable V3[2][2] v = [
 				[
 					deltaImpluse * entities[0].massInv * _rotatedDirection,
-					deltaImpluse * entities[0].inertiaGlobalInv * _applicationPoints[0].vectorProduct(_rotatedDirection)
+					V3.zero
+					// deltaImpluse * entities[0].inertiaGlobalInv * _applicationPoints[0].vectorProduct(_rotatedDirection)
 				], 
 				[
 					deltaImpluse * entities[1].massInv * _rotatedDirection,
-					deltaImpluse * entities[1].inertiaGlobalInv * _applicationPoints[1].vectorProduct(_rotatedDirection)
+					V3.zero
+					// deltaImpluse * entities[1].inertiaGlobalInv * _applicationPoints[1].vectorProduct(_rotatedDirection)
 				], 
 			];
+				
+			// immutable V3[2][2] v = [
+			// 	[
+			// 		V3.zero, 
+			// 		V3.zero, 
+			// 	], 
+			// 	[
+			// 		V3.zero, 
+			// 		V3.zero, 
+			// 	], 
+			// ];
 			return v;
 		}
 		
@@ -343,9 +418,10 @@ struct AngularLinkConstraint(NumericType){
 			_initialImpulse = -impulse(velocity);
 		}
 		
-		void updateBias(in N gain, in N slop, in V3 distance, in N unitTime){
+		void updateBias(in N gain, in N slop, in Q distance, in N unitTime){
 			import std.math;
-			_biasTerm = (gain * (_rotatedDirection.dotProduct(distance)))/unitTime;
+			// _biasTerm = (gain * (_rotatedDirection.dotProduct(distance)))/unitTime;
+			_biasTerm = N(0);
 			import std.stdio;
 			writeln("bias : ", _biasTerm);
 			// import std.stdio;

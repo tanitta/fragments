@@ -24,10 +24,10 @@ class Integrator(NumericType) {
 		++/
 		N unitTime()const{return _unitTime;}
 		unittest{
-			auto integrator = new Integrator!(double)(1);
-			assert(integrator.unitTime == 1);
-			integrator.unitTime = 2;
-			assert(integrator.unitTime == 2);
+			auto integrator = new Integrator!(double)();
+			assert(integrator.unitTime == 1.0);
+			integrator.unitTime = 2.0;
+			assert(integrator.unitTime == 2.0);
 		}
 		
 		void integrate(ref DynamicEntity!(N)[] dynamicEntities){
