@@ -46,9 +46,9 @@ class Chip(NumericType){
 		+/
 		this(){
 			import fragments.material;
-			auto material = new Material!(N);
+			auto material = new Material!(N)(0.5);
 			
-			entity = new fragments.square.Square!(N)(material, 0.3);
+			entity = new fragments.square.Square!(N)(material, 0.1);
 			entity.mass = N(25);
 			entity.inertia = M33(
 				[0.8, 0, 0],
@@ -120,13 +120,13 @@ class Model(N) {
 	public{
 		/++
 		++/
-		void addChip(Chip!N chip){
+		void add(Chip!N chip){
 			_chips ~= chip;
 		}
 		
 		/++
 		++/
-		void addLink(LinkConstraintPair!N link){
+		void add(LinkConstraintPair!N link){
 			_links ~= link;
 		}
 		
@@ -174,7 +174,7 @@ class Land(NumericType) {
 			import fragments.polygon;
 			import fragments.material;
 			
-			auto material = new Material!(N)(0.1);
+			auto material = new Material!(N)(1.0);
 			foreach (mesh; _model.meshes) {
 				for (int i = 0; i < mesh.numIndices; i+=3) {
 					V3[3] vertices;
@@ -266,20 +266,91 @@ class TestApp : ar.BaseApp{
 	void setupModel(){
 		_model = new Model!N;
 		
-		import std.random;
-		for (int i = 0; i < 128; i++) {
+		// import std.random;
+		// for (int i = 0; i < 128; i++) {
+		// 	auto chip = new Chip!(N);
+		// 	chip.position = V3(uniform(-5.0, 5.0), 45+uniform(0.0, 5.0), uniform(-5.0, 5.0));
+		// 	chip.orientation = Q.unit;
+		// 	chip.addForce(
+		// 		_unitTime,
+		// 		V3(
+		// 			uniform(-1.0, 1.0),
+		// 			uniform(0.0, 1.0),
+		// 			uniform(-1.0, 1.0)
+		// 		)*210.0*10,
+		// 		chip.position + V3(uniform(-1.0, 1.0), uniform(-1.0, 1.0), uniform(-1.0, 1.0)));
+		// 	_model.addChip(chip);
+		// }
+		{
 			auto chip = new Chip!(N);
-			chip.position = V3(uniform(-5.0, 5.0), 45+uniform(0.0, 5.0), uniform(-5.0, 5.0));
+			chip.position = V3(1, 9, 1);
 			chip.orientation = Q.unit;
 			chip.addForce(
 				_unitTime,
-				V3(
-					uniform(-1.0, 1.0),
-					uniform(0.0, 1.0),
-					uniform(-1.0, 1.0)
-				)*210.0*10,
-				chip.position + V3(uniform(-1.0, 1.0), uniform(-1.0, 1.0), uniform(-1.0, 1.0)));
-			_model.addChip(chip);
+				V3(0, 0, 0)*210.0, 
+				chip.position
+			);
+			_model.add(chip);
+		}
+		{
+			auto chip = new Chip!(N);
+			chip.position = V3(0, 10, 0.6);
+			chip.orientation = Q.unit;
+			chip.addForce(
+				_unitTime,
+				V3(0, 0, 0)*210.0, 
+				chip.position
+			);
+			_model.add(chip);
+		}
+		{
+			auto chip = new Chip!(N);
+			chip.position = V3(-1, 10, 0.6);
+			chip.orientation = Q.unit;
+			chip.addForce(
+				_unitTime,
+				V3(0, 0, 0)*210.0, 
+				chip.position
+			);
+			_model.add(chip);
+		}
+		{
+			auto chip = new Chip!(N);
+			chip.position = V3(-1, 10, 0.6);
+			chip.orientation = Q.unit;
+			chip.addForce(
+				_unitTime,
+				V3(0, 0, 0)*210.0, 
+				chip.position
+			);
+			_model.add(chip);
+		}
+		{
+			auto link = BallJoint!N(
+				_model.chips[0].entity, 
+				_model.chips[1].entity, 
+				V3(0, 0, 0.3), 
+				V3(0, 0, -0.3), 
+			);
+			_model.add(link);
+		}
+		{
+			auto link = BallJoint!N(
+				_model.chips[1].entity, 
+				_model.chips[2].entity, 
+				V3(0, 0, 0.3), 
+				V3(0, 0, -0.3), 
+			);
+			_model.add(link);
+		}
+		{
+			auto link = BallJoint!N(
+				_model.chips[2].entity, 
+				_model.chips[3].entity, 
+				V3(0, 0, 0.3), 
+				V3(0, 0, -0.3), 
+			);
+			_model.add(link);
 		}
 		
 		import std.algorithm : map;
@@ -345,6 +416,35 @@ class TestApp : ar.BaseApp{
 	void drawDebug(){
 		gui.draw;
 		fpsUseRate = ar.fpsUseRate*100.0;
+	}
+	
+	void keyPressed(int c){
+		V3 force = V3.zero;
+		switch (c) {
+			case 262:
+				force = V3(-1, 0, 0);
+			break;
+			
+			case 263:
+				force = V3(1, 0, 0);
+			break;
+			
+			case 264:
+				force = V3(0, 0, -1);
+			break;
+			
+			case 265:
+				force = V3(0, 0, 1);
+			break;
+			default:
+			break;
+		}
+		auto chip = _model.chips[0];
+		chip.addForce(
+			_unitTime,
+			force*210.0*20.0, 
+			chip.position
+		);
 	}
 }
 
