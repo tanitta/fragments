@@ -86,20 +86,20 @@ private void updateDeltaVelocities(N, V3 = ar.Vector!(N, 3))(ref LinkConstraintP
 			}
 		}
 
-		// foreach (ref angularConstraint; linkConstraintPair.angularLinkConstraints) {
-		// 	V3[2][2] deltaVelocities = angularConstraint.deltaVelocities(entities);
-		// 	{
-		// 		auto entity = entities[0];
-		// 		entity.deltaLinearVelocity  = entity.deltaLinearVelocity + deltaVelocities[0][0];
-		// 		entity.deltaAngularVelocity = entity.deltaAngularVelocity + deltaVelocities[0][1];
-		// 	}
-		//
-		// 	{
-		// 		auto entity = entities[1];
-		// 		entity.deltaLinearVelocity  = entity.deltaLinearVelocity - deltaVelocities[1][0];
-		// 		entity.deltaAngularVelocity = entity.deltaAngularVelocity - deltaVelocities[1][1];
-		// 	}
-		// }
+		foreach (ref angularConstraint; linkConstraintPair.angularLinkConstraints) {
+			V3[2][2] deltaVelocities = angularConstraint.deltaVelocities(entities);
+			{
+				auto entity = entities[0];
+				entity.deltaLinearVelocity  = entity.deltaLinearVelocity + deltaVelocities[0][0];
+				entity.deltaAngularVelocity = entity.deltaAngularVelocity + deltaVelocities[0][1];
+			}
+		
+			{
+				auto entity = entities[1];
+				entity.deltaLinearVelocity  = entity.deltaLinearVelocity - deltaVelocities[1][0];
+				entity.deltaAngularVelocity = entity.deltaAngularVelocity - deltaVelocities[1][1];
+			}
+		}
 	}
 }
 

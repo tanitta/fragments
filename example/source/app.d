@@ -48,7 +48,7 @@ class Chip(NumericType){
 			import fragments.material;
 			auto material = new Material!(N)(0.5);
 			
-			entity = new fragments.square.Square!(N)(material, 0.1);
+			entity = new fragments.square.Square!(N)(material, 0.3);
 			entity.mass = N(25);
 			entity.inertia = M33(
 				[0.8, 0, 0],
@@ -174,7 +174,7 @@ class Land(NumericType) {
 			import fragments.polygon;
 			import fragments.material;
 			
-			auto material = new Material!(N)(1.0);
+			auto material = new Material!(N)(0.5);
 			foreach (mesh; _model.meshes) {
 				for (int i = 0; i < mesh.numIndices; i+=3) {
 					V3[3] vertices;
@@ -283,7 +283,7 @@ class TestApp : ar.BaseApp{
 		// }
 		{
 			auto chip = new Chip!(N);
-			chip.position = V3(1, 9, 1);
+			chip.position = V3(0, 10, 0);
 			chip.orientation = Q.unit;
 			chip.addForce(
 				_unitTime,
@@ -327,7 +327,7 @@ class TestApp : ar.BaseApp{
 		// }
 		
 		// {
-		// 	auto link = BallJoint!N(
+		// 	auto link = FixedJoint!N(
 		// 		_model.chips[0].entity, 
 		// 		_model.chips[1].entity, 
 		// 		V3(0, 0, 0.3), 
