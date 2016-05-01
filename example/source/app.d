@@ -303,31 +303,31 @@ class TestApp : ar.BaseApp{
 			);
 			_model.add(chip);
 		}
-		// {
-		// 	auto chip = new Chip!(N);
-		// 	chip.position = V3(-1, 10, 0.6);
-		// 	chip.orientation = Q.unit;
-		// 	chip.addForce(
-		// 		_unitTime,
-		// 		V3(0, 0, 0)*210.0, 
-		// 		chip.position
-		// 	);
-		// 	_model.add(chip);
-		// }
-		// {
-		// 	auto chip = new Chip!(N);
-		// 	chip.position = V3(-1, 10, 0.6);
-		// 	chip.orientation = Q.unit;
-		// 	chip.addForce(
-		// 		_unitTime,
-		// 		V3(0, 0, 0)*210.0, 
-		// 		chip.position
-		// 	);
-		// 	_model.add(chip);
-		// }
+		{
+			auto chip = new Chip!(N);
+			chip.position = V3(-1, 10, 0.6);
+			chip.orientation = Q.unit;
+			chip.addForce(
+				_unitTime,
+				V3(0, 0, 0)*210.0, 
+				chip.position
+			);
+			_model.add(chip);
+		}
+		{
+			auto chip = new Chip!(N);
+			chip.position = V3(-1, 10, 0.6);
+			chip.orientation = Q.unit;
+			chip.addForce(
+				_unitTime,
+				V3(0, 0, 0)*210.0, 
+				chip.position
+			);
+			_model.add(chip);
+		}
 		
 		// {
-		// 	auto link = FixedJoint!N(
+		// 	auto link = BallJoint!N(
 		// 		_model.chips[0].entity, 
 		// 		_model.chips[1].entity, 
 		// 		V3(0, 0, 0.3), 
@@ -348,6 +348,16 @@ class TestApp : ar.BaseApp{
 		// 	auto link = BallJoint!N(
 		// 		_model.chips[2].entity, 
 		// 		_model.chips[3].entity, 
+		// 		V3(0, 0, 0.3), 
+		// 		V3(0, 0, -0.3), 
+		// 	);
+		// 	_model.add(link);
+		// }
+		//
+		// {
+		// 	auto link = BallJoint!N(
+		// 		_model.chips[3].entity, 
+		// 		_model.chips[0].entity, 
 		// 		V3(0, 0, 0.3), 
 		// 		V3(0, 0, -0.3), 
 		// 	);

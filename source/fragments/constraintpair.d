@@ -178,7 +178,7 @@ class LinkConstraintPair(NumericType) {
 				immutable velocity = (_dynamicEntities[0].linearVelocity + _dynamicEntities[0].angularVelocity.vectorProduct(_rotatedLocalApplicationPoints[0]))-
 				(_dynamicEntities[1].linearVelocity + _dynamicEntities[1].angularVelocity.vectorProduct(_rotatedLocalApplicationPoints[1]));
 			
-				immutable gain = N(0.1);
+				immutable gain = N(0.5);
 				immutable slop = N(0);
 				immutable distance = (_dynamicEntities[1].position+_rotatedLocalApplicationPoints[1])-(_dynamicEntities[0].position+_rotatedLocalApplicationPoints[0]);
 
@@ -370,19 +370,23 @@ struct AngularLinkConstraint(NumericType){
 			// immutable V3 deltaVelocity = V3.zero;
 			
 			import std.algorithm;
-			immutable N deltaImpluse = (_initialImpulse - impulse(deltaVelocity))*0.1;
+			immutable N deltaImpluse = (_initialImpulse - impulse(deltaVelocity))*0.05;
 			writeln("deltaImpluse : ", deltaImpluse);
 			
 			immutable V3[2][2] v = [
 				[
-					deltaImpluse * entities[0].massInv * _rotatedDirection,
-					V3.zero
-					// deltaImpluse * entities[0].inertiaGlobalInv * _applicationPoints[0].vectorProduct(_rotatedDirection)
+					// deltaImpluse * entities[0].massInv * _applicationPoints[0].vectorProduct(_rotatedDirection),
+					// deltaImpluse * entities[0].massInv * _rotatedDirection,
+					V3.zero, 
+					deltaImpluse * entities[0].inertiaGlobalInv * _rotatedDirection,
+					// -deltaImpluse * entities[0].inertiaGlobalInv * _applicationPoints[0].vectorProduct(_rotatedDirection)
 				], 
 				[
-					deltaImpluse * entities[1].massInv * _rotatedDirection,
-					V3.zero
-					// deltaImpluse * entities[1].inertiaGlobalInv * _applicationPoints[1].vectorProduct(_rotatedDirection)
+					// deltaImpluse * entities[1].massInv * _applicationPoints[1].vectorProduct(_rotatedDirection),
+					// deltaImpluse * entities[1].massInv * _rotatedDirection,
+					V3.zero,
+					deltaImpluse * entities[1].inertiaGlobalInv * _rotatedDirection,
+					// -deltaImpluse * entities[1].inertiaGlobalInv * _applicationPoints[1].vectorProduct(_rotatedDirection)
 				], 
 			];
 				
