@@ -25,7 +25,7 @@ class Integrator(NumericType) {
 		N unitTime()const{return _unitTime;}
 		unittest{
 			auto integrator = new Integrator!(double)();
-			assert(integrator.unitTime == 1.0);
+			assert(integrator.unitTime == 0.0);
 			integrator.unitTime = 2.0;
 			assert(integrator.unitTime == 2.0);
 		}
