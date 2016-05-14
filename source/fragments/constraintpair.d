@@ -333,7 +333,7 @@ unittest{
 	auto entityB = new Square!N(material);
 	
 	assert(__traits(compiles, {
-		auto linkConstraint= LinkConstraint!N();
+		auto linkConstraint= LinearLinkConstraint!N();
 	}));
 }
 
