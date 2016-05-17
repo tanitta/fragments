@@ -4,81 +4,6 @@ import fragments.entity;
 import fragments.contactpoint;
 import armos;
 
-/++
-+/
-template BallJoint(NumericType) {
-	alias N = NumericType;
-	alias V3 = ar.Vector!(N, 3);
-	alias M33 = ar.Matrix!(N, 3, 3);
-	public{
-		LinkConstraintPair!N BallJoint(
-			DynamicEntity!N entityA, DynamicEntity!N entityB, 
-			in V3 applicationPointA, in V3 applicationPointB,
-		){
-			return new LinkConstraintPair!N(
-				entityA, entityB,
-				applicationPointA, applicationPointB, 
-				[
-					LinearLinkConstraint!N(V3(1, 0, 0)), 
-					LinearLinkConstraint!N(V3(0, 1, 0)), 
-					LinearLinkConstraint!N(V3(0, 0, 1)), 
-				],
-				[]
-			);
-		};
-	}//public
-
-	private{
-	}//private
-}//template BallJoint
-unittest{
-	import fragments.square;
-	import fragments.material;
-	alias N = double;
-	alias V3 = ar.Vector!(N, 3);
-	auto material = new Material!N;
-	auto entityA = new Square!N(material);
-	auto entityB = new Square!N(material);
-	assert(__traits(compiles, {
-		auto ballJoint = BallJoint!N(
-			entityA, entityB,
-			V3(0, 0, 1), 
-			V3(0, 0, -1), 
-		);
-	}));
-}
-
-/++
-++/
-template FixedJoint(NumericType) {
-	alias N = NumericType;
-	alias V3 = ar.Vector!(N, 3);
-	alias M33 = ar.Matrix!(N, 3, 3);
-	public{
-		LinkConstraintPair!N FixedJoint(
-			DynamicEntity!N entityA, DynamicEntity!N entityB, 
-			in V3 applicationPointA, in V3 applicationPointB,
-		){
-			return new LinkConstraintPair!N(
-				entityA, entityB,
-				applicationPointA, applicationPointB, 
-				[
-					LinearLinkConstraint!N(V3(1, 0, 0)), 
-					LinearLinkConstraint!N(V3(0, 1, 0)), 
-					LinearLinkConstraint!N(V3(0, 0, 1)), 
-				],
-				[
-					AngularLinkConstraint!N(V3(1, 0, 0)), 
-					AngularLinkConstraint!N(V3(0, 1, 0)), 
-					AngularLinkConstraint!N(V3(0, 0, 1)), 
-				]
-			);
-		};
-	}//public
-
-	private{
-	}//private
-}//template BallJoint
 
 /++
 +/
@@ -178,7 +103,7 @@ class LinkConstraintPair(NumericType) {
 				immutable velocity = (_dynamicEntities[0].linearVelocity + _dynamicEntities[0].angularVelocity.vectorProduct(_rotatedLocalApplicationPoints[0]))-
 				(_dynamicEntities[1].linearVelocity + _dynamicEntities[1].angularVelocity.vectorProduct(_rotatedLocalApplicationPoints[1]));
 			
-				immutable gain = N(0.5);
+				immutable gain = N(0.1);
 				immutable slop = N(0);
 				immutable distance = (_dynamicEntities[1].position+_rotatedLocalApplicationPoints[1])-(_dynamicEntities[0].position+_rotatedLocalApplicationPoints[0]);
 
@@ -195,9 +120,9 @@ class LinkConstraintPair(NumericType) {
 				import std.stdio;
 				writeln("ang : ", velocity.norm);
 				
-				immutable gain = N(0.0);
+				immutable gain = N(0);
 				immutable slop = N(0);
-				// immutable distance = (_dynamicEntities[1].orientation)-(_dynamicEntities[0].orientation);
+				immutable q01 = _dynamicEntities[1].orientation*_dynamicEntities[0].orientation.inverse;
 				immutable distance = _dynamicEntities[1].orientation;
 				foreach (ref angularLinkConstraint; _angularLinkConstraints) {
 					angularLinkConstraint.update(_dynamicEntities[0].orientation, _massAndInertiaTermInv, _rotatedLocalApplicationPoints);
@@ -424,6 +349,7 @@ struct AngularLinkConstraint(NumericType){
 		
 		void updateBias(in N gain, in N slop, in Q distance, in N unitTime){
 			import std.math;
+			// _biasTerm = (gain * (_rotatedDirection.dotProduct(distance)))/unitTime;
 			// _biasTerm = (gain * (_rotatedDirection.dotProduct(distance)))/unitTime;
 			_biasTerm = N(0);
 			import std.stdio;
