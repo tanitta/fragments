@@ -8,7 +8,7 @@ struct Ray(NumericType){
 	alias N = NumericType;
 	alias V3 = ar.Vector!(N, 3);
 	private{
-		this(V3 begin, V3 end){
+		this(in V3 begin, in V3 end){
 			_begin = begin;
 			_end = end;
 			_length = (begin - end).norm;
