@@ -8,7 +8,7 @@ import fragments.constraintpair;
 
 /++
 ++/
-class Engine(NumericType){
+class Engine(NumericType)if(__traits(isFloating, NumericType)){
 	alias N = NumericType;
 	
 	public{
@@ -72,3 +72,11 @@ class Engine(NumericType){
 		
 	}//private
 }//class Engine
+unittest{
+	assert(__traits(compiles, {
+		auto engine = new Engine!double;
+	}));
+	assert(!__traits(compiles, {
+		auto engine = new Engine!int;
+	}));
+}
