@@ -21,7 +21,7 @@ struct BoundingBox(NumericType) {
 		}body{
 			_start = V3(fmin(s[0], e[0]), fmin(s[1], e[1]), fmin(s[2], e[2])) - offset;
 			_end = V3(fmax(s[0], e[0]), fmax(s[1], e[1]), fmax(s[2], e[2])) + offset;
-			_center = ( _start, _end )*0.5;
+			_center = ( _start, _end )*N(0.5);
 		}
 		
 		///
