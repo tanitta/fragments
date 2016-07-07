@@ -86,17 +86,17 @@ class Chip(NumericType){
 			ar.pushMatrix;
 				ar.translate(entity.position);
 				
-				ar.setColor(64, 64, 255);
+				ar.color(64, 64, 255);
 				ar.drawLine(V3.zero, -entity.linearVelocity*0.33);
-				ar.setColor(255, 255, 255);
+				ar.color(255, 255, 255);
 				
 				ar.multMatrix(entity.orientation.matrix44);
 				
 				ar.drawAxis(1.0);
 				
 				ar.pushStyle;{
-					ar.setColor(64, 64, 64);
-					ar.setLineWidth = 2;
+					ar.color(64, 64, 64);
+					ar.lineWidth = 2;
 					drawBoxFrame(V3(-0.3, -0.02, -0.3), V3(0.3, 0.02, 0.3));
 				}ar.popStyle;
 				
@@ -363,10 +363,10 @@ class TestApp : ar.BaseApp{
 		camera.position = cast(ar.Vector3f)( _model.chips[0].position+V3(-d*sin(c/360.0*PI), h, -d*cos(c/360.0*PI)) );
 		camera.begin;
 			ar.pushMatrix;
-			ar.setColor(255, 255, 255);
+			ar.color(255, 255, 255);
 			_land.draw;
 			ar.pushStyle;
-			ar.setLineWidth = 2;
+			ar.lineWidth = 2;
 			ar.popStyle;
 			_model.draw;
 			ar.popMatrix;
@@ -411,5 +411,3 @@ class TestApp : ar.BaseApp{
 }
 
 void main(){
-	ar.run(new TestApp);
-}

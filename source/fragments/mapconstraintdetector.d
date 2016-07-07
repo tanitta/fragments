@@ -148,10 +148,10 @@ private struct AABBNode(NumericType){
 		
 		void drawRecursively(){
 			if(isLeaf){
-				ar.setColor(0, 255, 64);
+				ar.color(0, 255, 64);
 				_boundingBox.drawBoundingBox;
 			}else{
-				ar.setColor(64, 64, 64);
+				ar.color(64, 64, 64);
 				_boundingBox.drawBoundingBox;
 				foreach (nextNode; _nexts) {
 					nextNode.drawRecursively;
