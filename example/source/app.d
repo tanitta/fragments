@@ -4,6 +4,7 @@ import fragments.square;
 import fragments.engine;
 import fragments.boundingbox;
 import fragments.constraintpair;
+import fragments.joint;
 
 void drawBoundingBox(B)(B boundingBox){
 	with( boundingBox ){
@@ -294,29 +295,7 @@ class TestApp : ar.BaseApp{
 		}
 		{
 			auto chip = new Chip!(N);
-			chip.position = V3(0, 10, 0.6);
-			chip.orientation = Q.unit;
-			chip.addForce(
-				_unitTime,
-				V3(0, 0, 0)*210.0, 
-				chip.position
-			);
-			_model.add(chip);
-		}
-		{
-			auto chip = new Chip!(N);
-			chip.position = V3(-1, 10, 0.6);
-			chip.orientation = Q.unit;
-			chip.addForce(
-				_unitTime,
-				V3(0, 0, 0)*210.0, 
-				chip.position
-			);
-			_model.add(chip);
-		}
-		{
-			auto chip = new Chip!(N);
-			chip.position = V3(-1, 10, 0.6);
+			chip.position = V3(0, 10, 1.0);
 			chip.orientation = Q.unit;
 			chip.addForce(
 				_unitTime,
@@ -326,43 +305,15 @@ class TestApp : ar.BaseApp{
 			_model.add(chip);
 		}
 		
-		// {
-		// 	auto link = BallJoint!N(
-		// 		_model.chips[0].entity, 
-		// 		_model.chips[1].entity, 
-		// 		V3(0, 0, 0.3), 
-		// 		V3(0, 0, -0.3), 
-		// 	);
-		// 	_model.add(link);
-		// }
-		// {
-		// 	auto link = BallJoint!N(
-		// 		_model.chips[1].entity, 
-		// 		_model.chips[2].entity, 
-		// 		V3(0, 0, 0.3), 
-		// 		V3(0, 0, -0.3), 
-		// 	);
-		// 	_model.add(link);
-		// }
-		// {
-		// 	auto link = BallJoint!N(
-		// 		_model.chips[2].entity, 
-		// 		_model.chips[3].entity, 
-		// 		V3(0, 0, 0.3), 
-		// 		V3(0, 0, -0.3), 
-		// 	);
-		// 	_model.add(link);
-		// }
-		//
-		// {
-		// 	auto link = BallJoint!N(
-		// 		_model.chips[3].entity, 
-		// 		_model.chips[0].entity, 
-		// 		V3(0, 0, 0.3), 
-		// 		V3(0, 0, -0.3), 
-		// 	);
-		// 	_model.add(link);
-		// }
+		{
+			auto link = BallJoint!N(
+				_model.chips[0].entity, 
+				_model.chips[1].entity, 
+				V3(0, 0, 0.3), 
+				V3(0, 0, -0.3), 
+			);
+			_model.add(link);
+		}
 		
 		import std.algorithm : map;
 		import std.array : array;
