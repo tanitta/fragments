@@ -411,3 +411,5 @@ class TestApp : ar.BaseApp{
 }
 
 void main(){
+    ar.run(new TestApp);
+}
