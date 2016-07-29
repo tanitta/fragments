@@ -87,7 +87,7 @@ private struct AABBNode(NumericType){
 	public{
 		/++
 		++/
-		this(StaticEntity!(N)[] staticEntities)in{assert( staticEntities.length > 0);}body{
+		this(StaticEntity!(N)[] staticEntities)in{assert( staticEntities.length > 0, "empty entities");}body{
 			import std.array;
 			import std.math;
 			
