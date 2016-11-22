@@ -4,3 +4,8 @@ copyright "Copyright © 2016, tanitta"
 authors "tanitta"
 
 dependency "fragments" path="../"
+
+buildType "optimized" {
+	buildOptions "optimize"
+}
+
