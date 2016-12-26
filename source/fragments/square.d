@@ -5,7 +5,7 @@ import fragments.entity;
 import fragments.contactpoint;
 import fragments.boundingbox;
 import fragments.material;
-import fragments.constraintpair;
+import fragments.constraintpairs.collisionconstraintpair;
 
 /++
 ++/

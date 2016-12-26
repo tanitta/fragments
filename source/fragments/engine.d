@@ -4,7 +4,8 @@ import fragments.entity;
 import fragments.mapconstraintdetector;
 import fragments.constraintsolver;
 import fragments.integrator;
-import fragments.constraintpair;
+import fragments.constraints;
+import fragments.constraintpairs.linkconstraintpair;
 
 /++
 ++/

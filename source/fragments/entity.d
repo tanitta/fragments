@@ -4,7 +4,7 @@ import armos.math;
 import fragments.boundingbox;
 import fragments.contactpoint;
 import fragments.material;
-import fragments.constraintpair;
+import fragments.constraintpairs.collisionconstraintpair;
 import fragments.integrator;
 import fragments.mapconstraintdetector;
 /++

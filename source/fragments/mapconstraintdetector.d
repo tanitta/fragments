@@ -1,6 +1,6 @@
 module fragments.mapconstraintdetector;
 
-import fragments.constraintpair;
+import fragments.constraintpairs.collisionconstraintpair;
 import fragments.contactpoint;
 import fragments.entity;
 import fragments.polygon;

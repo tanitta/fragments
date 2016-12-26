@@ -1,7 +1,8 @@
 module fragments.constraintsolver;
 
 import armos.math;
-import fragments.constraintpair;
+import fragments.constraints;
+import fragments.constraintpairs;
 import fragments.entity;
 
 /++
