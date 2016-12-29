@@ -20,7 +20,7 @@ struct LinearLinkConstraint(NumericType) {
         
         /++
         +/
-        V3[2][2] deltaVelocities(DynamicEntity!N[] entities)const in{
+        V3[2][2] deltaVelocities(in DynamicEntity!N[] entities)const in{
             import std.math;
             assert(!isNaN(_initialImpulse));
         }body{
@@ -29,9 +29,6 @@ struct LinearLinkConstraint(NumericType) {
             
             import std.algorithm;
             immutable N deltaImpluse = (_initialImpulse - impulse(deltaVelocity));
-            
-            // immutable V3 deltaLinearVelocity = deltaImpluse * dynamicEntity.massInv * _direction;
-            // immutable V3 deltaAngularVelocity = deltaImpluse * dynamicEntity.inertiaGlobalInv * _applicationPoint.vectorProduct(_rotatedDirection);
             
             return [
                 [
