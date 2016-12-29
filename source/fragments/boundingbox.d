@@ -1,12 +1,16 @@
 module fragments.boundingbox;
+
 import std.math;
 import armos.math;
 
 /++
 ++/
 struct BoundingBox(NumericType) {
-    alias N = NumericType;
-    alias V3 = Vector!(N, 3);
+    private{
+        alias N = NumericType;
+        alias V3 = Vector!(N, 3);
+    }
+    
     public{
         ///
         this(in V3 s, in V3 e, in V3 offset = V3.zero)

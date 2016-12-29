@@ -82,8 +82,8 @@ private void updateDeltaVelocities(N, V3 = Vector!(N, 3))(ref LinkConstraintPair
 
             {
                 auto entity = entities[1];
-                entity.deltaLinearVelocity  = entity.deltaLinearVelocity - deltaVelocities[0][0];
-                entity.deltaAngularVelocity = entity.deltaAngularVelocity - deltaVelocities[0][1];
+                entity.deltaLinearVelocity  = entity.deltaLinearVelocity - deltaVelocities[1][0];
+                entity.deltaAngularVelocity = entity.deltaAngularVelocity - deltaVelocities[1][1];
             }
         }
 

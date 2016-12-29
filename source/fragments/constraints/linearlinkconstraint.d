@@ -33,7 +33,7 @@ struct LinearLinkConstraint(NumericType) {
             // immutable V3 deltaLinearVelocity = deltaImpluse * dynamicEntity.massInv * _direction;
             // immutable V3 deltaAngularVelocity = deltaImpluse * dynamicEntity.inertiaGlobalInv * _applicationPoint.vectorProduct(_rotatedDirection);
             
-            immutable V3[2][2] v = [
+            return [
                 [
                     deltaImpluse * entities[0].massInv * _rotatedDirection,
                     deltaImpluse * entities[0].inertiaGlobalInv * _applicationPoints[0].vectorProduct(_rotatedDirection)
@@ -43,7 +43,6 @@ struct LinearLinkConstraint(NumericType) {
                     deltaImpluse * entities[1].inertiaGlobalInv * _applicationPoints[1].vectorProduct(_rotatedDirection)
                 ], 
             ];
-            return v;
         }
         
         /++

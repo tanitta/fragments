@@ -31,42 +31,24 @@ struct AngularLinkConstraint(NumericType){
             assert(!isNaN(v[1][1][0]));
         }body{
             immutable V3 deltaVelocity = (entities[0].deltaAngularVelocity - entities[1].deltaAngularVelocity);
-            import std.stdio;
-            entities[0].deltaAngularVelocity.writeln;
+            // import std.stdio;
+            // entities[0].deltaAngularVelocity.writeln;
             // immutable V3 deltaVelocity = V3.zero;
             
             import std.algorithm;
             immutable N deltaImpluse = (_initialImpulse - impulse(deltaVelocity))*0.05;
-            writeln("deltaImpluse : ", deltaImpluse);
+            // writeln("deltaImpluse : ", deltaImpluse);
             
-            immutable V3[2][2] v = [
+            return [
                 [
-                    // deltaImpluse * entities[0].massInv * _applicationPoints[0].vectorProduct(_rotatedDirection),
-                    // deltaImpluse * entities[0].massInv * _rotatedDirection,
                     V3.zero, 
                     deltaImpluse * entities[0].inertiaGlobalInv * _rotatedDirection,
-                    // -deltaImpluse * entities[0].inertiaGlobalInv * _applicationPoints[0].vectorProduct(_rotatedDirection)
                 ], 
                 [
-                    // deltaImpluse * entities[1].massInv * _applicationPoints[1].vectorProduct(_rotatedDirection),
-                    // deltaImpluse * entities[1].massInv * _rotatedDirection,
                     V3.zero,
                     deltaImpluse * entities[1].inertiaGlobalInv * _rotatedDirection,
-                    // -deltaImpluse * entities[1].inertiaGlobalInv * _applicationPoints[1].vectorProduct(_rotatedDirection)
                 ], 
             ];
-                
-            // immutable V3[2][2] v = [
-            //     [
-            //         V3.zero, 
-            //         V3.zero, 
-            //     ], 
-            //     [
-            //         V3.zero, 
-            //         V3.zero, 
-            //     ], 
-            // ];
-            return v;
         }
         
         /++
@@ -91,16 +73,19 @@ struct AngularLinkConstraint(NumericType){
         
         ///
         void updateBias(in N gain, in N slop, in Q distance, in N unitTime){
-            immutable N spring = 0.1;
+            immutable N spring = 0.5;
             import std.math;
-            // _biasTerm = (gain * (_rotatedDirection.dotProduct(distance)))/unitTime;
-            // _biasTerm = (gain * (_rotatedDirection.dotProduct(distance)))/unitTime;
-            _biasTerm = N(0);
-            import std.stdio;
-            // writeln("bias : ", _biasTerm);
-            writeln("distance: ", distance);
-            // import std.stdio;
-            // _biasTerm.writeln;
+            immutable referenceVectorA = _localDirection.OrthogonalNormalizedVector;
+            //TODO
+            immutable referenceVectorB = distance.rotatedVector(referenceVectorA);
+            immutable deflection = referenceVectorA.vectorProduct(referenceVectorB);
+
+            immutable tmp = _localDirection.dotProduct(deflection);
+            if(tmp > N(0)){
+                _biasTerm = referenceVectorA.angle(referenceVectorB);
+            }else{
+                _biasTerm = -referenceVectorA.angle(referenceVectorB);
+            }
         };
         
         /++

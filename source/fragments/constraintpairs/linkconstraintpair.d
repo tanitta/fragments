@@ -119,8 +119,8 @@ class LinkConstraintPair(NumericType) {
             {
                 immutable velocity = _dynamicEntities[0].angularVelocity - _dynamicEntities[1].angularVelocity;
                 // immutable velocity = V3.zero;
-                import std.stdio;
-                writeln("ang : ", velocity.norm);
+                // import std.stdio;
+                // writeln("ang : ", velocity.norm);
                 
                 immutable gain = N(0);
                 immutable slop = N(0);

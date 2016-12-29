@@ -7,6 +7,25 @@ import fragments.constraints;
 import fragments.constraintpairs;
 import fragments.joint;
 
+/++
++/
+class Config {
+    public{
+        typeof(this) hasGravity(in bool b){
+            _hasGravity = b;
+            return this;
+        };
+
+        bool hasGravity()const{
+            return _hasGravity;
+        };
+    }//public
+
+    private{
+        bool _hasGravity;
+    }//private
+}//class Config
+
 void drawBoundingBox(B)(B boundingBox){
     with( boundingBox ){
         ar.graphics.boxFramePrimitive((start+end)*0.5, end-start).drawWireFrame;
@@ -65,6 +84,7 @@ class Chip(NumericType){
         /++
         +/
         void draw()const{
+            entity.angularVelocity.norm.writeln;
             ar.graphics.pushMatrix;
                 ar.graphics.translate(entity.position);
                 
@@ -244,6 +264,7 @@ class TestApp : ar.app.BaseApp{
         setupModel;
         
         //Engine
+        _config = (new Config).hasGravity(false);
         engine = new fragments.engine.Engine!(N);
         engine.staticEntities = _land.staticEntities;
         
@@ -271,7 +292,7 @@ class TestApp : ar.app.BaseApp{
         
         {
             auto chip = new Chip!(N);
-            chip.position = V3(0, 10, 0);
+            chip.position = V3(0, 20, 0);
             chip.orientation = Q.unit;
             chip.addForce(
                 _unitTime,
@@ -283,7 +304,7 @@ class TestApp : ar.app.BaseApp{
         
         {
             auto chip = new Chip!(N);
-            chip.position = V3(0, 10, 1.0);
+            chip.position = V3(0, 20, 1.0);
             chip.orientation = Q.unit;
             chip.addForce(
                 _unitTime,
@@ -292,30 +313,30 @@ class TestApp : ar.app.BaseApp{
             );
             _model.add(chip);
         }
-        //
-        // {
-        //     auto chip = new Chip!(N);
-        //     chip.position = V3(0, 10, 2.0);
-        //     chip.orientation = Q.unit;
-        //     chip.addForce(
-        //         _unitTime,
-        //         V3(0, 0, 0)*210.0, 
-        //         chip.position
-        //     );
-        //     _model.add(chip);
-        // }
-        //
-        // {
-        //     auto chip = new Chip!(N);
-        //     chip.position = V3(0, 10, 3.0);
-        //     chip.orientation = Q.unit;
-        //     chip.addForce(
-        //         _unitTime,
-        //         V3(0, 0, 0)*210.0, 
-        //         chip.position
-        //     );
-        //     _model.add(chip);
-        // }
+        
+        {
+            auto chip = new Chip!(N);
+            chip.position = V3(0, 20, 2.0);
+            chip.orientation = Q.unit;
+            chip.addForce(
+                _unitTime,
+                V3(0, 0, 0)*210.0, 
+                chip.position
+            );
+            _model.add(chip);
+        }
+        
+        {
+            auto chip = new Chip!(N);
+            chip.position = V3(0, 20, 3.0);
+            chip.orientation = Q.unit;
+            chip.addForce(
+                _unitTime,
+                V3(0, 0, 0)*210.0, 
+                chip.position
+            );
+            _model.add(chip);
+        }
         
         // {
         //     auto link = FixedJoint!N(
@@ -337,10 +358,39 @@ class TestApp : ar.app.BaseApp{
         //     _model.add(link);
         // }
         //
+        // {
+        //     auto link = FixedJoint!N(
+        //         _model.chips[0].entity, 
+        //         _model.chips[1].entity, 
+        //         V3(0, 0, 0.3), 
+        //         V3(0, 0, -0.3), 
+        //     );
+        //     _model.add(link);
+        // }
         {
             auto link = FixedJoint!N(
                 _model.chips[0].entity, 
                 _model.chips[1].entity, 
+                V3(0, 0, 0.3), 
+                V3(0, 0, -0.3), 
+            );
+            _model.add(link);
+        }
+        
+        {
+            auto link = BallJoint!N(
+                _model.chips[1].entity, 
+                _model.chips[2].entity, 
+                V3(0, 0, 0.3), 
+                V3(0, 0, -0.3), 
+            );
+            _model.add(link);
+        }
+        
+        {
+            auto link = FixedJoint!N(
+                _model.chips[2].entity, 
+                _model.chips[3].entity, 
                 V3(0, 0, 0.3), 
                 V3(0, 0, -0.3), 
             );
@@ -353,8 +403,6 @@ class TestApp : ar.app.BaseApp{
         import std.conv;
         _dynamicEntities = _model.chips.map!(c => c.entity.to!(DynamicEntity!N)).array;
         
-        import std.array:array,join;
-        _linearImpulseConstraints = _dynamicEntities.map!(entity => LinearImpulseConstraint!N(entity, V3(0, -9.8*entity.mass*_unitTime, 0))).array;
     }
 
     void setupGui(){
@@ -387,6 +435,44 @@ class TestApp : ar.app.BaseApp{
     }
     
     override void update(){
+        {
+            V3 force = V3.zero;
+            if(hasHeldKey(ar.utils.KeyType.W)){
+                force += V3(0, 0, 1);
+            }
+            if(hasHeldKey(ar.utils.KeyType.S)){
+                force += V3(0, 0, -1);
+            }
+            if(hasHeldKey(ar.utils.KeyType.A)){
+                force += V3(1, 0, 0);
+            }
+            if(hasHeldKey(ar.utils.KeyType.D)){
+                force += V3(-1, 0, 0);
+            }
+            if(hasHeldKey(ar.utils.KeyType.Q)){
+                force += V3(0, 1, 0);
+            }
+            if(hasHeldKey(ar.utils.KeyType.E)){
+                force += V3(0, -1, 0);
+            }
+            auto chip = _model.chips[0];
+            chip.addForce(
+                _unitTime,
+                force*210.0*200.0, 
+                chip.position
+            );
+        }
+
+        //gravity
+        if(_config.hasGravity){
+            import std.algorithm : map;
+            import std.array : array;
+            _linearImpulseConstraints = _dynamicEntities.map!(entity => LinearImpulseConstraint!N(entity, V3(0, -9.8*entity.mass*_unitTime, 0)))
+                                                        .array;
+        }else{
+            _linearImpulseConstraints = [];
+        }
+
         engine.unitTime = _unitTime;
         engine.update(_dynamicEntities, _model.links,_linearImpulseConstraints);
     }
@@ -413,34 +499,46 @@ class TestApp : ar.app.BaseApp{
         gui.draw;
         fpsUseRate = ar.app.fpsUseRate*100.0;
     }
-    
-    override void keyPressed(ar.utils.KeyType k){
-        V3 force = V3.zero;
-        switch (k) {
-            case ar.utils.KeyType.A:
-                force = V3(-1, 0, 0);
-            break;
-            
-            case ar.utils.KeyType.D:
-                force = V3(1, 0, 0);
-            break;
-            
-            case ar.utils.KeyType.W:
-                force = V3(0, 0, -1);
-            break;
-            
-            case ar.utils.KeyType.S:
-                force = V3(0, 0, 1);
-            break;
-            default:
-            break;
+
+    override void keyReleased(ar.utils.KeyType k){
+        if(k == ar.utils.KeyType.Num1){
+            _config.hasGravity.writeln;
+            _config.hasGravity = !_config.hasGravity;
         }
-        auto chip = _model.chips[0];
-        chip.addForce(
-            _unitTime,
-            force*210.0*200.0, 
-            chip.position
-        );
+        // ar.utils.KeyType.
+
+    }
+    
+    // override void keyPressed(ar.utils.KeyType k){
+    //     V3 force = V3.zero;
+    //     switch (k) {
+    //         case ar.utils.KeyType.A:
+    //             force = V3(-1, 0, 0);
+    //         break;
+    //        
+    //         case ar.utils.KeyType.D:
+    //             force = V3(1, 0, 0);
+    //         break;
+    //        
+    //         case ar.utils.KeyType.W:
+    //             force = V3(0, 0, -1);
+    //         break;
+    //        
+    //         case ar.utils.KeyType.S:
+    //             force = V3(0, 0, 1);
+    //         break;
+    //         default:
+    //         break;
+    //     }
+    //     auto chip = _model.chips[0];
+    //     chip.addForce(
+    //         _unitTime,
+    //         force*210.0*200.0, 
+    //         chip.position
+    //     );
+    // }
+    private{
+        Config _config;
     }
 }
 
