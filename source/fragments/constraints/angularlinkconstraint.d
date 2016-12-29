@@ -20,7 +20,7 @@ struct AngularLinkConstraint(NumericType){
         
         /++
         +/
-        V3[2][2] deltaVelocities(DynamicEntity!N[] entities)const in{
+        V3[2][2] deltaVelocities(in DynamicEntity!N[] entities)const in{
             import std.math;
             assert(!isNaN(_initialImpulse));
         }out(v){
@@ -31,13 +31,9 @@ struct AngularLinkConstraint(NumericType){
             assert(!isNaN(v[1][1][0]));
         }body{
             immutable V3 deltaVelocity = (entities[0].deltaAngularVelocity - entities[1].deltaAngularVelocity);
-            // import std.stdio;
-            // entities[0].deltaAngularVelocity.writeln;
-            // immutable V3 deltaVelocity = V3.zero;
             
             import std.algorithm;
             immutable N deltaImpluse = (_initialImpulse - impulse(deltaVelocity))*0.05;
-            // writeln("deltaImpluse : ", deltaImpluse);
             
             return [
                 [
@@ -119,7 +115,7 @@ struct AngularLinkConstraint(NumericType){
     }//private
 }//struct LinkConstraint
 
-V3 OrthogonalNormalizedVector(V3)(in V3 v){
+private V3 OrthogonalNormalizedVector(V3)(in V3 v){
     immutable tmp = V3(v[1], v[2], v[0]);
     return v.vectorProduct(tmp).normalized;
 }
