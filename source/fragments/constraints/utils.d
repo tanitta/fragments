@@ -49,3 +49,27 @@ M33 crossMatrix(V3, M33 = Matrix!(typeof(V3[0]), 3, 3))(in V3 vector){
         [ -vector[1], vector[0],  0          ],
     );
 }
+
+N inertiaAroundAxis(V3, M33, N = V3.elementType)(
+    in V3 axis,
+    in M33 inertia, 
+){
+    immutable v = V3(
+        axis.x * inertia[0][0] + axis.y * inertia[1][0] + axis.z * inertia[2][0],
+        axis.x * inertia[0][1] + axis.y * inertia[1][1] + axis.z * inertia[2][1],
+        axis.x * inertia[0][2] + axis.y * inertia[1][2] + axis.z * inertia[2][2],
+    );
+    return v.x * axis.x + v.y * axis.y + v.z * axis.z;
+}
+unittest{
+    alias N = double;
+    alias M33 = Matrix!(N, 3, 3);
+    alias V3 = Vector!(N, 3);
+    auto v = V3(1, 2, 3);
+    auto m = M33(
+        [1, 2, 3],
+        [2, 3, 4],
+        [3, 4, 5]
+    );
+    assert(inertiaAroundAxis(v, m) == 132);
+}
