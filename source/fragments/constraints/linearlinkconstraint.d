@@ -44,14 +44,23 @@ struct LinearLinkConstraint(NumericType) {
         
         /++
         +/
-        void update(in Q orientation, in M33 massAndInertiaTermInv, in V3[] rotatedLocalApplicationPoints)in{
+        void update(in DynamicEntity!N entityA, in DynamicEntity!N entityB, in V3[] rotatedLocalApplicationPoints)in{
             import std.math;
-            assert(!isNaN(orientation[0]));
-            assert(!isNaN(massAndInertiaTermInv[0][0]));
+            // assert(!isNaN(orientation[0]));
+            // assert(!isNaN(massAndInertiaTermInv[0][0]));
         }body{
-            _rotatedDirection = orientation.rotatedVector(_localDirection);
-            _jacDiagInv = N(1)/((massAndInertiaTermInv*_rotatedDirection).dotProduct(_rotatedDirection));
+            _rotatedDirection = entityA.orientation.rotatedVector(_localDirection);
             _applicationPoints = rotatedLocalApplicationPoints;
+            //TODO
+            // _jacDiagInv = N(1)/((massAndInertiaTermInv*_rotatedDirection).dotProduct(_rotatedDirection));
+            import fragments.constraints.utils;
+            _jacDiagInv = linearLinkJacDiagInv(
+                entityA.orientation, entityB.orientation,
+                _applicationPoints[0], _applicationPoints[1],
+                _localDirection,
+                entityA.inertiaGlobalInv, entityB.inertiaGlobalInv,
+                entityA.massInv, entityB.massInv
+            );
         }
         
         ///
@@ -63,9 +72,9 @@ struct LinearLinkConstraint(NumericType) {
         }
         
         ///
-        void updateBias(in N gain, in N slop, in V3 distance, in N unitTime){
+        void updateBias(in V3 distance, in N unitTime){
             import std.math;
-            _biasTerm = (gain * (_rotatedDirection.dotProduct(distance)))/unitTime;
+            _biasTerm = (_spring * (_rotatedDirection.dotProduct(distance)))/unitTime;
         };
         
         /++
@@ -73,9 +82,34 @@ struct LinearLinkConstraint(NumericType) {
         void localDirection(in V3 localDirection){
             _localDirection = localDirection;
         }
+
+        ///
+        ref typeof(this) spring(in N s){
+            _spring = s;
+            return this;
+        }
+
+        ///
+        N spring()const{
+            return _spring;
+        }
+
+        ///
+        ref typeof(this) damper(in N d){
+            _damper = d;
+            return this;
+        }
+
+        ///
+        N damper()const{
+            return _damper;
+        }
     }//public
 
     private{
+        N _spring = 0.5;
+        N _damper = 1.0;
+
         N _initialImpulse;
         
         V3 _localDirection;
@@ -91,7 +125,7 @@ struct LinearLinkConstraint(NumericType) {
             import std.math;
             assert(!isNaN(deltaVelocity[0]));
         }body{
-            immutable N impulse = _jacDiagInv * (_rotatedDirection.dotProduct(deltaVelocity) - _biasTerm);
+            immutable N impulse = _jacDiagInv * (_rotatedDirection.dotProduct(deltaVelocity)*_damper - _biasTerm);
             return impulse;
         }
     }//private

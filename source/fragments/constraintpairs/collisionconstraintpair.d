@@ -35,7 +35,7 @@ struct CollisionConstraintPair(NumericType) {
             
             auto staticEntity = contactPoint.staticEntity;
 
-            immutable jacDiagInv = jacDiagInv(
+            immutable jacDiagInv = collisionJacDiagInv(
                 applicationPoint,
                 dynamicEntity.massInv,
                 dynamicEntity.inertiaGlobalInv,
@@ -97,7 +97,7 @@ struct CollisionConstraintPair(NumericType) {
 
                 const staticEntity = contactPoints[0].staticEntity;
                 
-                immutable jacDiagInv = jacDiagInv(
+                immutable jacDiagInv = collisionJacDiagInv(
                     applicationPoint,
                     _dynamicEntity.massInv,
                     _dynamicEntity.inertiaGlobalInv,

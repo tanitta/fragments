@@ -33,7 +33,7 @@ struct AngularLinkConstraint(NumericType){
             immutable V3 deltaVelocity = (entities[0].deltaAngularVelocity - entities[1].deltaAngularVelocity);
             
             import std.algorithm;
-            immutable N deltaImpluse = (_initialImpulse - impulse(deltaVelocity))*0.05;
+            immutable N deltaImpluse = (_initialImpulse - impulse(deltaVelocity));
             
             return [
                 [
@@ -49,15 +49,22 @@ struct AngularLinkConstraint(NumericType){
         
         /++
         +/
-        void update(in Q orientation, in M33 massAndInertiaTermInv, in V3[] rotatedLocalApplicationPoints)in{
+        void update(in DynamicEntity!N entityA, in DynamicEntity!N entityB)in{
             import std.math;
-            assert(!isNaN(orientation[0]));
-            assert(!isNaN(massAndInertiaTermInv[0][0]));
+            // assert(!isNaN(orientation[0]));
+            // assert(!isNaN(inertiaTermInv[0][0]));
         }body{
-            _rotatedDirection = orientation.rotatedVector(_localDirection);
-            _jacDiagInv = N(1)/((massAndInertiaTermInv*_rotatedDirection).dotProduct(_rotatedDirection));
-            _applicationPoints = rotatedLocalApplicationPoints;
-        }
+            import fragments.constraints.utils: inertiaAroundAxis,
+                                                angularLinkJacDiagInv;
+            _rotatedDirection = entityA.orientation.rotatedVector(_localDirection);
+            // _jacDiagInv = N(1)/((inertiaTermInv*_rotatedDirection).dotProduct(_rotatedDirection));
+            // _jacDiagInv = N(1)/(inertiaGlobalA.inertiaAroundAxis(_rotatedDirection) + inertiaGlobalB.inertiaAroundAxis(_rotatedDirection));
+            _jacDiagInv = angularLinkJacDiagInv(
+                _localDirection,
+                entityA.orientation, entityB.orientation,
+                entityA.inertiaGlobalInv, entityB.inertiaGlobalInv
+            );
+    }
         
         ///
         void updateInitialImpulse(in V3 velocity)in{
@@ -68,8 +75,7 @@ struct AngularLinkConstraint(NumericType){
         }
         
         ///
-        void updateBias(in N gain, in N slop, in Q distance, in N unitTime){
-            immutable N spring = 0.5;
+        void updateBias(in Q distance, in N unitTime){
             import std.math;
             immutable referenceVectorA = _localDirection.OrthogonalNormalizedVector;
             //TODO
@@ -78,9 +84,9 @@ struct AngularLinkConstraint(NumericType){
 
             immutable tmp = _localDirection.dotProduct(deflection);
             if(tmp > N(0)){
-                _biasTerm = referenceVectorA.angle(referenceVectorB);
+                _biasTerm = referenceVectorA.angle(referenceVectorB)*_spring/unitTime;
             }else{
-                _biasTerm = -referenceVectorA.angle(referenceVectorB);
+                _biasTerm = -referenceVectorA.angle(referenceVectorB)*_spring/unitTime;
             }
         };
         
@@ -89,16 +95,40 @@ struct AngularLinkConstraint(NumericType){
         void localDirection(in V3 localDirection){
             _localDirection = localDirection;
         }
+
+        ///
+        ref typeof(this) spring(in N s){
+            _spring = s;
+            return this;
+        }
+
+        ///
+        N spring()const{
+            return _spring;
+        }
+
+        ///
+        ref typeof(this) damper(in N d){
+            _damper = d;
+            return this;
+        }
+
+        ///
+        N damper()const{
+            return _damper;
+        }
     }//public
 
     private{
+        N _spring = 0.5;
+        N _damper = 1.0;
+
         N _initialImpulse;
         
         V3 _localDirection; // ローカル拘束軸
         V3 _rotatedDirection; // ワールド拘束軸
         
         N _jacDiagInv;
-        V3[2] _applicationPoints;
         
         N _biasTerm;
         
@@ -107,8 +137,9 @@ struct AngularLinkConstraint(NumericType){
             import std.math;
             assert(!isNaN(deltaVelocity[0]));
         }body{
-            immutable N damper = 1.0;
-            immutable N impulse = _jacDiagInv * (_rotatedDirection.dotProduct(deltaVelocity)*damper - _biasTerm);
+            immutable N impulse = _jacDiagInv * (_rotatedDirection.dotProduct(deltaVelocity)*_damper - _biasTerm)*0.2;
+            // immutable N impulse = _jacDiagInv * (_rotatedDirection.dotProduct(deltaVelocity));
+            // immutable N impulse = _jacDiagInv * (_rotatedDirection.dotProduct(deltaVelocity))*0.1;
             return impulse;
         }
         

@@ -29,9 +29,9 @@ class Engine(NumericType)if(__traits(isFloating, NumericType)){
         ++/
         void unitTime(in N t){
             _unitTime = t;
-            _mapConstraintDetector.unitTime = t;
-            _constraintSolver.unitTime = t;
-            _integrator.unitTime = t;
+            _mapConstraintDetector.unitTime = t/_iterations;
+            _constraintSolver.unitTime = t/_iterations;
+            _integrator.unitTime = t/_iterations;
         }
         
         /++
@@ -54,7 +54,7 @@ class Engine(NumericType)if(__traits(isFloating, NumericType)){
             import std.range;
             foreach (i; _iterations.iota) {
                 import std.algorithm:map, each;
-                linkConstraintPairs.each!((ref pair) => pair.update(_unitTime));
+                linkConstraintPairs.each!((ref pair) => pair.update(_unitTime/_iterations));
 
                 dynamicEntities.each!((ref entity) => entity.updateCollisionConstraintPairs(_mapConstraintDetector.detectedStaticEntities(entity)));
 

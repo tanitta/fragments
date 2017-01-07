@@ -84,7 +84,6 @@ class Chip(NumericType){
         /++
         +/
         void draw()const{
-            entity.angularVelocity.norm.writeln;
             ar.graphics.pushMatrix;
                 ar.graphics.translate(entity.position);
                 
@@ -93,7 +92,7 @@ class Chip(NumericType){
                 ar.graphics.color(255, 255, 255);
                 
                 import std.conv;
-                ar.graphics.multModelMatrix(entity.orientation.matrix44);
+                ar.graphics.multModelMatrix(entity.orientation.matrix44.to!(ar.math.Matrix!(float, 4, 4)));
                 
                 ar.graphics.drawAxis(1.0);
                 
@@ -255,7 +254,7 @@ class TestApp : ar.app.BaseApp{
         ar.graphics.samples = 2;
         camera.target= ar.math.Vector3f(0, 45, 0);
         
-        _unitTime = 1.0/300.0;
+        _unitTime = 1.0/30.0;
         
         //Land
         _land = new Land!(N);
@@ -304,7 +303,7 @@ class TestApp : ar.app.BaseApp{
         
         {
             auto chip = new Chip!(N);
-            chip.position = V3(0, 20, 1.0);
+            chip.position = V3(0, 20, 0.6);
             chip.orientation = Q.unit;
             chip.addForce(
                 _unitTime,
@@ -378,7 +377,7 @@ class TestApp : ar.app.BaseApp{
         }
         
         {
-            auto link = BallJoint!N(
+            auto link = FixedJoint!N(
                 _model.chips[1].entity, 
                 _model.chips[2].entity, 
                 V3(0, 0, 0.3), 
@@ -435,6 +434,17 @@ class TestApp : ar.app.BaseApp{
     }
     
     override void update(){
+
+        //gravity
+        if(_config.hasGravity){
+            import std.algorithm : map;
+            import std.array : array;
+            _linearImpulseConstraints = _dynamicEntities.map!(entity => LinearImpulseConstraint!N(entity, V3(0, -9.8*entity.mass*_unitTime, 0)))
+                                                        .array;
+        }else{
+            _linearImpulseConstraints = [];
+        }
+
         {
             V3 force = V3.zero;
             if(hasHeldKey(ar.utils.KeyType.W)){
@@ -455,22 +465,14 @@ class TestApp : ar.app.BaseApp{
             if(hasHeldKey(ar.utils.KeyType.E)){
                 force += V3(0, -1, 0);
             }
+            force *= 210.0*20.0;
             auto chip = _model.chips[0];
-            chip.addForce(
-                _unitTime,
-                force*210.0*200.0, 
-                chip.position
-            );
-        }
-
-        //gravity
-        if(_config.hasGravity){
-            import std.algorithm : map;
-            import std.array : array;
-            _linearImpulseConstraints = _dynamicEntities.map!(entity => LinearImpulseConstraint!N(entity, V3(0, -9.8*entity.mass*_unitTime, 0)))
-                                                        .array;
-        }else{
-            _linearImpulseConstraints = [];
+            // chip.addForce(
+            //     _unitTime,
+            //     force*210.0*200.0, 
+            //     chip.position
+            // );
+            _linearImpulseConstraints ~= LinearImpulseConstraint!N(chip.entity, force*_unitTime);
         }
 
         engine.unitTime = _unitTime;
@@ -502,7 +504,6 @@ class TestApp : ar.app.BaseApp{
 
     override void keyReleased(ar.utils.KeyType k){
         if(k == ar.utils.KeyType.Num1){
-            _config.hasGravity.writeln;
             _config.hasGravity = !_config.hasGravity;
         }
         // ar.utils.KeyType.

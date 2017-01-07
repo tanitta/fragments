@@ -64,6 +64,7 @@ class LinkConstraintPair(NumericType) {
     private{
         DynamicEntity!N[2] _dynamicEntities;
         M33 _massAndInertiaTermInv;
+        // M33 _inertiaTermInv;
         V3[2] _localApplicationPoints;
         V3[2] _rotatedLocalApplicationPoints;
         
@@ -96,42 +97,52 @@ class LinkConstraintPair(NumericType) {
                     _dynamicEntities[i].inertiaGlobalInv
                 );
             }
+
+            // _inertiaTermInv = M33.zero;
+            // for (int i = 0; i < 2; i++) {
+            //     _inertiaTermInv = _inertiaTermInv + inertiaAroundAxis(
+            //         _rotatedLocalDirection, 
+            //         _dynamicEntities[i].inertiaGlobalInv
+            //     );
+            //
+            //     // _inertiaTermInv = _inertiaTermInv + _rotatedLocalDirection *
+            // }
         }
         
         void updateConstraints(in N unitTime){
             
             import std.math;
+            //LinearConstraints
             {
-                immutable velocity = (_dynamicEntities[0].linearVelocity + _dynamicEntities[0].angularVelocity.vectorProduct(_rotatedLocalApplicationPoints[0]))-
-                (_dynamicEntities[1].linearVelocity + _dynamicEntities[1].angularVelocity.vectorProduct(_rotatedLocalApplicationPoints[1]));
+                immutable velocity = (_dynamicEntities[0].linearVelocity + _dynamicEntities[0].angularVelocity.vectorProduct(_rotatedLocalApplicationPoints[0]))
+                                    -(_dynamicEntities[1].linearVelocity + _dynamicEntities[1].angularVelocity.vectorProduct(_rotatedLocalApplicationPoints[1]));
             
-                immutable gain = N(0.1);
-                immutable slop = N(0);
-                immutable distance = (_dynamicEntities[1].position+_rotatedLocalApplicationPoints[1])-(_dynamicEntities[0].position+_rotatedLocalApplicationPoints[0]);
-
+                immutable distance = (_dynamicEntities[1].position+_rotatedLocalApplicationPoints[1])
+                                    -(_dynamicEntities[0].position+_rotatedLocalApplicationPoints[0]);
 
                 foreach (ref linearLinkConstraint; _linearLinkConstraints) {
-                    linearLinkConstraint.update(_dynamicEntities[0].orientation, _massAndInertiaTermInv, _rotatedLocalApplicationPoints);
-                    linearLinkConstraint.updateBias(gain, slop, distance, unitTime);
+                    linearLinkConstraint.spring(1.0)
+                                        .damper(1.0);
+                    linearLinkConstraint.update(_dynamicEntities[0], _dynamicEntities[1], _rotatedLocalApplicationPoints);
+                    linearLinkConstraint.updateBias(distance, unitTime);
                     linearLinkConstraint.updateInitialImpulse(velocity);
                 }
             }
+
+            //AngularConstraints
             {
                 immutable velocity = _dynamicEntities[0].angularVelocity - _dynamicEntities[1].angularVelocity;
-                // immutable velocity = V3.zero;
-                // import std.stdio;
-                // writeln("ang : ", velocity.norm);
-                
-                immutable gain = N(0);
-                immutable slop = N(0);
-                immutable q01 = _dynamicEntities[1].orientation*_dynamicEntities[0].orientation.inverse;
+
+                // immutable distance = _dynamicEntities[1].orientation*_dynamicEntities[0].orientation.inverse;
                 immutable distance = rotationDifference(
                     _dynamicEntities[0].orientation,
                     _dynamicEntities[1].orientation
                 );
                 foreach (ref angularLinkConstraint; _angularLinkConstraints) {
-                    angularLinkConstraint.update(_dynamicEntities[0].orientation, _massAndInertiaTermInv, _rotatedLocalApplicationPoints);
-                    angularLinkConstraint.updateBias(gain, slop, -distance, unitTime);
+                    angularLinkConstraint.spring(0.5)
+                                         .damper(1.0);
+                    angularLinkConstraint.update(_dynamicEntities[0], _dynamicEntities[1]);
+                    angularLinkConstraint.updateBias(-distance, unitTime);
                     angularLinkConstraint.updateInitialImpulse(velocity);
                 }
             }
