@@ -52,11 +52,11 @@ private void iterate(N)(
     alias V3 = Vector!(N, 3);
     alias M33 = Matrix!(N, 3, 3);
     //iteration
-    linearImpulseConstraints.updateDeltaVelocities(iterations);
     for (int i = 0; i < iterations; i++) {
         linkConstraintPairs.updateDeltaVelocities;
+        linearImpulseConstraints.updateDeltaVelocities(iterations);
+        collidingEntities.updateDeltaVelocities;
     }
-    collidingEntities.updateDeltaVelocities;
 }
 
 private void updateDeltaVelocities(N, V3 = Vector!(N, 3))(ref LinearImpulseConstraint!N[] linearImpulseConstraints, int iterations){

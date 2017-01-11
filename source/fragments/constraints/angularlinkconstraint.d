@@ -76,12 +76,18 @@ struct AngularLinkConstraint(NumericType){
         
         ///
         void updateBias(in Q distance, in N unitTime){
+            //Extract rotational element around _localDirection.
+
             import std.math;
             immutable referenceVectorA = _localDirection.OrthogonalNormalizedVector;
-            //TODO
-            immutable referenceVectorB = distance.rotatedVector(referenceVectorA);
-            immutable deflection = referenceVectorA.vectorProduct(referenceVectorB);
 
+            //Project rotated referenceVector to plane.
+            immutable angleQuaternion = Q.angleAxis(_angle, _localDirection);
+            immutable pt = (distance*angleQuaternion).rotatedVector(referenceVectorA);
+            immutable d = pt.dotProduct(_localDirection);
+            immutable referenceVectorB =  -_localDirection * d + pt;
+
+            immutable deflection = referenceVectorA.vectorProduct(referenceVectorB);
             immutable tmp = _localDirection.dotProduct(deflection);
             if(tmp > N(0)){
                 _biasTerm = referenceVectorA.angle(referenceVectorB)*_spring/unitTime;
@@ -117,9 +123,22 @@ struct AngularLinkConstraint(NumericType){
         N damper()const{
             return _damper;
         }
+
+        ///
+        ref typeof(this) angle(in N a){
+            _angle = a;
+            return this;
+        }
+
+        ///
+        N angle()const{
+            return _angle;
+        };
     }//public
 
     private{
+        N _angle = N(0);
+
         N _spring = 0.5;
         N _damper = 1.0;
 

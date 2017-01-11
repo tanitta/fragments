@@ -228,8 +228,8 @@ class TestApp : ar.app.BaseApp{
     alias Q = ar.math.Quaternion!(N);
     
     float c = 0;
-    float h = 10;
-    float d = 10;
+    float h = 5;
+    float d = 5;
     float fpsUseRate = 0;
     auto camera = new ar.graphics.DefaultCamera;
     
@@ -439,7 +439,7 @@ class TestApp : ar.app.BaseApp{
         if(_config.hasGravity){
             import std.algorithm : map;
             import std.array : array;
-            _linearImpulseConstraints = _dynamicEntities.map!(entity => LinearImpulseConstraint!N(entity, V3(0, -9.8*entity.mass*_unitTime, 0)))
+            _linearImpulseConstraints = _dynamicEntities.map!(entity => LinearImpulseConstraint!N(entity, V3(0, -9.8*entity.mass*_unitTime/10, 0)))
                                                         .array;
         }else{
             _linearImpulseConstraints = [];
@@ -472,7 +472,7 @@ class TestApp : ar.app.BaseApp{
             //     force*210.0*200.0, 
             //     chip.position
             // );
-            _linearImpulseConstraints ~= LinearImpulseConstraint!N(chip.entity, force*_unitTime);
+            _linearImpulseConstraints ~= LinearImpulseConstraint!N(chip.entity, force*_unitTime/10);
         }
 
         engine.unitTime = _unitTime;

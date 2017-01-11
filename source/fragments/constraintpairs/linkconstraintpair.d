@@ -142,7 +142,7 @@ class LinkConstraintPair(NumericType) {
                     angularLinkConstraint.spring(0.5)
                                          .damper(1.0);
                     angularLinkConstraint.update(_dynamicEntities[0], _dynamicEntities[1]);
-                    angularLinkConstraint.updateBias(-distance, unitTime);
+                    angularLinkConstraint.updateBias(distance, unitTime);
                     angularLinkConstraint.updateInitialImpulse(velocity);
                 }
             }

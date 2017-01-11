@@ -23,7 +23,6 @@ N collisionJacDiagInv(N, V3 = Vector!(N, 3), M33 = Matrix!(N, 3, 3))(
     return N(1)/((k * normal).dotProduct(normal));
 }
 
-//TODO inv?
 ///
 N linearLinkJacDiagInv(N, V3 = Vector!(N, 3), M33 = Matrix!(N, 3, 3), Q = Quaternion!N)(
     in Q orientationA, 
@@ -35,25 +34,26 @@ N linearLinkJacDiagInv(N, V3 = Vector!(N, 3), M33 = Matrix!(N, 3, 3), Q = Quater
     in M33 inertiaInvB,
     in N massInvA,
     in N massInvB
-){
+)out(r){
+    assert(r > N(0));
+}body{
     immutable jA = (targetGlobalPosA.vectorProduct(orientationA.rotatedVector(-jointAxis)));
     immutable jB = (targetGlobalPosB.vectorProduct(orientationB.rotatedVector(jointAxis)));
     immutable minvJtA = inertiaInvA.inertiaAroundAxis(jA);
     immutable minvJtB = inertiaInvB.inertiaAroundAxis(jB);
     immutable r = (massInvA + minvJtA+ massInvB + minvJtB);
-    assert(r > N(0));
     return r;
 }
 unittest{
     alias N = double;
     alias M33 = Matrix!(N, 3, 3);
     alias V3 = Vector!(N, 3);
+    alias Q = Quaternion!N;
     assert(__traits(compiles, {
-        immutable r = linearLinkJacDiagInv(M33.identity, M33.identity, V3.zero, V3.zero, V3(0, 0, 1), M33.identity, M33.identity, N(1), N(1));
+        immutable r = linearLinkJacDiagInv(Q.zero, Q.zero, V3.zero, V3.zero, V3(0, 0, 1), M33.identity, M33.identity, N(1), N(1));
     }));
 }
 
-//TODO
 ///
 auto  angularLinkJacDiagInv(V3, M33, Q)(
     in V3 jointAxis,
@@ -61,14 +61,15 @@ auto  angularLinkJacDiagInv(V3, M33, Q)(
     in Q orientationB,
     in M33 inertiaInvA,
     in M33 inertiaInvB
-){
+)out(r){
+    alias N = V3.elementType;
+    assert(r > N(0));
+}body{
     immutable jA = orientationA.rotatedVector(jointAxis);
     immutable jB = orientationB.rotatedVector(-jointAxis);
     immutable minvJtA = inertiaInvA.inertiaAroundAxis(jA);
     immutable minvJtB = inertiaInvB.inertiaAroundAxis(jB);
     immutable r = minvJtA + minvJtB;
-    alias N = V3.elementType;
-    assert(r > N(0));
     return r;
 }
 
@@ -112,9 +113,6 @@ N inertiaAroundAxis(V3, M33, N = V3.elementType)(
         axis.x * inertia[0][0] + axis.y * inertia[1][0] + axis.z * inertia[2][0],
         axis.x * inertia[0][1] + axis.y * inertia[1][1] + axis.z * inertia[2][1],
         axis.x * inertia[0][2] + axis.y * inertia[1][2] + axis.z * inertia[2][2],
-        // axis.x * inertia[0][0] + axis.y * inertia[0][1] + axis.z * inertia[0][2],
-        // axis.x * inertia[1][0] + axis.y * inertia[1][1] + axis.z * inertia[1][2],
-        // axis.x * inertia[2][0] + axis.y * inertia[2][1] + axis.z * inertia[2][2],
     );
     return v.x * axis.x + v.y * axis.y + v.z * axis.z;
 }

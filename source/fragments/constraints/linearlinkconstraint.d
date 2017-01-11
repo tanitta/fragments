@@ -51,8 +51,7 @@ struct LinearLinkConstraint(NumericType) {
         }body{
             _rotatedDirection = entityA.orientation.rotatedVector(_localDirection);
             _applicationPoints = rotatedLocalApplicationPoints;
-            //TODO
-            // _jacDiagInv = N(1)/((massAndInertiaTermInv*_rotatedDirection).dotProduct(_rotatedDirection));
+            // _jacDiagInv = N(1)/((massAndInertiaTermInv(rotatedLocalApplicationPoints[0], entityA.massInv, entityA.inertiaGlobalInv, rotatedLocalApplicationPoints[1], entityB.massInv, entityB.inertiaGlobalInv)*_rotatedDirection).dotProduct(_rotatedDirection));
             import fragments.constraints.utils;
             _jacDiagInv = linearLinkJacDiagInv(
                 entityA.orientation, entityB.orientation,
@@ -109,6 +108,9 @@ struct LinearLinkConstraint(NumericType) {
     private{
         N _spring = 0.5;
         N _damper = 1.0;
+
+        N _erp = 0.5;
+        N _cfm = 1.0;
 
         N _initialImpulse;
         
