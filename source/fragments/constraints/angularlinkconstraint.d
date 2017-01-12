@@ -79,7 +79,8 @@ struct AngularLinkConstraint(NumericType){
             //Extract rotational element around _localDirection.
 
             import std.math;
-            immutable referenceVectorA = _localDirection.OrthogonalNormalizedVector;
+            import fragments.constraints.utils:orthogonalNormalizedVector;
+            immutable referenceVectorA = _localDirection.orthogonalNormalizedVector;
 
             //Project rotated referenceVector to plane.
             immutable angleQuaternion = Q.angleAxis(_angle, _localDirection);
@@ -164,15 +165,3 @@ struct AngularLinkConstraint(NumericType){
         
     }//private
 }//struct LinkConstraint
-
-private V3 OrthogonalNormalizedVector(V3)(in V3 v){
-    immutable tmp = V3(v[1], v[2], v[0]);
-    return v.vectorProduct(tmp).normalized;
-}
-unittest{
-    immutable v = Vector!(double, 3)(1, 2, 3);
-    immutable orthogonalNormalizedVector = OrthogonalNormalizedVector(v);
-    import std.math;
-    assert(approxEqual(v.dotProduct(orthogonalNormalizedVector), 0));
-}
-

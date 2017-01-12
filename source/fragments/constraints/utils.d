@@ -128,3 +128,15 @@ unittest{
     );
     assert(inertiaAroundAxis(m, v) == 132);
 }
+
+V3 orthogonalNormalizedVector(V3)(in V3 v){
+    immutable tmp = V3(v[1], v[2], v[0]);
+    return v.vectorProduct(tmp).normalized;
+}
+unittest{
+    immutable v = Vector!(double, 3)(1, 2, 3);
+    immutable orthogonalNormalizedVector = orthogonalNormalizedVector(v);
+    import std.math;
+    assert(approxEqual(v.dotProduct(orthogonalNormalizedVector), 0));
+}
+

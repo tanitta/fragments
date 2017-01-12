@@ -388,7 +388,7 @@ class TestApp : ar.app.BaseApp{
         
         {
             auto link = FixedJoint!N(
-                _model.chips[2].entity, 
+                _model.chips[0].entity, 
                 _model.chips[3].entity, 
                 V3(0, 0, 0.3), 
                 V3(0, 0, -0.3), 
