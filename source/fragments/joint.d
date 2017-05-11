@@ -34,7 +34,7 @@ template BallJoint(NumericType) {
     }//private
 }//template BallJoint
 unittest{
-    import fragments.square;
+    import fragments.entities.square;
     import fragments.material;
     alias N = double;
     alias V3 = Vector!(N, 3);
@@ -82,7 +82,7 @@ template FixedJoint(NumericType) {
     }//private
 }//template BallJoint
 unittest{
-    import fragments.square;
+    import fragments.entities.square;
     import fragments.material;
     alias N = double;
     alias V3 = Vector!(N, 3);

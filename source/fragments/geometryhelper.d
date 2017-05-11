@@ -1,82 +1,10 @@
-module fragments.square;
+module fragments.geometryhelper;
 
+import fragments.contactpoint:ContactPoint;
+import fragments.entity:StaticEntity;
 import armos.math;
-import fragments.entity;
-import fragments.contactpoint;
-import fragments.boundingbox;
-import fragments.material;
-import fragments.constraintpairs.collisionconstraintpair;
 
-/++
-++/
-class Square(NumericType) : DynamicEntity!(NumericType){
-    alias N = NumericType;
-    alias V3 = Vector!(N, 3);
-    alias Q = Quaternion!N;
-    mixin DynamicEntityProperties!N;
-    
-    public{
-        this(in Material!(N) m, in N size = N(1.0)){
-            _material = m;
-
-            _margin = V3(0.5, 0.5, 0.5);
-            
-            _rays = [
-                V3(size,  0, 0    ), 
-                V3(-size, 0, 0    ), 
-                V3(0,     0, size ), 
-                V3(0,     0, -size), 
-        
-                V3(size,  0, size ), 
-                V3(-size, 0, -size), 
-                V3(size,  0, -size), 
-                V3(-size, 0, size ), 
-            ];
-            
-            _collisionConstraintPairs = [
-                CollisionConstraintPair!N(this), 
-                CollisionConstraintPair!N(this), 
-                CollisionConstraintPair!N(this), 
-                CollisionConstraintPair!N(this), 
-                CollisionConstraintPair!N(this), 
-                CollisionConstraintPair!N(this), 
-                CollisionConstraintPair!N(this), 
-                CollisionConstraintPair!N(this), 
-            ];
-        }
-        
-        void updateCollisionConstraintPairs(in StaticEntity!N[] staticEntities)
-        in{
-            assert(_collisionConstraintPairs.length == 8);
-        }body{
-            _isColliding = false;
-            foreach (int index, ray; _rays) {
-                ContactPoint!N[] points;
-                immutable V3 rayBeginGlobal = _orientationPre.rotatedVector(ray)+_positionPre;
-                immutable V3 rayEndGlobal   = _orientation.rotatedVector(ray)+_position;
-                detectMostCloselyContactPoint(
-                    rayBeginGlobal,
-                    rayEndGlobal, 
-                    staticEntities, 
-                    points
-                );
-                _isColliding = _isColliding || points.length > 0;
-                _collisionConstraintPairs[index].update(points);
-            }
-        }
-    }//public
-    
-    private{
-        V3[8] _rays;
-    }//private
-}//class Chip
-unittest{
-    import fragments.material;
-    auto material = new Material!(double);
-    auto square = new Square!(double)(material);
-};
-
-private bool detectMostCloselyContactPoint(N, V3 = Vector!(N, 3), StaticEntities)(
+bool detectMostCloselyContactPoint(N, V3 = Vector!(N, 3), StaticEntities)(
     in V3 rayBeginGlobal,
     in V3 rayEndGlobal,
     in StaticEntities staticEntities,
@@ -94,17 +22,8 @@ private bool detectMostCloselyContactPoint(N, V3 = Vector!(N, 3), StaticEntities
         );
     }
     
-    if(isDetected){
-        int closelyIndex = 0;
-        N closelyDistance = N.max;
-        foreach (int index, point; points) {
-            if( point.distance < closelyDistance ){
-                closelyIndex = index;
-                closelyDistance = point.distance;
-            }
-        }
-        contactPoints ~= points[closelyIndex];
-    }
+    if(isDetected) contactPoints ~= points.closestContactPoint;
+   
     return isDetected;
 }
 unittest{
@@ -153,7 +72,19 @@ unittest{
     }
 }
 
-private bool detectContactPoint(N, V3 = Vector!(N, 3))(
+ContactPoint!N closestContactPoint(N)(in ContactPoint!N[] points){
+    int closelyIndex = 0;
+    N closelyDistance = N.max;
+    foreach (int index, point; points) {
+        if( point.distance < closelyDistance ){
+            closelyIndex = index;
+            closelyDistance = point.distance;
+        }
+    }
+    return points[closelyIndex];
+}
+
+bool detectContactPoint(N, V3 = Vector!(N, 3))(
     in V3 rayBeginGlobal,
     in V3 rayEndGlobal,
     in StaticEntity!N staticEntity,

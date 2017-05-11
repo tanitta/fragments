@@ -145,6 +145,8 @@ interface DynamicEntity(NumericType) : Entity!(NumericType){
 }//interface DynamicEntity
 
 template DynamicEntityProperties(NumericType){
+    import fragments.boundingbox;
+    import fragments.constraintpairs.collisionconstraintpair;
     alias N = NumericType;
     alias V3 = Vector!(N, 3);
     alias Q = Quaternion!(N);

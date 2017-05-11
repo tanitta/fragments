@@ -133,7 +133,7 @@ struct LinearLinkConstraint(NumericType) {
     }//private
 }//struct LinkConstraint
 unittest{
-    import fragments.square;
+    import fragments.entities.square;
     import fragments.material;
     alias N = double;
     auto material = new Material!N;

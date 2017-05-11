@@ -150,7 +150,7 @@ class LinkConstraintPair(NumericType) {
     }//private
 }//class LinkConstraintPair
 unittest{
-    import fragments.square;
+    import fragments.entities.square;
     import fragments.material;
     alias N = double;
     auto material = new Material!N;
@@ -161,7 +161,7 @@ unittest{
     // }));
 }
 unittest{
-    import fragments.square;
+    import fragments.entities.square;
     import fragments.material;
     alias N = double;
     auto material = new Material!N;
