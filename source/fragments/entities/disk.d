@@ -17,6 +17,7 @@ class Disk(NumericType) : DynamicEntity!(NumericType){
             _radius = radius;
             _material = m;
             _margin = V3(0.5, 0.5, 0.5);
+
             import fragments.constraintpairs.collisionconstraintpair;
             _collisionConstraintPairs = [
                 CollisionConstraintPair!N(this),
@@ -29,8 +30,8 @@ class Disk(NumericType) : DynamicEntity!(NumericType){
             assert(_collisionConstraintPairs.length == 8);
         }body{
             _isColliding = false;
-            // updateCollisionConstraintPairsCenterRay(staticEntities);
-            updateCollisionConstraintPairsCircleRay(staticEntities);
+            updateCollisionConstraintPairsCenterRay(staticEntities);
+            // updateCollisionConstraintPairsCircleRay(staticEntities);
         }
     }//public
 
@@ -43,42 +44,48 @@ class Disk(NumericType) : DynamicEntity!(NumericType){
             immutable V3 rayBeginGlobal = _orientationPre.rotatedVector(V3.zero)+_positionPre;
             immutable V3 rayEndGlobal   = _orientation.rotatedVector(V3.zero)+_position;
             import fragments.geometryhelper:detectMostCloselyContactPoint;
+            N margin = 0.003;
             detectMostCloselyContactPoint(
-                    rayBeginGlobal,
-                    rayEndGlobal, 
-                    staticEntities, 
-                    points
-                    );
+                rayBeginGlobal,
+                rayEndGlobal, 
+                staticEntities, 
+                points, 
+                margin
+            );
             _isColliding = _isColliding || points.length > 0;
             _collisionConstraintPairs[0].update(points);
         }
 
         void updateCollisionConstraintPairsCircleRay(in StaticEntity!N[] staticEntities){
             import fragments.contactpoint:ContactPoint;
+            ContactPoint!N[] points;
             ContactPoint!N[] pointsTmp;
             foreach (staticEntity; staticEntities) {
                 V3 rayPre = staticEntityDirectionOnDiscLocal(_positionPre, _orientationPre, staticEntity)*_radius;
                 V3 ray    = staticEntityDirectionOnDiscLocal(_position, _orientation, staticEntity)*_radius;
                 import std.math:isNaN;
-                if(rayPre.norm.isNaN) rayPre = V3.zero;
-                if(ray.norm.isNaN)    ray    = V3.zero;
-
+                // if(rayPre.norm.isNaN || ray.norm.isNaN) continue;
+                if(rayPre.norm.isNaN) rayPre = V3(0, 0, _radius);
+                if(ray.norm.isNaN)    ray    = V3(0, 0, _radius);
                 import std.stdio;
                 ray.writeln;
                 immutable V3 rayBeginGlobal = _orientationPre.rotatedVector(rayPre)+_positionPre;
                 immutable V3 rayEndGlobal   = _orientation.rotatedVector(ray)+_position;
 
+                bool isDetected = false;
                 import fragments.geometryhelper:detectContactPoint;
-                _isColliding =  _isColliding || detectContactPoint(
-                        rayBeginGlobal,
-                        rayEndGlobal,
-                        staticEntity,
-                        pointsTmp, 
-                        );
+                N margin = 0.003;
+                isDetected =  isDetected || detectContactPoint(
+                    rayBeginGlobal,
+                    rayEndGlobal,
+                    staticEntity,
+                    pointsTmp, 
+                    margin
+                );
+
+                import fragments.geometryhelper:closestContactPoint;
+                if(isDetected) points ~= pointsTmp.closestContactPoint;
             }
-            import fragments.geometryhelper:closestContactPoint;
-            ContactPoint!N[] points;
-            if(pointsTmp.length > 0) points ~= pointsTmp.closestContactPoint;
             _isColliding = _isColliding || points.length > 0;
             _collisionConstraintPairs[1].update(points);
         }

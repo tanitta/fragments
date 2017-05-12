@@ -9,6 +9,7 @@ bool detectMostCloselyContactPoint(N, V3 = Vector!(N, 3), StaticEntities)(
     in V3 rayEndGlobal,
     in StaticEntities staticEntities,
     ref ContactPoint!N[] contactPoints, 
+    N margin
 ){
     bool isDetected = false;
     
@@ -19,6 +20,7 @@ bool detectMostCloselyContactPoint(N, V3 = Vector!(N, 3), StaticEntities)(
             rayEndGlobal,
             staticEntity,
             points, 
+            margin
         );
     }
     
@@ -89,6 +91,7 @@ bool detectContactPoint(N, V3 = Vector!(N, 3))(
     in V3 rayEndGlobal,
     in StaticEntity!N staticEntity,
     ref ContactPoint!N[] points, 
+    in N margin, 
     in V3 applicationPoint = null
 ){
     bool isSuccess = false;
@@ -112,9 +115,9 @@ bool detectContactPoint(N, V3 = Vector!(N, 3))(
         immutable isBuried = (d2 <= 0 && 0 <= d1);
         // immutable isBuried = (d2 < 0);
         immutable isIncludedInPolygon =
-        ( ( p1 - p0 ).vectorProduct(pContact-p0).dotProduct(pNormal) >= N(0) )&&
-        ( ( p2 - p1 ).vectorProduct(pContact-p1).dotProduct(pNormal) >= N(0) )&&
-        ( ( p0 - p2 ).vectorProduct(pContact-p2).dotProduct(pNormal) >= N(0) );
+        ( ( p1 - p0 ).vectorProduct(pContact-p0).dotProduct(pNormal) >= -margin )&&
+        ( ( p2 - p1 ).vectorProduct(pContact-p1).dotProduct(pNormal) >= -margin )&&
+        ( ( p0 - p2 ).vectorProduct(pContact-p2).dotProduct(pNormal) >= -margin );
         
         if(isBuried && isIncludedInPolygon){
             const contactPoint = ContactPoint!N(

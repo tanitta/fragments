@@ -54,11 +54,13 @@ class Square(NumericType) : DynamicEntity!(NumericType){
                 immutable V3 rayBeginGlobal = _orientationPre.rotatedVector(ray)+_positionPre;
                 immutable V3 rayEndGlobal   = _orientation.rotatedVector(ray)+_position;
                 import fragments.geometryhelper:detectMostCloselyContactPoint;
+                N margin = 0.003;
                 detectMostCloselyContactPoint(
                     rayBeginGlobal,
                     rayEndGlobal, 
                     staticEntities, 
-                    points
+                    points, 
+                    margin
                 );
                 _isColliding = _isColliding || points.length > 0;
                 _collisionConstraintPairs[index].update(points);
