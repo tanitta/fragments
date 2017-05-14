@@ -50,25 +50,6 @@ struct CollisionConstraintPair(NumericType) {
                 staticEntity.normal,
                 biasTerm,
             );
-            
-            // friction constraint
-            {
-                _staticFriction = (dynamicEntity.material.staticFriction * staticEntity.material.staticFriction)^^N(0.5);
-                _dynamicFriction = (dynamicEntity.material.dynamicFriction * staticEntity.material.dynamicFriction)^^N(0.5);
-
-                V3[2] frictionAxes;
-                frictionAxes[0] = (staticEntity.vertices[1] - staticEntity.vertices[0]).normalized;
-                frictionAxes[1] = frictionAxes[0].vectorProduct(staticEntity.normal);
-
-                foreach (int index, frictionAxis; frictionAxes) {
-                    frictionConstraints[index] = FrictionConstraint!N(
-                        relativeVelocity,
-                        jacDiagInv,
-                        applicationPoint,
-                        frictionAxis,
-                    );
-                }
-            }
         }
         
         ///
