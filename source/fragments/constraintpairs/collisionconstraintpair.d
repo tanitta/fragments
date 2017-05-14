@@ -155,8 +155,8 @@ struct CollisionConstraintPair(NumericType) {
                 frictionAxes[0] = relativeVelocity.vectorProduct(staticEntity.normal).normalized;
                 frictionAxes[1] = frictionAxes[0].vectorProduct(staticEntity.normal);
             }else{
-                frictionAxes[0] = (staticEntity.vertices[1] - staticEntity.vertices[0]).normalized;
-                frictionAxes[1] = frictionAxes[0].vectorProduct(staticEntity.normal);
+                frictionAxes[0] = V3(0, 0, 0);
+                frictionAxes[1] = V3(0, 0, 0);
             }
 
             foreach (int index, frictionAxis; frictionAxes) {
