@@ -20,6 +20,8 @@ class Square(NumericType) : DynamicEntity!(NumericType){
             _margin = V3(0.5, 0.5, 0.5);
             
             _rays = [
+                V3(0,     0, 0    ), 
+
                 V3(size,  0, 0    ), 
                 V3(-size, 0, 0    ), 
                 V3(0,     0, size ), 
@@ -33,6 +35,7 @@ class Square(NumericType) : DynamicEntity!(NumericType){
             
             import fragments.constraintpairs.collisionconstraintpair;
             _collisionConstraintPairs = [
+                CollisionConstraintPair!N(this), 
                 CollisionConstraintPair!N(this), 
                 CollisionConstraintPair!N(this), 
                 CollisionConstraintPair!N(this), 
@@ -69,7 +72,7 @@ class Square(NumericType) : DynamicEntity!(NumericType){
     }//public
     
     private{
-        V3[8] _rays;
+        V3[9] _rays;
     }//private
 }//class Square
 unittest{
