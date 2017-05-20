@@ -13,6 +13,7 @@ class LinkConstraintPair(NumericType) {
     alias N = NumericType;
     alias V3 = Vector!(N, 3);
     alias M33 = Matrix!(N, 3, 3);
+    alias Q   = Quaternion!(N);
     
     public{
         /++
@@ -31,6 +32,10 @@ class LinkConstraintPair(NumericType) {
             
             _linearLinkConstraints = linearLinkConstraints;
             _angularLinkConstraints = angularLinkConstraints;
+            import std.algorithm:map;
+            import std.array:array;
+            _initialAngularAxises = _angularLinkConstraints.map!(c => c.localDirection)
+                                                           .array;
         }
         
         /++
@@ -73,6 +78,7 @@ class LinkConstraintPair(NumericType) {
         
         LinearLinkConstraint!N[]  _linearLinkConstraints;
         AngularLinkConstraint!N[] _angularLinkConstraints;
+        V3[] _initialAngularAxises;
         
         void updateRotatedLocalApplicationPoints(){
             foreach (int index, ref rotatedLocalApplicationPoint; _rotatedLocalApplicationPoints) {
@@ -134,18 +140,61 @@ class LinkConstraintPair(NumericType) {
                 immutable velocity = _dynamicEntities[0].angularVelocity - _dynamicEntities[1].angularVelocity;
 
                 // immutable distance = _dynamicEntities[1].orientation*_dynamicEntities[0].orientation.inverse;
-                immutable distance = rotationDifference(
-                    _dynamicEntities[0].orientation,
-                    _dynamicEntities[1].orientation
-                );
-                foreach (ref angularLinkConstraint; _angularLinkConstraints) {
+                immutable Q distance = rotationDifference(_dynamicEntities[1].orientation,
+                                                          _dynamicEntities[0].orientation);
+
+                N[] angles = new N[](_angularLinkConstraints.length);
+                
+                Q angleQuaternion = Q.unit;
+                foreach (size_t i, ref angularLinkConstraint; _angularLinkConstraints) {
+                    //Project rotated referenceVector to plane.
+                    // immutable angleQuaternion = Q.angleAxis(_angle, _initialAngularAxises[i]);
+
+                    _angularLinkConstraints[i].localDirection = angleQuaternion.rotatedVector(_initialAngularAxises[i]);
+                    angles[i] = calcAngle(_initialAngularAxises[i], distance*angleQuaternion.inverse);
+                    // angleQuaternion = angleQuaternion * Q.angleAxis(-angles[i], _angularLinkConstraints[i].localDirection);
+                    angleQuaternion = angleQuaternion*Q.angleAxis(angles[i], _initialAngularAxises[i]);
+                    // angleQuaternion = angleQuaternion*Q.angleAxis(angles[i], _angularLinkConstraints[i].localDirection);
+
+                    // Extract rotational element around _localDirection.
+                    // immutable referenceVectorA = _initialAngularAxises[i].orthogonalNormalizedVector;
+                    // angles[i] = 0
+
+
+
                     angularLinkConstraint.spring(0.5)
                                          .damper(1.0);
                     angularLinkConstraint.update(_dynamicEntities[0], _dynamicEntities[1]);
-                    angularLinkConstraint.updateBias(distance, unitTime);
+                    angularLinkConstraint.updateBias(angles[i], unitTime);
                     angularLinkConstraint.updateInitialImpulse(velocity);
+
                 }
             }
+        }
+
+        N calcAngle(in V3 axis, in Q q){
+            N angle = 0;
+            import std.math;
+            import std.stdio;
+            if(axis == V3(1, 0, 0)){
+                V3 r = q.rotatedVector(V3(0, 1, 0));
+                angle = atan2(r.z, r.y);
+                writeln("X ", angle/PI);
+                // angle = 0;
+            }else if(axis == V3(0, 1, 0)){
+                V3 r = q.rotatedVector(V3(0, 0, 1));
+                angle = atan2(r.x, r.z);
+                writeln("Y ", angle/PI);
+                // angle = 0;
+            }else if(axis == V3(0, 0, 1)){
+                V3 r = q.rotatedVector(V3(1, 0, 0));
+                angle = atan2(r.y, r.x);
+                writeln("Z ", angle/PI);
+                angle = 0;
+            }else{
+                assert(0);
+            }
+            return angle;
         }
     }//private
 }//class LinkConstraintPair
@@ -168,4 +217,49 @@ unittest{
     auto entityA = new Square!N(material);
     auto entityB = new Square!N(material);
     // auto linkConstraintPair = new LinkConstraintPair!N(entityA, entityB);
+}
+
+// TODO Need to rewrite.
+Vector!(N, 3) matrixToEulerXYZ(N)(in Matrix!(N, 3, 3) matrix){
+	//	// rot =  cy*cz          -cy*sz           sy
+	//	//        cz*sx*sy+cx*sz  cx*cz-sx*sy*sz -cy*sx
+	//	//       -cx*cz*sy+sx*sz  cz*sx+cx*sy*sz  cx*cy
+	//
+    Vector!(N, 3) xyz;
+	N fi = getMatrixElem(matrix,2);
+    import std.math;
+	if (fi < N(1.0f))
+	{
+		if (fi > N(-1.0f))
+		{
+			xyz[0] = atan2(-getMatrixElem(matrix,5),getMatrixElem(matrix,8));
+			xyz[1] = asin(getMatrixElem(matrix,2));
+			xyz[2] = atan2(-getMatrixElem(matrix,1),getMatrixElem(matrix,0));
+			// return true;
+		}
+		else
+		{
+			// WARNING.  Not unique.  XA - ZA = -atan2(r10,r11)
+			xyz[0] = -atan2(getMatrixElem(matrix,3),getMatrixElem(matrix,4));
+			xyz[1] = -PI*0.5;
+			xyz[2] = N(0.0);
+			// return false;
+		}
+	}
+	else
+	{
+		// WARNING.  Not unique.  XAngle + ZAngle = atan2(r10,r11)
+		xyz[0] = atan2(getMatrixElem(matrix,3),getMatrixElem(matrix,4));
+		xyz[1] = PI*0.5;
+		xyz[2] = 0.0;
+	}
+	// return false;
+    return xyz;
+}
+
+// TODO Need to rewrite.
+N getMatrixElem(N)(in Matrix!(N, 3, 3) matrix, in size_t index){
+	immutable size_t i = (index%3);
+	immutable size_t j = (index/3);
+	return matrix[i][j];
 }

@@ -31,7 +31,7 @@ class Disk(NumericType) : DynamicEntity!(NumericType){
         }body{
             _isColliding = false;
             updateCollisionConstraintPairsCenterRay(staticEntities);
-            // updateCollisionConstraintPairsCircleRay(staticEntities);
+            updateCollisionConstraintPairsCircleRay(staticEntities);
         }
     }//public
 
@@ -60,19 +60,19 @@ class Disk(NumericType) : DynamicEntity!(NumericType){
             import fragments.contactpoint:ContactPoint;
             ContactPoint!N[] points;
             ContactPoint!N[] pointsTmp;
+            bool isDetected = false;
             foreach (staticEntity; staticEntities) {
-                V3 rayPre = staticEntityDirectionOnDiscLocal(_positionPre, _orientationPre, staticEntity)*_radius;
-                V3 ray    = staticEntityDirectionOnDiscLocal(_position, _orientation, staticEntity)*_radius;
+                V3 rayPre = staticEntityDirectionOnDiskLocal(_positionPre, _orientationPre, staticEntity)*_radius;
+                V3 ray    = staticEntityDirectionOnDiskLocal(_position,    _orientation,    staticEntity)*_radius;
                 import std.math:isNaN;
                 // if(rayPre.norm.isNaN || ray.norm.isNaN) continue;
-                if(rayPre.norm.isNaN) rayPre = V3(0, 0, _radius);
-                if(ray.norm.isNaN)    ray    = V3(0, 0, _radius);
-                import std.stdio;
-                ray.writeln;
+                if(rayPre.norm.isNaN) rayPre = V3(0, 0, 0);
+                if(ray.norm.isNaN)    ray    = V3(0, 0, 0);
+
                 immutable V3 rayBeginGlobal = _orientationPre.rotatedVector(rayPre)+_positionPre;
+                // immutable V3 rayBeginGlobal = _orientationPre.rotatedVector(V3.zero)+_positionPre;
                 immutable V3 rayEndGlobal   = _orientation.rotatedVector(ray)+_position;
 
-                bool isDetected = false;
                 import fragments.geometryhelper:detectContactPoint;
                 N margin = 0.003;
                 isDetected =  isDetected || detectContactPoint(
@@ -82,17 +82,16 @@ class Disk(NumericType) : DynamicEntity!(NumericType){
                     pointsTmp, 
                     margin
                 );
-
-                import fragments.geometryhelper:closestContactPoint;
-                if(isDetected) points ~= pointsTmp.closestContactPoint;
             }
+            import fragments.geometryhelper:closestContactPoint;
+            if(isDetected) points ~= pointsTmp.closestContactPoint;
             _isColliding = _isColliding || points.length > 0;
             _collisionConstraintPairs[1].update(points);
         }
     }//private
 }//class Disk
 
-private V3 staticEntityDirectionOnDiscLocal(V3, Q, N)(in V3 position, in Q orientation, in StaticEntity!N staticEntity){
+private V3 staticEntityDirectionOnDiskLocal(V3, Q, N)(in V3 position, in Q orientation, in StaticEntity!N staticEntity){
     auto directionLocal = orientation.inverse.rotatedVector(-staticEntity.normal);
     return V3(directionLocal.x, 0, directionLocal.z).normalized;
 }

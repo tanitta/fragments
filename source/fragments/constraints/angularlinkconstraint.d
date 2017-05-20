@@ -64,7 +64,7 @@ struct AngularLinkConstraint(NumericType){
                 entityA.orientation, entityB.orientation,
                 entityA.inertiaGlobalInv, entityB.inertiaGlobalInv
             );
-    }
+        }
         
         ///
         void updateInitialImpulse(in V3 velocity)in{
@@ -75,32 +75,43 @@ struct AngularLinkConstraint(NumericType){
         }
         
         ///
-        void updateBias(in Q distance, in N unitTime){
-            //Extract rotational element around _localDirection.
+        void updateBias(in N distance, in N unitTime){
+            // // Extract rotational element around _localDirection.
+            // import std.math;
+            // import fragments.constraints.utils:orthogonalNormalizedVector;
+            // immutable referenceVectorA = _localDirection.orthogonalNormalizedVector;
+            //
+            // //Project rotated referenceVector to plane.
+            // // TODO move angleQuaternion outside
+            // immutable angleQuaternion = Q.angleAxis(- distance + _angle, _localDirection);
+            // immutable pt = angleQuaternion.rotatedVector(referenceVectorA);
+            // immutable d = pt.dotProduct(_localDirection);
+            // immutable referenceVectorB =  (-_localDirection * d + pt).normalized;
+            //
+            // immutable deflection = referenceVectorA.vectorProduct(referenceVectorB);
+            // immutable sign = _localDirection.dotProduct(deflection);
+            // if(sign > N(0)){
+            //     _biasTerm = referenceVectorA.angle(referenceVectorB)*_spring/unitTime;
+            // }else{
+            //     _biasTerm = -referenceVectorA.angle(referenceVectorB)*_spring/unitTime;
+            // }
 
-            import std.math;
-            import fragments.constraints.utils:orthogonalNormalizedVector;
-            immutable referenceVectorA = _localDirection.orthogonalNormalizedVector;
-
-            //Project rotated referenceVector to plane.
-            immutable angleQuaternion = Q.angleAxis(_angle, _localDirection);
-            immutable pt = (distance*angleQuaternion).rotatedVector(referenceVectorA);
-            immutable d = pt.dotProduct(_localDirection);
-            immutable referenceVectorB =  -_localDirection * d + pt;
-
-            immutable deflection = referenceVectorA.vectorProduct(referenceVectorB);
-            immutable tmp = _localDirection.dotProduct(deflection);
-            if(tmp > N(0)){
-                _biasTerm = referenceVectorA.angle(referenceVectorB)*_spring/unitTime;
-            }else{
-                _biasTerm = -referenceVectorA.angle(referenceVectorB)*_spring/unitTime;
-            }
+            // if(_localDirection == V3(0, 0, 1)){
+            //     _biasTerm = 0.1;
+            // }else{
+            //     _biasTerm = (distance+_angle)*_spring/unitTime;
+            // }
+            _biasTerm = (_angle-distance)*_spring/unitTime;
         };
         
-        /++
-        +/
+        ///
         void localDirection(in V3 localDirection){
             _localDirection = localDirection;
+        }
+
+        ///
+        V3 localDirection()const{
+            return _localDirection;
         }
 
         ///

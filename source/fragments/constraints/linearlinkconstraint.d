@@ -23,7 +23,13 @@ struct LinearLinkConstraint(NumericType) {
         V3[2][2] deltaVelocities(in DynamicEntity!N[] entities)const in{
             import std.math;
             assert(!isNaN(_initialImpulse));
-        }body{
+        }out(v){
+            import std.math;
+            assert(!isNaN(v[0][0][0]));
+            assert(!isNaN(v[0][1][0]));
+            assert(!isNaN(v[1][0][0]));
+            assert(!isNaN(v[1][1][0]));
+        } body{
             immutable V3 deltaVelocity = (entities[0].deltaLinearVelocity + entities[0].deltaAngularVelocity.vectorProduct(_applicationPoints[0]))
                                        - (entities[1].deltaLinearVelocity + entities[1].deltaAngularVelocity.vectorProduct(_applicationPoints[1]));
             

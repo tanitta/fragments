@@ -58,11 +58,9 @@ class Engine(NumericType)if(__traits(isFloating, NumericType)){
 
                 dynamicEntities.each!((ref entity) => entity.updateCollisionConstraintPairs(_mapConstraintDetector.detectedStaticEntities(entity)));
 
-                _constraintSolver.solve(
-                        dynamicEntities, 
-                        linkConstraintPairs,
-                        linearImpulseConstraints, 
-                        );
+                _constraintSolver.solve(dynamicEntities, 
+                                        linkConstraintPairs,
+                                        linearImpulseConstraints);
 
                 dynamicEntities.each!(entity => entity.updateStatus(_integrator, _mapConstraintDetector));
             }
