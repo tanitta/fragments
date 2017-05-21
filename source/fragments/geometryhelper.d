@@ -28,6 +28,7 @@ bool detectMostCloselyContactPoint(N, V3 = Vector!(N, 3), StaticEntities)(
    
     return isDetected;
 }
+
 unittest{
     alias N = double;
     alias V3 = Vector!(N, 3);
@@ -61,7 +62,7 @@ unittest{
         V3 end = V3(10, 0, 0);
         
         ContactPoint!N[] contactPoints;
-        detectMostCloselyContactPoint(begin, end, polygons, contactPoints);
+        detectMostCloselyContactPoint(begin, end, polygons, contactPoints, 0);
         assert(contactPoints[0].staticEntity == exceptedPolygon);
     }
     {
@@ -69,7 +70,7 @@ unittest{
         V3 end = V3(-10, 0, 0);
         
         ContactPoint!N[] contactPoints;
-        detectMostCloselyContactPoint(begin, end, polygons, contactPoints);
+        detectMostCloselyContactPoint(begin, end, polygons, contactPoints, 0);
         assert(contactPoints.length == 0);
     }
 }
@@ -158,7 +159,7 @@ unittest{
         V3 end = V3(10, 0, 0);
         
         ContactPoint!N[] contactPoints;
-        detectContactPoint(begin, end, polygon, contactPoints);
+        detectContactPoint(begin, end, polygon, contactPoints, 0);
         
         assert(contactPoints.length == 1);
         assert(contactPoints[0].distance == 9);
@@ -170,7 +171,7 @@ unittest{
         V3 end = V3(10, 0, 20);
         
         ContactPoint!N[] contactPoints;
-        detectContactPoint(begin, end, polygon, contactPoints);
+        detectContactPoint(begin, end, polygon, contactPoints, 0);
         
         assert(contactPoints.length == 0);
     }
