@@ -8,7 +8,7 @@ import fragments.contactpoint;
 import fragments.constraints;
 
 ///
-class LinkLinearConstraint(NumericType) : LinkConstraintPair!(NumericType){
+class LinearLinkConstraintPair(NumericType) : LinkConstraintPair!(NumericType){
     alias N = NumericType;
     alias V3 = Vector!(N, 3);
     alias M33 = Matrix!(N, 3, 3);
@@ -20,6 +20,8 @@ class LinkLinearConstraint(NumericType) : LinkConstraintPair!(NumericType){
         this(
             DynamicEntity!N entityA, DynamicEntity!N entityB,
             in V3 localApplicationPointA, in V3 localApplicationPointB,
+            in Q orientationalOffsetA, 
+            in Q orientationalOffsetB, 
             LinearLinkConstraint!N[] linearLinkConstraints, 
             // AngularLinkConstraint!N[] angularLinkConstraints, 
         ){
@@ -33,10 +35,9 @@ class LinkLinearConstraint(NumericType) : LinkConstraintPair!(NumericType){
             _angularLinkConstraints = [AngularLinkConstraint!N(V3(1, 0, 0)), 
                                        AngularLinkConstraint!N(V3(0, 1, 0)), 
                                        AngularLinkConstraint!N(V3(0, 0, 1))];
-            import std.algorithm:map;
-            import std.array:array;
-            _initialAngularAxises = _angularLinkConstraints.map!(c => c.localDirection)
-                                                           .array;
+
+            _orientationalOffsets[0] = orientationalOffsetA;
+            _orientationalOffsets[1] = orientationalOffsetB;
         }
        
         /++
@@ -79,7 +80,7 @@ class LinkLinearConstraint(NumericType) : LinkConstraintPair!(NumericType){
        
         LinearLinkConstraint!N[]  _linearLinkConstraints;
         AngularLinkConstraint!N[] _angularLinkConstraints;
-        V3[] _initialAngularAxises;
+        Q[2] _orientationalOffsets;
        
         void updateRotatedLocalApplicationPoints(){
             foreach (int index, ref rotatedLocalApplicationPoint; _rotatedLocalApplicationPoints) {
@@ -139,36 +140,16 @@ class LinkLinearConstraint(NumericType) : LinkConstraintPair!(NumericType){
             //AngularConstraints
             {
                 immutable velocity = _dynamicEntities[0].angularVelocity - _dynamicEntities[1].angularVelocity;
-
-                // immutable distance = _dynamicEntities[1].orientation*_dynamicEntities[0].orientation.inverse;
-                immutable Q distance = rotationDifference(_dynamicEntities[1].orientation,
+                immutable Q distance = _orientationalOffsets[0]*rotationDifference(_dynamicEntities[1].orientation*_orientationalOffsets[1],
                                                           _dynamicEntities[0].orientation);
 
-                N[] angles = new N[](_angularLinkConstraints.length);
-               
-                Q angleQuaternion = Q.unit;
                 foreach (size_t i, ref angularLinkConstraint; _angularLinkConstraints) {
-                    //Project rotated referenceVector to plane.
-                    // immutable angleQuaternion = Q.angleAxis(_angle, _initialAngularAxises[i]);
-
-                    _angularLinkConstraints[i].localDirection = angleQuaternion.rotatedVector(_initialAngularAxises[i]);
-                    angles[i] = calcAngle(_initialAngularAxises[i], distance*angleQuaternion.inverse);
-                    // angleQuaternion = angleQuaternion * Q.angleAxis(-angles[i], _angularLinkConstraints[i].localDirection);
-                    angleQuaternion = angleQuaternion*Q.angleAxis(angles[i], _initialAngularAxises[i]);
-                    // angleQuaternion = angleQuaternion*Q.angleAxis(angles[i], _angularLinkConstraints[i].localDirection);
-
-                    // Extract rotational element around _localDirection.
-                    // immutable referenceVectorA = _initialAngularAxises[i].orthogonalNormalizedVector;
-                    // angles[i] = 0
-
-
-
+                    immutable angle = calcAngle(angularLinkConstraint.localDirection, distance);
                     angularLinkConstraint.spring(0.5)
-                                         .damper(1.0);
-                    angularLinkConstraint.update(_dynamicEntities[0], _dynamicEntities[1]);
-                    angularLinkConstraint.updateBias(angles[i], unitTime);
-                    angularLinkConstraint.updateInitialImpulse(velocity);
-
+                                         .damper(1.0)
+                                         .update(_dynamicEntities[0], _dynamicEntities[1])
+                                         .updateBias(angle, unitTime)
+                                         .updateInitialImpulse(velocity);
                 }
             }
         }
@@ -181,21 +162,18 @@ class LinkLinearConstraint(NumericType) : LinkConstraintPair!(NumericType){
                 V3 r = q.rotatedVector(V3(0, 1, 0));
                 angle = atan2(r.z, r.y);
                 writeln("X ", angle/PI);
-                // angle = 0;
             }else if(axis == V3(0, 1, 0)){
                 V3 r = q.rotatedVector(V3(0, 0, 1));
                 angle = atan2(r.x, r.z);
                 writeln("Y ", angle/PI);
-                // angle = 0;
             }else if(axis == V3(0, 0, 1)){
                 V3 r = q.rotatedVector(V3(1, 0, 0));
                 angle = atan2(r.y, r.x);
                 writeln("Z ", angle/PI);
-                angle = 0;
             }else{
                 assert(0);
             }
             return angle;
         }
     }//private
-}//class LinkLinearConstraint
+}//class LinearLinkConstraintPair

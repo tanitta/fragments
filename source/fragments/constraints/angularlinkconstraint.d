@@ -49,7 +49,7 @@ struct AngularLinkConstraint(NumericType){
         
         /++
         +/
-        void update(in DynamicEntity!N entityA, in DynamicEntity!N entityB)in{
+        ref typeof(this) update(in DynamicEntity!N entityA, in DynamicEntity!N entityB)in{
             import std.math;
             // assert(!isNaN(orientation[0]));
             // assert(!isNaN(inertiaTermInv[0][0]));
@@ -64,18 +64,20 @@ struct AngularLinkConstraint(NumericType){
                 entityA.orientation, entityB.orientation,
                 entityA.inertiaGlobalInv, entityB.inertiaGlobalInv
             );
+            return this;
         }
         
         ///
-        void updateInitialImpulse(in V3 velocity)in{
+        ref typeof(this) updateInitialImpulse(in V3 velocity)in{
             import std.math;
             assert(!isNaN(velocity[0]));
         }body{
             _initialImpulse = -impulse(velocity);
+            return this;
         }
         
         ///
-        void updateBias(in N distance, in N unitTime){
+        ref typeof(this) updateBias(in N distance, in N unitTime){
             // // Extract rotational element around _localDirection.
             // import std.math;
             // import fragments.constraints.utils:orthogonalNormalizedVector;
@@ -102,11 +104,13 @@ struct AngularLinkConstraint(NumericType){
             //     _biasTerm = (distance+_angle)*_spring/unitTime;
             // }
             _biasTerm = (_angle-distance)*_spring/unitTime;
+            return this;
         };
         
         ///
-        void localDirection(in V3 localDirection){
+        ref typeof(this) localDirection(in V3 localDirection){
             _localDirection = localDirection;
+            return this;
         }
 
         ///

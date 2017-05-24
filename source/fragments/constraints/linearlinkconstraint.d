@@ -50,11 +50,7 @@ struct LinearLinkConstraint(NumericType) {
         
         /++
         +/
-        void update(in DynamicEntity!N entityA, in DynamicEntity!N entityB, in V3[] rotatedLocalApplicationPoints)in{
-            import std.math;
-            // assert(!isNaN(orientation[0]));
-            // assert(!isNaN(massAndInertiaTermInv[0][0]));
-        }body{
+        ref typeof(this) update(in DynamicEntity!N entityA, in DynamicEntity!N entityB, in V3[] rotatedLocalApplicationPoints){
             _rotatedDirection = entityA.orientation.rotatedVector(_localDirection);
             _applicationPoints = rotatedLocalApplicationPoints;
             // _jacDiagInv = N(1)/((massAndInertiaTermInv(rotatedLocalApplicationPoints[0], entityA.massInv, entityA.inertiaGlobalInv, rotatedLocalApplicationPoints[1], entityB.massInv, entityB.inertiaGlobalInv)*_rotatedDirection).dotProduct(_rotatedDirection));
@@ -66,26 +62,30 @@ struct LinearLinkConstraint(NumericType) {
                 entityA.inertiaGlobalInv, entityB.inertiaGlobalInv,
                 entityA.massInv, entityB.massInv
             );
+            return this;
         }
         
         ///
-        void updateInitialImpulse(in V3 velocity)in{
+        ref typeof(this) updateInitialImpulse(in V3 velocity)in{
             import std.math;
             assert(!isNaN(velocity[0]));
         }body{
             _initialImpulse = -impulse(velocity);
+            return this;
         }
         
         ///
-        void updateBias(in V3 distance, in N unitTime){
+        ref typeof(this) updateBias(in V3 distance, in N unitTime){
             import std.math;
             _biasTerm = (_spring * (_rotatedDirection.dotProduct(distance)))/unitTime;
+            return this;
         };
         
         /++
         +/
-        void localDirection(in V3 localDirection){
+        ref typeof(this) localDirection(in V3 localDirection){
             _localDirection = localDirection;
+            return this;
         }
 
         ///
