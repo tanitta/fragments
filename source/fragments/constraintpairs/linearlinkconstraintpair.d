@@ -161,15 +161,12 @@ class LinearLinkConstraintPair(NumericType) : LinkConstraintPair!(NumericType){
             if(axis == V3(1, 0, 0)){
                 V3 r = q.rotatedVector(V3(0, 1, 0));
                 angle = atan2(r.z, r.y);
-                writeln("X ", angle/PI);
             }else if(axis == V3(0, 1, 0)){
                 V3 r = q.rotatedVector(V3(0, 0, 1));
                 angle = atan2(r.x, r.z);
-                writeln("Y ", angle/PI);
             }else if(axis == V3(0, 0, 1)){
                 V3 r = q.rotatedVector(V3(1, 0, 0));
                 angle = atan2(r.y, r.x);
-                writeln("Z ", angle/PI);
             }else{
                 assert(0);
             }

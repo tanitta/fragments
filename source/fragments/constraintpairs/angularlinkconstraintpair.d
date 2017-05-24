@@ -192,31 +192,21 @@ class AngularLinkConstraintPair(NumericType) : LinkConstraintPair!(NumericType){
             if(axis[0] > 0.5){
                 V3 r = q.rotatedVector(V3(0, 1, 0));
                 angle = atan2(r.z, r.y);
-                writeln("X ", angle/PI);
-                // angle = 0;
             }else if(axis[1] > 0.5){
                 V3 r = q.rotatedVector(V3(0, 0, 1));
                 angle = atan2(r.x, r.z);
-                writeln("Y ", angle/PI);
-                // angle = 0;
             }else if(axis[2] > 0.5){
                 V3 r = q.rotatedVector(V3(1, 0, 0));
                 angle = atan2(r.y, r.x);
-                writeln("Z ", angle/PI);
             }else if(axis[0] < -0.5){
                 V3 r = q.rotatedVector(V3(0, 1, 0));
                 angle = -atan2(r.z, r.y);
-                writeln("X ", angle/PI);
-                // angle = 0;
             }else if(axis[1] < -0.5){
                 V3 r = q.rotatedVector(V3(0, 0, 1));
                 angle = -atan2(r.x, r.z);
-                writeln("Y ", angle/PI);
-                // angle = 0;
             }else if(axis[2] < -0.5){
                 V3 r = q.rotatedVector(V3(1, 0, 0));
                 angle = -atan2(r.y, r.x);
-                writeln("Z ", angle/PI);
             }else{
                 assert(0);
             }
