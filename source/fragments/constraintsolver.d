@@ -52,20 +52,21 @@ private void iterate(N)(
     alias V3 = Vector!(N, 3);
     alias M33 = Matrix!(N, 3, 3);
     //iteration
+    import std.conv:to;
+    immutable iterationsInv = N(1)/iterations.to!N;
     for (int i = 0; i < iterations; i++) {
         linkConstraintPairs.updateDeltaVelocities;
-        linearImpulseConstraints.updateDeltaVelocities(iterations);
+        linearImpulseConstraints.updateDeltaVelocities(iterationsInv);
         collidingEntities.updateDeltaVelocities;
     }
 }
 
-private void updateDeltaVelocities(N, V3 = Vector!(N, 3))(ref LinearImpulseConstraint!N[] linearImpulseConstraints, int iterations){
+private void updateDeltaVelocities(N, V3 = Vector!(N, 3))(ref LinearImpulseConstraint!N[] linearImpulseConstraints, N iterationsInv){
     foreach (ref linearImpulseConstraint; linearImpulseConstraints) {
-        import std.conv;
         auto entity = linearImpulseConstraint.entity;
         V3[2] deltaVelocities = linearImpulseConstraint.deltaVelocities(entity);
-        entity.deltaLinearVelocity  = entity.deltaLinearVelocity + deltaVelocities[0]/iterations.to!N;
-        entity.deltaAngularVelocity = entity.deltaAngularVelocity + deltaVelocities[1]/iterations.to!N;
+        entity.deltaLinearVelocity  = entity.deltaLinearVelocity + deltaVelocities[0]*iterationsInv;
+        entity.deltaAngularVelocity = entity.deltaAngularVelocity + deltaVelocities[1]*iterationsInv;
     }
 }
 

@@ -54,15 +54,21 @@ class Engine(NumericType)if(__traits(isFloating, NumericType)){
             import std.range;
             foreach (i; _iterations.iota) {
                 import std.algorithm:map, each;
-                linkConstraintPairs.each!((ref pair) => pair.update(_unitTime/_iterations));
+                foreach (ref pair; linkConstraintPairs) {
+                    pair.update(_unitTime/_iterations);
+                }
 
-                dynamicEntities.each!((ref entity) => entity.updateCollisionConstraintPairs(_mapConstraintDetector.detectedStaticEntities(entity)));
-
+                foreach (ref entity; dynamicEntities) {
+                    entity.updateCollisionConstraintPairs(_mapConstraintDetector.detectedStaticEntities(entity));
+                }
+                
                 _constraintSolver.solve(dynamicEntities, 
                                         linkConstraintPairs,
                                         linearImpulseConstraints);
 
-                dynamicEntities.each!(entity => entity.updateStatus(_integrator, _mapConstraintDetector));
+                foreach (ref entity; dynamicEntities) {
+                    entity.updateStatus(_integrator, _mapConstraintDetector);
+                }
             }
         };
     }//public

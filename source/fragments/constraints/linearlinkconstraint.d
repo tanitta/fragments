@@ -33,9 +33,8 @@ struct LinearLinkConstraint(NumericType) {
             immutable V3 deltaVelocity = (entities[0].deltaLinearVelocity + entities[0].deltaAngularVelocity.vectorProduct(_applicationPoints[0]))
                                        - (entities[1].deltaLinearVelocity + entities[1].deltaAngularVelocity.vectorProduct(_applicationPoints[1]));
             
-            import std.algorithm;
             immutable N deltaImpluse = (_initialImpulse - impulse(deltaVelocity));
-            
+
             return [
                 [
                     deltaImpluse * entities[0].massInv * _rotatedDirection,
